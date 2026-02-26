@@ -965,18 +965,6 @@
             corePath: CONFIG.FFMPEG_CORE_URL
         });
 
-        const videoInput = document.getElementById('videoInput');
-        const videoSection = document.getElementById('videoSection');
-        const videoPlayer = document.getElementById('videoPlayer');
-        const controlsPanel = document.getElementById('controlsPanel');
-        const actionSection = document.getElementById('actionSection');
-        const startRange = document.getElementById('startRange');
-        const endRange = document.getElementById('endRange');
-        const rangeSelected = document.getElementById('rangeSelected');
-        const startTimeDisplay = document.getElementById('startTimeDisplay');
-        const endTimeDisplay = document.getElementById('endTimeDisplay');
-        const durationDisplay = document.getElementById('durationDisplay');
-
         let videoDuration = 0;
         let isConverting = false;
         let currentFilter = 'none';
@@ -990,6 +978,9 @@
         }
 
         async function syncVibe() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            if (!videoPlayer) return;
+
             if (!videoPlayer.paused || videoPlayer.currentTime > 0) {
                 const canvas = document.createElement('canvas');
                 canvas.width = videoPlayer.videoWidth;
@@ -1008,38 +999,48 @@
             }
         }
 
-        videoInput.addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (videoPlayer.src) {
-                    URL.revokeObjectURL(videoPlayer.src);
+        document.addEventListener('change', function (e) {
+            if (e.target && e.target.id === 'videoInput') {
+                const videoInput = e.target;
+                const videoSection = document.getElementById('videoSection');
+                const videoPlayer = document.getElementById('videoPlayer');
+                const controlsPanel = document.getElementById('controlsPanel');
+                const actionSection = document.getElementById('actionSection');
+                const startRange = document.getElementById('startRange');
+                const endRange = document.getElementById('endRange');
+
+                const file = videoInput.files[0];
+                if (file) {
+                    if (videoPlayer.src) {
+                        URL.revokeObjectURL(videoPlayer.src);
+                    }
+                    currentVideoFile = file;
+                    const url = URL.createObjectURL(file);
+                    videoPlayer.src = url;
+                    videoSection.classList.add('active');
+
+                    videoPlayer.onloadedmetadata = function () {
+                        videoDuration = videoPlayer.duration;
+
+                        // Trigger initial vibe sync after metadata loads
+                        setTimeout(syncVibe, 500);
+
+                        document.getElementById('videoInfo').innerHTML = `
+                            <span>📹 ${file.name}</span>
+                            <span>⏱️ ${formatTime(videoDuration)}</span>
+                            <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
+                        `;
+
+                        startRange.max = videoDuration;
+                        endRange.max = videoDuration;
+                        endRange.value = Math.min(2, videoDuration);
+
+                        controlsPanel.style.display = 'block';
+                        actionSection.style.display = 'block';
+                        updateRange();
+                        updatePredictor();
+                    };
                 }
-                currentVideoFile = file;
-                const url = URL.createObjectURL(file);
-                videoPlayer.src = url;
-                videoSection.classList.add('active');
-
-                videoPlayer.onloadedmetadata = function () {
-                    videoDuration = videoPlayer.duration;
-
-                    // Trigger initial vibe sync after metadata loads
-                    setTimeout(syncVibe, 500);
-
-                    document.getElementById('videoInfo').innerHTML = `
-                        <span>📹 ${file.name}</span>
-                        <span>⏱️ ${formatTime(videoDuration)}</span>
-                        <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
-                    `;
-
-                    startRange.max = videoDuration;
-                    endRange.max = videoDuration;
-                    endRange.value = Math.min(2, videoDuration);
-
-                    controlsPanel.style.display = 'block';
-                    actionSection.style.display = 'block';
-                    updateRange();
-                    updatePredictor();
-                };
             }
         });
 
@@ -1059,10 +1060,18 @@
         }
 
         function updatePredictor() {
-            const width = parseInt(document.getElementById('gifWidth').value);
-            const fps = parseInt(document.getElementById('fps').value);
-            const speed = parseFloat(document.getElementById('speed').value);
-            const hasOverlay = document.getElementById('overlayText').value.length > 0;
+            const widthInput = document.getElementById('gifWidth');
+            const fpsInput = document.getElementById('fps');
+            const speedInput = document.getElementById('speed');
+            const overlayInput = document.getElementById('overlayText');
+            const qualityEst = document.getElementById('qualityEst');
+
+            if (!widthInput || !fpsInput || !speedInput || !overlayInput || !qualityEst) return;
+
+            const width = parseInt(widthInput.value);
+            const fps = parseInt(fpsInput.value);
+            const speed = parseFloat(speedInput.value);
+            const hasOverlay = overlayInput.value.length > 0;
 
             let quality = "High Def";
             if (width > 800) quality = "Ultra HD";
@@ -1071,10 +1080,19 @@
             if (fps > 25) quality += " (Super Smooth)";
             if (hasOverlay) quality += " + FX";
 
-            document.getElementById('qualityEst').textContent = quality;
+            qualityEst.textContent = quality;
         }
 
         function updateRange() {
+            const startRange = document.getElementById('startRange');
+            const endRange = document.getElementById('endRange');
+            const rangeSelected = document.getElementById('rangeSelected');
+            const startTimeDisplay = document.getElementById('startTimeDisplay');
+            const endTimeDisplay = document.getElementById('endTimeDisplay');
+            const durationDisplay = document.getElementById('durationDisplay');
+
+            if (!startRange || !endRange) return;
+
             let start = parseFloat(startRange.value);
             let end = parseFloat(endRange.value);
 
@@ -1099,13 +1117,15 @@
             const leftPercent = (start / videoDuration) * 100;
             const widthPercent = ((end - start) / videoDuration) * 100;
 
-            rangeSelected.style.left = leftPercent + '%';
-            rangeSelected.style.width = widthPercent + '%';
+            if (rangeSelected) {
+                rangeSelected.style.left = leftPercent + '%';
+                rangeSelected.style.width = widthPercent + '%';
+            }
 
             // Update displays
-            startTimeDisplay.textContent = start.toFixed(1) + 's';
-            endTimeDisplay.textContent = end.toFixed(1) + 's';
-            durationDisplay.textContent = (end - start).toFixed(1) + 's';
+            if (startTimeDisplay) startTimeDisplay.textContent = start.toFixed(1) + 's';
+            if (endTimeDisplay) endTimeDisplay.textContent = end.toFixed(1) + 's';
+            if (durationDisplay) durationDisplay.textContent = (end - start).toFixed(1) + 's';
         }
 
         startRange.addEventListener('input', updateRange);
@@ -1116,8 +1136,11 @@
         let startX, startY;
 
         function toggleCropper(ratio) {
+            const videoPlayer = document.getElementById('videoPlayer');
             const overlay = document.getElementById('cropperOverlay');
             const box = document.getElementById('cropperBox');
+
+            if (!videoPlayer || !overlay) return;
 
             if (ratio === 'off') {
                 overlay.classList.remove('active');
@@ -1246,22 +1269,38 @@
                 await ffmpeg.load();
             }
 
-            const start = parseFloat(startRange.value);
-            const duration = parseFloat(durationDisplay.textContent);
-            const width = parseInt(document.getElementById('gifWidth').value);
-            const fps = parseInt(document.getElementById('fps').value);
-            const speed = parseFloat(document.getElementById('speed').value);
-            const loopMode = document.getElementById('loopMode').value;
-            const overlayText = document.getElementById('overlayText').value;
-            const textSize = parseInt(document.getElementById('textSize').value);
-            const textPos = document.getElementById('textPos').value;
-
-            isConverting = true;
+            // Fresh lookups for stability during reloads
+            const startRange = document.getElementById('startRange');
+            const endRange = document.getElementById('endRange');
+            const durationDisplay = document.getElementById('durationDisplay');
+            const gifWidthInput = document.getElementById('gifWidth');
+            const fpsInput = document.getElementById('fps');
+            const speedSelect = document.getElementById('speed');
+            const loopModeSelect = document.getElementById('loopMode');
+            const overlayTextInput = document.getElementById('overlayText');
+            const textSizeInput = document.getElementById('textSize');
+            const textPosSelect = document.getElementById('textPos');
             const convertBtn = document.getElementById('convertBtn');
             const progressContainer = document.getElementById('progressContainer');
             const progressFill = document.getElementById('progressFill');
             const progressPercent = document.getElementById('progressPercent');
             const progressStatus = document.getElementById('progressStatus');
+            const videoPlayer = document.getElementById('videoPlayer');
+
+            if (!startRange || !durationDisplay || !convertBtn || !progressContainer || !videoPlayer) {
+                showToast("Page not ready — please reload.");
+                return;
+            }
+
+            const start = parseFloat(startRange.value);
+            const duration = parseFloat(durationDisplay.textContent);
+            const width = parseInt(gifWidthInput.value);
+            const fps = parseInt(fpsInput.value);
+            const speed = parseFloat(speedSelect.value);
+            const loopMode = loopModeSelect.value;
+            const overlayText = overlayTextInput.value;
+            const textSize = parseInt(textSizeInput.value);
+            const textPos = textPosSelect.value;
 
             convertBtn.disabled = true;
             convertBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Processing...';
@@ -1430,31 +1469,44 @@
         function resetConversionState() {
             isConverting = false;
             const convertBtn = document.getElementById('convertBtn');
-            convertBtn.disabled = false;
-            convertBtn.textContent = '⚡ Convert to GIF';
-            document.getElementById('progressContainer').classList.remove('active');
-            document.getElementById('progressFill').style.width = '0%';
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+
+            if (convertBtn) {
+                convertBtn.disabled = false;
+                convertBtn.innerHTML = '⚡ Convert to GIF';
+            }
+            if (progressContainer) progressContainer.classList.remove('active');
+            if (progressFill) progressFill.style.width = '0%';
         }
 
         function resetVideo() {
-            if (videoPlayer.src) {
-                URL.revokeObjectURL(videoPlayer.src);
-            }
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoSection = document.getElementById('videoSection');
+            const controlsPanel = document.getElementById('controlsPanel');
+            const actionSection = document.getElementById('actionSection');
+            const previewSection = document.getElementById('previewSection');
+            const videoInput = document.getElementById('videoInput');
             const resultGif = document.getElementById('resultGif');
-            if (resultGif.src) {
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            if (videoPlayer && videoPlayer.src) {
+                URL.revokeObjectURL(videoPlayer.src);
+                videoPlayer.src = '';
+            }
+            if (resultGif && resultGif.src) {
                 URL.revokeObjectURL(resultGif.src);
                 resultGif.src = '';
             }
-            const downloadBtn = document.getElementById('downloadBtn');
-            if (downloadBtn.href) {
+            if (downloadBtn) {
                 downloadBtn.href = '';
             }
-            videoPlayer.src = '';
-            videoSection.classList.remove('active');
-            controlsPanel.style.display = 'none';
-            actionSection.style.display = 'none';
-            document.getElementById('previewSection').classList.remove('active');
-            videoInput.value = '';
+            if (videoSection) videoSection.classList.remove('active');
+            if (controlsPanel) controlsPanel.style.display = 'none';
+            if (actionSection) actionSection.style.display = 'none';
+            if (previewSection) previewSection.classList.remove('active');
+            if (videoInput) videoInput.value = '';
+
             videoDuration = 0;
             currentVideoFile = null;
         }
