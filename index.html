@@ -850,6 +850,12 @@
                         <div class="filter-card" onclick="setFilter('invert', this)">
                             <span class="filter-label">Invert</span>
                         </div>
+                        <div class="filter-card" onclick="setFilter('vhs', this)">
+                            <span class="filter-label">📼 VHS Retro</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('psychedelic', this)">
+                            <span class="filter-label">🌈 Psychedelia</span>
+                        </div>
                     </div>
                 </div>
 
@@ -875,11 +881,21 @@
                         </div>
                         <div class="setting-group">
                             <label class="setting-label">Word Spacing</label>
-                            <input type="number" id="wordSpacing" class="setting-input" value="0" min="0" max="50">
+                            <input type="number" id="wordSpacing" class="setting-input" value="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Font Family</label>
+                            <select id="fontStyle" class="setting-input">
+                                <option value="arial.ttf">Standard (Arial)</option>
+                                <option value="Anton-Regular.ttf">Anton (Headline)</option>
+                                <option value="Orbitron.ttf">Orbitron (Sci-Fi)</option>
+                                <option value="PermanentMarker-Regular.ttf">Marker (Street)</option>
+                                <option value="Montserrat-Regular.ttf">Montserrat (Modern)</option>
+                            </select>
                         </div>
                         <div class="setting-group">
                             <label class="setting-label">Line Spacing</label>
-                            <input type="number" id="lineSpacing" class="setting-input" value="10" min="0" max="100">
+                            <input type="number" id="lineSpacing" class="setting-input" value="20" min="0" max="100">
                         </div>
                         <div class="setting-group">
                             <label class="setting-label">Text Box</label>
@@ -1245,20 +1261,22 @@
             }
         })();
 
-        function wrapText(text, maxChars) {
+        function wrapText(text, maxChars, wordSpacing = 0) {
+            const spaces = ' '.repeat(wordSpacing + 1);
             const words = text.split(' ');
             let lines = [];
             let currentLine = '';
 
             words.forEach(word => {
+                // Test length without the extra spaces for wrapping calculation
                 if ((currentLine + word).length > maxChars) {
-                    if (currentLine) lines.push(currentLine.trim());
+                    if (currentLine) lines.push(currentLine.trim().split(' ').join(spaces));
                     currentLine = word + ' ';
                 } else {
                     currentLine += word + ' ';
                 }
             });
-            if (currentLine) lines.push(currentLine.trim());
+            if (currentLine) lines.push(currentLine.trim().split(' ').join(spaces));
             return lines.join('\n');
         }
 
@@ -1301,6 +1319,7 @@
             const overlayText = overlayTextInput.value;
             const textSize = parseInt(textSizeInput.value);
             const textPos = textPosSelect.value;
+            const fontStyle = document.getElementById('fontStyle').value;
 
             convertBtn.disabled = true;
             convertBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Processing...';
@@ -1313,11 +1332,22 @@
 
                 // Load font and write text file if overlay text is present
                 if (overlayText) {
-                    await ffmpeg.FS('writeFile', 'arial.ttf', await fetchFile(CONFIG.FONT_URL));
+                    const fontMap = {
+                        'arial.ttf': CONFIG.FONT_URL,
+                        'Anton-Regular.ttf': 'https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf',
+                        'Orbitron.ttf': 'https://github.com/google/fonts/raw/main/ofl/orbitron/static/Orbitron-Regular.ttf',
+                        'PermanentMarker-Regular.ttf': 'https://github.com/google/fonts/raw/main/apache/permanentmarker/PermanentMarker-Regular.ttf',
+                        'Montserrat-Regular.ttf': 'https://raw.githubusercontent.com/JulietaUla/Montserrat/main/fonts/ttf/Montserrat-Regular.ttf'
+                    };
+
+                    const fontUrl = fontMap[fontStyle] || CONFIG.FONT_URL;
+                    progressStatus.textContent = 'Loading Font...';
+                    ffmpeg.FS('writeFile', fontStyle, await fetchFile(fontUrl));
 
                     // Smart Wrap Logic: Approximate chars per line
+                    const wordSpacing = parseInt(document.getElementById('wordSpacing').value) || 0;
                     const maxChars = Math.floor(width / (textSize * 0.6));
-                    const wrapped = wrapText(overlayText.trim(), maxChars);
+                    const wrapped = wrapText(overlayText.trim(), maxChars, wordSpacing);
 
                     ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
                 }
@@ -1355,6 +1385,8 @@
                 if (currentFilter === 'mirror') baseFilters.push('hflip');
                 if (currentFilter === 'grain') baseFilters.push('noise=all_seed=6:all_strength=10:all_flags=t+u');
                 if (currentFilter === 'invert') baseFilters.push('negate');
+                if (currentFilter === 'vhs') baseFilters.push('hue=s=0.5,noise=alls=10:allf=t+u,boxblur=1:1');
+                if (currentFilter === 'psychedelic') baseFilters.push('hue=h=\'t*100\',curves=all=\'0/0 0.5/1 1/0\'');
 
                 // D. Sizing & FPS
                 // Force even dimensions to prevent "width/height not divisible by 2" errors
@@ -1371,14 +1403,13 @@
                         default: yPos = '(h-text_h-20)';
                     }
 
-                    const wordSpacing = parseInt(document.getElementById('wordSpacing').value) || 0;
                     const lineSpacing = parseInt(document.getElementById('lineSpacing').value) || 10;
                     const useBox = document.getElementById('textBox').value === "1" ? 1 : 0;
                     const boxPadding = parseInt(document.getElementById('boxPadding').value) || 10;
                     const textColor = document.getElementById('textColor').value;
                     const boxOpacity = document.getElementById('boxOpacity').value;
 
-                    baseFilters.push(`drawtext=fontfile=arial.ttf:textfile=overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:word_spacing=${wordSpacing}:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+                    baseFilters.push(`drawtext=fontfile=${fontStyle}:textfile=overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
                 }
 
                 const baseFilterStr = baseFilters.join(',');
@@ -1456,6 +1487,9 @@
                     ffmpeg.FS('unlink', 'palette.png');
                     ffmpeg.FS('unlink', 'output.gif');
                     if (overlayText) ffmpeg.FS('unlink', 'overlay_text.txt');
+                    if (fontStyle && fontStyle !== 'arial.ttf') {
+                        try { ffmpeg.FS('unlink', fontStyle); } catch (e) { }
+                    }
                 } catch (e) { }
 
             } catch (error) {
