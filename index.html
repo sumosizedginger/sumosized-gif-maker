@@ -1352,9 +1352,9 @@
                     const fontMap = {
                         'arial.ttf': CONFIG.FONT_URL,
                         'Anton-Regular.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/anton/Anton-Regular.ttf',
-                        'Orbitron.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/orbitron/static/Orbitron-Regular.ttf',
+                        'Orbitron.ttf': 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/orbitron@0.4.2/static/Orbitron-Regular.ttf',
                         'PermanentMarker-Regular.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/apache/permanentmarker/PermanentMarker-Regular.ttf',
-                        'Montserrat-Regular.ttf': 'https://cdn.jsdelivr.net/gh/JulietaUla/Montserrat@main/fonts/ttf/Montserrat-Regular.ttf'
+                        'Montserrat-Regular.ttf': 'https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-400-normal.ttf'
                     };
 
                     const fontUrl = fontMap[fontStyle] || CONFIG.FONT_URL;
@@ -1379,8 +1379,16 @@
 
                     // C. Smart Wrap Logic: Zero-Guesswork Canvas measurement
                     const wordSpacing = parseInt(document.getElementById('wordSpacing').value) || 0;
-                    // Use 90% of width for a tight but safe professional layout
-                    const wrapped = wrapText(overlayText.trim(), width * 0.9, textSize, fontName, wordSpacing);
+
+                    // Verify font is actually loaded in the browser's engine before measuring
+                    const fontReady = document.fonts.check(`${textSize}px "${fontName}"`);
+                    if (!fontReady) {
+                        console.warn(`Font ${fontName} not verified in browser cache. Waiting for system...`);
+                        await document.fonts.ready;
+                    }
+
+                    // Use 80% of width for a professional, centered "Safe Zone" layout
+                    const wrapped = wrapText(overlayText.trim(), width * 0.8, textSize, fontName, wordSpacing);
 
                     ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
                 }
