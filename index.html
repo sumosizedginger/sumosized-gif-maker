@@ -1156,6 +1156,9 @@
             const fps = parseInt(document.getElementById('fps').value);
             const speed = parseFloat(document.getElementById('speed').value);
             const loopMode = document.getElementById('loopMode').value;
+            const overlayText = document.getElementById('overlayText').value;
+            const textSize = parseInt(document.getElementById('textSize').value);
+            const textPos = document.getElementById('textPos').value;
 
             isConverting = true;
             const convertBtn = document.getElementById('convertBtn');
@@ -1172,6 +1175,12 @@
 
             try {
                 ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
+
+                // Load font if overlay text is present
+                if (overlayText) {
+                    const fontUrl = 'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf';
+                    await ffmpeg.FS('writeFile', 'arial.ttf', await fetchFile(fontUrl));
+                }
 
                 // --- Part 1: Build the Base Filter Chain ---
                 let baseFilters = [];
@@ -1201,6 +1210,21 @@
                 // Force even dimensions to prevent "width/height not divisible by 2" errors
                 baseFilters.push(`scale=${width}:-2:flags=lanczos`);
                 baseFilters.push(`fps=${fps}`);
+
+                // E. Text Overlay
+                if (overlayText) {
+                    let yPos;
+                    switch (textPos) {
+                        case 'top': yPos = '10'; break;
+                        case 'middle': yPos = '(h-text_h)/2'; break;
+                        case 'bottom': yPos = 'h-text_h-10'; break;
+                        default: yPos = 'h-text_h-10';
+                    }
+                    // Escape single quotes in text
+                    const safeText = overlayText.replace(/'/g, "\\'");
+                    // Use a more robust drawtext filter
+                    baseFilters.push(`drawtext=fontfile=arial.ttf:text='${safeText}':fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${yPos}`);
+                }
 
                 const baseFilterStr = baseFilters.join(',');
 
