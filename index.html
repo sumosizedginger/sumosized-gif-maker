@@ -8,7 +8,7 @@
     <script>
         // Register the COI service worker to enable SharedArrayBuffer for FFmpeg.wasm
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sumosized-gif-maker/coi-serviceworker.js').then(() => {
+            navigator.serviceWorker.register('./coi-serviceworker.js').then(() => {
                 // If the page wasn't already controlled, reload to activate the SW
                 if (!navigator.serviceWorker.controller) {
                     window.location.reload();
@@ -1198,7 +1198,8 @@
                 if (currentFilter === 'cyberpunk') baseFilters.push('hue=h=300:s=1.5', 'curves=all=\'0/0 0.5/0.3 1/1\'');
 
                 // D. Sizing & FPS
-                baseFilters.push(`scale=${width}:-1:flags=lanczos`);
+                // Force even dimensions to prevent "width/height not divisible by 2" errors
+                baseFilters.push(`scale=${width}:-2:flags=lanczos`);
                 baseFilters.push(`fps=${fps}`);
 
                 const baseFilterStr = baseFilters.join(',');
@@ -1238,8 +1239,16 @@
                     '-y', 'output.gif'
                 );
 
-                const data = ffmpeg.FS('readFile', 'output.gif');
-                if (!data || data.length < 100) throw new Error("Empty Output");
+                let data;
+                try {
+                    data = ffmpeg.FS('readFile', 'output.gif');
+                } catch (e) {
+                    throw new Error("GIF generation failed during encoding");
+                }
+
+                if (!data || data.length < 100) {
+                     throw new Error("GIF output is empty — FFmpeg filter may be invalid for this video");
+                }
 
                 const url = URL.createObjectURL(new Blob([data.buffer], { type: 'image/gif' }));
                 document.getElementById('resultGif').src = url;
