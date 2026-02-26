@@ -1125,9 +1125,14 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         });
 
-        // FFmpeg Initialization
+        // FFmpeg Initialization with Logger
         (async () => {
             try {
+                // Enable console logging for diagnostics
+                ffmpeg.setLogger(({ type, message }) => {
+                    console.log(`[FFmpeg ${type}] ${message}`);
+                });
+
                 if (!ffmpeg.isLoaded()) {
                     await ffmpeg.load();
                     showToast("Elite Processor Ready");
@@ -1140,6 +1145,10 @@
 
         async function startConversion() {
             if (isConverting) return;
+            if (!ffmpeg.isLoaded()) {
+                showToast("Processor Loading...");
+                await ffmpeg.load();
+            }
 
             const start = parseFloat(startRange.value);
             const duration = parseFloat(durationDisplay.textContent);
@@ -1164,114 +1173,95 @@
             try {
                 ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
 
-                let filters = [];
+                // --- Part 1: Build the Base Filter Chain ---
+                let baseFilters = [];
 
-                // 1. Pro Cropper Logic
+                // A. Crop
                 if (cropData.active && cropData.w > 0) {
                     const rect = videoPlayer.getBoundingClientRect();
                     const scaleX = videoPlayer.videoWidth / rect.width;
                     const scaleY = videoPlayer.videoHeight / rect.height;
-
                     const cW = Math.round(cropData.w * scaleX);
                     const cH = Math.round(cropData.h * scaleY);
                     const cX = Math.round(cropData.x * scaleX);
                     const cY = Math.round(cropData.y * scaleY);
-
-                    filters.push(`crop=${cW}:${cH}:${cX}:${cY}`);
+                    baseFilters.push(`crop=${cW}:${cH}:${cX}:${cY}`);
                 }
 
-                // 2. Speed and Baseline Filters
-                if (speed !== 1) filters.push(`setpts=${1 / speed}*PTS`);
-                if (currentFilter === 'grayscale') filters.push('hue=s=0');
-                if (currentFilter === 'sepia') filters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131');
-                if (currentFilter === 'action-green') filters.push('hue=h=120:s=2', 'unsharp=5:5:1.0:5:5:0.0');
-                if (currentFilter === 'cyberpunk') filters.push('hue=h=300:s=1.5', 'curves=all=\'0/0 0.5/0.3 1/1\'');
+                // B. Speed
+                if (speed !== 1) baseFilters.push(`setpts=${1 / speed}*PTS`);
 
-                filters.push(`scale=${width}:-1:flags=lanczos`);
-                filters.push(`fps=${fps}`);
+                // C. Visual Filters
+                if (currentFilter === 'grayscale') baseFilters.push('hue=s=0');
+                if (currentFilter === 'sepia') baseFilters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131');
+                if (currentFilter === 'action-green') baseFilters.push('hue=h=120:s=2', 'unsharp=5:5:1.0:5:5:0.0');
+                if (currentFilter === 'cyberpunk') baseFilters.push('hue=h=300:s=1.5', 'curves=all=\'0/0 0.5/0.3 1/1\'');
 
-                // 3. Overlay text
-                const overlayText = document.getElementById('overlayText').value.trim();
-                const textSize = Math.round(parseInt(document.getElementById('textSize').value) * (width / videoPlayer.videoWidth)) || 32;
-                const textPos = document.getElementById('textPos').value;
-                if (overlayText) {
-                    let y_expr = '';
-                    if (textPos === 'top') y_expr = `${textSize}`;
-                    else if (textPos === 'middle') y_expr = '(h-text_h)/2';
-                    else y_expr = `h-text_h-${textSize}`;
-                    const safeText = overlayText.replace(/'/g, "\\'").replace(/:/g, "\\:");
-                    filters.push(`drawtext=text='${safeText}':fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${y_expr}`);
-                }
+                // D. Sizing & FPS
+                baseFilters.push(`scale=${width}:-1:flags=lanczos`);
+                baseFilters.push(`fps=${fps}`);
 
-                let filterStr = filters.join(',');
+                const baseFilterStr = baseFilters.join(',');
 
-                // 4. Advanced Loop Logic
-                if (loopMode === 'reverse') {
-                    filterStr += ',reverse';
-                } else if (loopMode === 'boomerang') {
-                    const baseFilters = filters.join(',');
-                    filterStr = `${baseFilters},split[f][b];[b]reverse[r];[f][r]concat=n=2:v=1:a=0`;
-                }
+                // --- Part 2: Two-Pass Palette Generation ---
+                progressStatus.textContent = 'Pass 1: Analyzing...';
 
-                progressStatus.textContent = 'Pass 1: Building Palette...';
-
-                // PASS 1: Generate palette from the video clip
+                // Pass 1: Simple palettegen from filtered video
                 await ffmpeg.run(
                     '-ss', start.toString(),
                     '-t', (duration / speed).toString(),
                     '-i', 'input.mp4',
-                    '-vf', `${filterStr},palettegen=stats_mode=single`,
+                    '-vf', `${baseFilterStr},palettegen`,
                     '-y', 'palette.png'
                 );
 
-                // Verify palette was created
-                let paletteData;
-                try {
-                    paletteData = ffmpeg.FS('readFile', 'palette.png');
-                    if (!paletteData || paletteData.length < 100) throw new Error('Empty palette');
-                } catch (e) {
-                    // Fallback: Do a simple single-pass (no palette optimization) if 2-pass fails
-                    progressStatus.textContent = 'Simple Encoding Fallback...';
-                    await ffmpeg.run(
-                        '-ss', start.toString(),
-                        '-t', (duration / speed).toString(),
-                        '-i', 'input.mp4',
-                        '-vf', filterStr,
-                        '-f', 'gif',
-                        '-y', 'output.gif'
-                    );
+                progressStatus.textContent = 'Pass 2: Encoding...';
+
+                // Pass 2: Handle Loop Modes + Palette Application
+                let complexFilter = `[0:v]${baseFilterStr}`;
+
+                if (loopMode === 'reverse') {
+                    complexFilter += `,reverse[vid];[vid][1:v]paletteuse`;
+                } else if (loopMode === 'boomerang') {
+                    complexFilter += `,split[f][b];[b]reverse[r];[f][r]concat=n=2:v=1:a=0[vid];[vid][1:v]paletteuse`;
+                } else {
+                    complexFilter += `[vid];[vid][1:v]paletteuse`;
                 }
 
-                if (paletteData && paletteData.length >= 100) {
-                    progressStatus.textContent = 'Pass 2: Elite Encoding...';
-
-                    // PASS 2: Apply palette using -filter_complex (the correct way)
-                    await ffmpeg.run(
-                        '-ss', start.toString(),
-                        '-t', (duration / speed).toString(),
-                        '-i', 'input.mp4',
-                        '-i', 'palette.png',
-                        '-filter_complex', `[0:v]${filterStr}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5`,
-                        '-f', 'gif',
-                        '-y', 'output.gif'
-                    );
-                }
+                await ffmpeg.run(
+                    '-ss', start.toString(),
+                    '-t', (duration / speed).toString(),
+                    '-i', 'input.mp4',
+                    '-i', 'palette.png',
+                    '-filter_complex', complexFilter,
+                    '-f', 'gif',
+                    '-y', 'output.gif'
+                );
 
                 const data = ffmpeg.FS('readFile', 'output.gif');
-                if (!data || data.length < 100) {
-                    throw new Error('GIF output is empty — FFmpeg filter may be invalid for this video.');
-                }
+                if (!data || data.length < 100) throw new Error("Empty Output");
+
                 const url = URL.createObjectURL(new Blob([data.buffer], { type: 'image/gif' }));
-
                 document.getElementById('resultGif').src = url;
-                document.getElementById('downloadBtn').href = url;
-                document.getElementById('previewSection').classList.add('active');
 
+                // Update download link
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.href = url;
+                downloadBtn.download = `sumosized-${Date.now()}.gif`;
+
+                document.getElementById('previewSection').classList.add('active');
                 showToast('Elite GIF Generated!');
                 document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
 
+                // Cleanup virtual files
+                try {
+                    ffmpeg.FS('unlink', 'input.mp4');
+                    ffmpeg.FS('unlink', 'palette.png');
+                    ffmpeg.FS('unlink', 'output.gif');
+                } catch (e) { }
+
             } catch (error) {
-                console.error(error);
+                console.error("Conversion Error:", error);
                 showToast('Processing Error: ' + error.message);
             } finally {
                 resetConversionState();
