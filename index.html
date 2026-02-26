@@ -1261,28 +1261,40 @@
             }
         })();
 
-        function wrapText(text, maxChars, wordSpacing = 0) {
-            const spacingStr = ' '.repeat(wordSpacing + 1);
+        function wrapText(text, maxWidth, fontSize, fontName, wordSpacing = 0) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.font = `${fontSize}px "${fontName}", Arial`;
+
+            // Measure the exact width of a space in the current font
+            const spaceWidth = ctx.measureText(' ').width;
+            const extraSpacingPx = wordSpacing * spaceWidth;
+
             const words = text.split(' ');
             let lines = [];
-            let currentLineWords = [];
+            let currentLine = [];
 
             words.forEach(word => {
-                // Calculate hypothetical length with injected spaces
-                const hyphenatedTest = [...currentLineWords, word];
-                const totalChars = hyphenatedTest.join('').length + (hyphenatedTest.length - 1) * (wordSpacing + 1);
+                const testLine = [...currentLine, word];
+                const testText = testLine.join(' ');
+                const metrics = ctx.measureText(testText);
+                // Total width = text width + (number of gaps * extra spacing per gap)
+                const totalWidth = metrics.width + (Math.max(0, testLine.length - 1) * extraSpacingPx);
 
-                if (totalChars > maxChars && currentLineWords.length > 0) {
-                    lines.push(currentLineWords.join(spacingStr));
-                    currentLineWords = [word];
+                if (totalWidth > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine.join(' '));
+                    currentLine = [word];
                 } else {
-                    currentLineWords.push(word);
+                    currentLine = testLine;
                 }
             });
-            if (currentLineWords.length > 0) {
-                lines.push(currentLineWords.join(spacingStr));
+            if (currentLine.length > 0) {
+                lines.push(currentLine.join(' '));
             }
-            return lines.join('\n');
+
+            // After wrapping, inject the extra spaces for the FFmpeg workaround
+            const spacingStr = ' '.repeat(wordSpacing + 1);
+            return lines.map(l => l.split(' ').join(spacingStr)).join('\n');
         }
 
         async function startConversion() {
@@ -1346,23 +1358,29 @@
                     };
 
                     const fontUrl = fontMap[fontStyle] || CONFIG.FONT_URL;
+                    const fontName = fontStyle.split('.')[0];
+
                     progressStatus.textContent = 'Loading Font...';
+
+                    // A. Update Browser Font System (for Canvas measurement)
+                    if (fontStyle !== 'arial.ttf') {
+                        try {
+                            const fontFace = new FontFace(fontName, `url(${fontUrl})`);
+                            const loadedFace = await fontFace.load();
+                            document.fonts.add(loadedFace);
+                            await document.fonts.ready; // Wait for the font system to stabilize
+                        } catch (e) {
+                            console.warn("Browser font load failed, falling back to estimation:", e);
+                        }
+                    }
+
+                    // B. Update FFmpeg Filesystem
                     ffmpeg.FS('writeFile', fontStyle, await fetchFile(fontUrl));
 
-                    // Smart Wrap Logic: Use font-specific width factors (conservative)
-                    const fontWidthFactors = {
-                        'arial.ttf': 0.6,
-                        'Anton-Regular.ttf': 0.5,
-                        'Orbitron.ttf': 0.9,
-                        'PermanentMarker-Regular.ttf': 0.75,
-                        'Montserrat-Regular.ttf': 0.65
-                    };
-                    const factor = fontWidthFactors[fontStyle] || 0.7;
-
+                    // C. Smart Wrap Logic: Zero-Guesswork Canvas measurement
                     const wordSpacing = parseInt(document.getElementById('wordSpacing').value) || 0;
-                    // Apply a 0.9 safety buffer to prevent edge-to-edge bleed
-                    const maxChars = Math.floor((width * 0.9) / (textSize * factor));
-                    const wrapped = wrapText(overlayText.trim(), maxChars, wordSpacing);
+                    // Use 90% of width for a tight but safe professional layout
+                    const wrapped = wrapText(overlayText.trim(), width * 0.9, textSize, fontName, wordSpacing);
 
                     ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
                 }
