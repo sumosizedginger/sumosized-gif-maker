@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video to GIF Converter</title>
+    <script src="coi-serviceworker.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -289,6 +291,130 @@
             box-shadow: 0 0 20px rgba(77, 255, 0, 0.1);
         }
 
+        /* Phase 2 Enhanced Components */
+        .feature-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            background: var(--action-green);
+            color: var(--navy);
+            box-shadow: 0 5px 15px rgba(77, 255, 0, 0.2);
+        }
+
+        .advanced-panel {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.4s var(--transition);
+        }
+
+        .advanced-panel.active {
+            display: block;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .filter-card.active {
+            border-color: var(--action-green);
+            background: rgba(77, 255, 0, 0.05);
+            box-shadow: inset 0 0 10px rgba(77, 255, 0, 0.1);
+        }
+
+        .filter-label {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .size-predictor {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(77, 255, 0, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid var(--action-green);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .size-val {
+            font-weight: 800;
+            color: var(--action-green);
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-top: 20px;
+        }
+
+        .frame-preview-bar {
+            height: 40px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .frame-strip {
+            height: 100%;
+            flex: 1;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .frame-strip:hover {
+            opacity: 1;
+        }
+
         .action-section {
             padding: 40px;
             text-align: center;
@@ -533,26 +659,85 @@
                     <p class="trim-hint">Drag handles to trim video section (Max 10 seconds recommended)</p>
                 </div>
 
-                <div class="settings-grid">
-                    <div class="setting-group">
-                        <label class="setting-label">Width (px)</label>
-                        <input type="number" id="gifWidth" class="setting-input" value="480" min="100" max="800"
-                            step="10">
-                    </div>
+                <div class="feature-tabs">
+                    <button class="tab-btn active" onclick="switchTab('settings')">Settings</button>
+                    <button class="tab-btn" onclick="switchTab('filters')">Filters</button>
+                    <button class="tab-btn" onclick="switchTab('overlays')">Overlays</button>
+                </div>
 
-                    <div class="setting-group">
-                        <label class="setting-label">Frame Rate (FPS)</label>
-                        <input type="number" id="fps" class="setting-input" value="15" min="1" max="30" step="1">
-                    </div>
+                <!-- Settings Panel -->
+                <div id="settingsPanel" class="advanced-panel active">
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label class="setting-label">Width (px)</label>
+                            <input type="number" id="gifWidth" class="setting-input" value="480" min="100" max="1024"
+                                step="10">
+                        </div>
 
-                    <div class="setting-group">
-                        <label class="setting-label">Quality</label>
-                        <select id="quality" class="setting-input">
-                            <option value="1">High (Slow)</option>
-                            <option value="5" selected>Medium</option>
-                            <option value="10">Low (Fast)</option>
-                        </select>
+                        <div class="setting-group">
+                            <label class="setting-label">Frame Rate (FPS)</label>
+                            <input type="number" id="fps" class="setting-input" value="15" min="1" max="60" step="1">
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Speed</label>
+                            <select id="speed" class="setting-input" onchange="updatePredictor()">
+                                <option value="0.5">0.5x (Slow)</option>
+                                <option value="1" selected>1.0x (Normal)</option>
+                                <option value="1.5">1.5x (Fast)</option>
+                                <option value="2">2.0x (Turbo)</option>
+                            </select>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Filters Panel -->
+                <div id="filtersPanel" class="advanced-panel">
+                    <div class="filter-grid" id="filterGrid">
+                        <div class="filter-card active" onclick="setFilter('none', this)">
+                            <span class="filter-label">None</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('grayscale', this)">
+                            <span class="filter-label">Noir</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('sepia', this)">
+                            <span class="filter-label">Retro</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('action-green', this)">
+                            <span class="filter-label">Green Ghost</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('cyberpunk', this)">
+                            <span class="filter-label">Cyberpunk</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overlays Panel -->
+                <div id="overlaysPanel" class="advanced-panel">
+                    <div class="setting-group">
+                        <label class="setting-label">Overlay Text</label>
+                        <input type="text" id="overlayText" class="setting-input" placeholder="Enter caption..."
+                            oninput="updatePredictor()">
+                    </div>
+                    <div class="settings-grid" style="margin-top: 15px;">
+                        <div class="setting-group">
+                            <label class="setting-label">Size</label>
+                            <input type="number" id="textSize" class="setting-input" value="32" min="10" max="100">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Position</label>
+                            <select id="textPos" class="setting-input">
+                                <option value="top">Top</option>
+                                <option value="middle">Middle</option>
+                                <option value="bottom" selected>Bottom</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="size-predictor">
+                    <span>Quality Index: <span class="size-val" id="qualityEst">Ultra High</span></span>
+                    <span>| Processor: <span class="size-val">Elite (FFmpeg)</span></span>
                 </div>
             </div>
 
@@ -593,6 +778,12 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({
+            log: true,
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+        });
+
         const videoInput = document.getElementById('videoInput');
         const videoSection = document.getElementById('videoSection');
         const videoPlayer = document.getElementById('videoPlayer');
@@ -607,10 +798,26 @@
 
         let videoDuration = 0;
         let isConverting = false;
+        let currentFilter = 'none';
+        let currentVideoFile = null;
+
+        // Sync SharedArrayBuffer check
+        (async () => {
+            try {
+                if (!ffmpeg.isLoaded()) {
+                    await ffmpeg.load();
+                    showToast("Elite Processor Ready");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("System Error: Cross-Origin Isolation Required");
+            }
+        })();
 
         videoInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
+                currentVideoFile = file;
                 const url = URL.createObjectURL(file);
                 videoPlayer.src = url;
                 videoSection.classList.add('active');
@@ -624,7 +831,6 @@
                         <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
                     `;
 
-                    // Set up range inputs
                     startRange.max = videoDuration;
                     endRange.max = videoDuration;
                     endRange.value = Math.min(2, videoDuration);
@@ -632,9 +838,41 @@
                     controlsPanel.style.display = 'block';
                     actionSection.style.display = 'block';
                     updateRange();
+                    updatePredictor();
                 };
             }
         });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.advanced-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabId + 'Panel').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function setFilter(filter, el) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            updatePredictor();
+        }
+
+        function updatePredictor() {
+            const width = parseInt(document.getElementById('gifWidth').value);
+            const fps = parseInt(document.getElementById('fps').value);
+            const speed = parseFloat(document.getElementById('speed').value);
+            const hasOverlay = document.getElementById('overlayText').value.length > 0;
+
+            let quality = "High Def";
+            if (width > 800) quality = "Ultra HD";
+            else if (width < 320) quality = "Standard";
+
+            if (fps > 25) quality += " (Super Smooth)";
+            if (hasOverlay) quality += " + FX";
+
+            document.getElementById('qualityEst').textContent = quality;
+        }
 
         function updateRange() {
             let start = parseFloat(startRange.value);
@@ -675,18 +913,16 @@
 
         async function startConversion() {
             if (isConverting) return;
+            if (!ffmpeg.isLoaded()) {
+                showToast("Processor Loading...");
+                await ffmpeg.load();
+            }
 
             const start = parseFloat(startRange.value);
-            const end = parseFloat(endRange.value);
+            const duration = parseFloat(durationDisplay.textContent);
             const width = parseInt(document.getElementById('gifWidth').value);
             const fps = parseInt(document.getElementById('fps').value);
-            const quality = parseInt(document.getElementById('quality').value);
-
-            if (end - start > 10) {
-                if (!confirm('Sections over 10 seconds may take a long time to convert. Continue?')) {
-                    return;
-                }
-            }
+            const speed = parseFloat(document.getElementById('speed').value);
 
             isConverting = true;
             const convertBtn = document.getElementById('convertBtn');
@@ -696,90 +932,50 @@
             const progressStatus = document.getElementById('progressStatus');
 
             convertBtn.disabled = true;
-            convertBtn.textContent = '⏳ Converting...';
+            convertBtn.textContent = '⚡ Processing...';
             progressContainer.classList.add('active');
 
             try {
-                // Extract frames
-                const frames = await extractFrames(start, end, fps, width, (progress) => {
-                    progressFill.style.width = (progress * 0.5) + '%';
-                    progressPercent.textContent = Math.round(progress * 0.5) + '%';
-                    progressStatus.textContent = 'Extracting frames...';
-                });
+                ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
 
-                // Create GIF
-                progressStatus.textContent = 'Generating GIF...';
+                let filters = [];
+                if (speed !== 1) filters.push(`setpts=${1 / speed}*PTS`);
+                if (currentFilter === 'grayscale') filters.push('hue=s=0');
+                if (currentFilter === 'sepia') filters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131');
+                if (currentFilter === 'action-green') filters.push('hue=h=120:s=2', 'unsharp=5:5:1.0:5:5:0.0');
+                if (currentFilter === 'cyberpunk') filters.push('hue=h=300:s=1.5', 'curves=all=\'0/0 0.5/0.3 1/1\'');
 
-                gifshot.createGIF({
-                    images: frames,
-                    gifWidth: width,
-                    gifHeight: Math.round(width * (videoPlayer.videoHeight / videoPlayer.videoWidth)),
-                    interval: 1 / fps,
-                    numFrames: frames.length,
-                    frameDuration: 1 / fps,
-                    sampleInterval: quality,
-                    progressCallback: (captureProgress) => {
-                        const totalProgress = 50 + (captureProgress * 50);
-                        progressFill.style.width = totalProgress + '%';
-                        progressPercent.textContent = Math.round(totalProgress) + '%';
-                    }
-                }, function (obj) {
-                    if (!obj.error) {
-                        document.getElementById('resultGif').src = obj.image;
-                        document.getElementById('downloadBtn').href = obj.image;
-                        document.getElementById('previewSection').classList.add('active');
-                        showToast('GIF created successfully!');
+                filters.push(`scale=${width}:-1:flags=lanczos`);
+                filters.push(`fps=${fps}`);
 
-                        // Scroll to preview
-                        document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        showToast('Error: ' + obj.errorMsg);
-                    }
+                const filterStr = filters.join(',');
+                progressStatus.textContent = 'Elite Encoding...';
 
-                    resetConversionState();
-                });
+                await ffmpeg.run(
+                    '-ss', start.toString(),
+                    '-t', (duration / speed).toString(),
+                    '-i', 'input.mp4',
+                    '-vf', `${filterStr},split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`,
+                    '-f', 'gif',
+                    'output.gif'
+                );
+
+                const data = ffmpeg.FS('readFile', 'output.gif');
+                const url = URL.createObjectURL(new Blob([data.buffer], { type: 'image/gif' }));
+
+                document.getElementById('resultGif').src = url;
+                document.getElementById('downloadBtn').href = url;
+                document.getElementById('previewSection').classList.add('active');
+
+                showToast('Elite GIF Generated!');
+                document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
 
             } catch (error) {
-                showToast('Error: ' + error.message);
+                console.error(error);
+                showToast('Processing Error: ' + error.message);
+            } finally {
                 resetConversionState();
             }
-        }
-
-        async function extractFrames(start, end, fps, width, onProgress) {
-            const frames = [];
-            const duration = end - start;
-            const frameCount = Math.floor(duration * fps);
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            // Calculate height maintaining aspect ratio
-            const height = Math.round(width * (videoPlayer.videoHeight / videoPlayer.videoWidth));
-            canvas.width = width;
-            canvas.height = height;
-
-            // Seek to start
-            videoPlayer.currentTime = start;
-            await new Promise(resolve => {
-                videoPlayer.onseeked = resolve;
-            });
-
-            // Extract frames
-            for (let i = 0; i < frameCount; i++) {
-                const currentTime = start + (i / fps);
-                videoPlayer.currentTime = currentTime;
-
-                await new Promise(resolve => {
-                    videoPlayer.onseeked = () => {
-                        ctx.drawImage(videoPlayer, 0, 0, width, height);
-                        frames.push(canvas.toDataURL('image/jpeg', 0.8));
-                        resolve();
-                    };
-                });
-
-                onProgress((i + 1) / frameCount);
-            }
-
-            return frames;
         }
 
         function resetConversionState() {
@@ -799,6 +995,7 @@
             document.getElementById('previewSection').classList.remove('active');
             videoInput.value = '';
             videoDuration = 0;
+            currentVideoFile = null;
         }
 
         function closePreview() {
