@@ -958,6 +958,20 @@
                 filters.push(`scale=${width}:-1:flags=lanczos`);
                 filters.push(`fps=${fps}`);
 
+                // Overlay text via FFmpeg drawtext filter
+                const overlayText = document.getElementById('overlayText').value.trim();
+                const textSize = parseInt(document.getElementById('textSize').value) || 32;
+                const textPos = document.getElementById('textPos').value;
+                if (overlayText) {
+                    let y_expr = '';
+                    if (textPos === 'top') y_expr = `${textSize}`;
+                    else if (textPos === 'middle') y_expr = '(h-text_h)/2';
+                    else y_expr = `h-text_h-${textSize}`;
+                    // Escape special chars for FFmpeg
+                    const safeText = overlayText.replace(/'/g, "\\'").replace(/:/g, "\\:");
+                    filters.push(`drawtext=text='${safeText}':fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${y_expr}`);
+                }
+
                 const filterStr = filters.join(',');
                 progressStatus.textContent = 'Elite Encoding...';
 
