@@ -1213,18 +1213,54 @@
                     filterStr = `${baseFilters},split[f][b];[b]reverse[r];[f][r]concat=n=2:v=1:a=0`;
                 }
 
-                progressStatus.textContent = 'Elite Encoding...';
+                progressStatus.textContent = 'Pass 1: Building Palette...';
 
+                // PASS 1: Generate palette from the video clip
                 await ffmpeg.run(
                     '-ss', start.toString(),
                     '-t', (duration / speed).toString(),
                     '-i', 'input.mp4',
-                    '-vf', `${filterStr},split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`,
-                    '-f', 'gif',
-                    'output.gif'
+                    '-vf', `${filterStr},palettegen=stats_mode=single`,
+                    '-y', 'palette.png'
                 );
 
+                // Verify palette was created
+                let paletteData;
+                try {
+                    paletteData = ffmpeg.FS('readFile', 'palette.png');
+                    if (!paletteData || paletteData.length < 100) throw new Error('Empty palette');
+                } catch (e) {
+                    // Fallback: Do a simple single-pass (no palette optimization) if 2-pass fails
+                    progressStatus.textContent = 'Simple Encoding Fallback...';
+                    await ffmpeg.run(
+                        '-ss', start.toString(),
+                        '-t', (duration / speed).toString(),
+                        '-i', 'input.mp4',
+                        '-vf', filterStr,
+                        '-f', 'gif',
+                        '-y', 'output.gif'
+                    );
+                }
+
+                if (paletteData && paletteData.length >= 100) {
+                    progressStatus.textContent = 'Pass 2: Elite Encoding...';
+
+                    // PASS 2: Apply palette using -filter_complex (the correct way)
+                    await ffmpeg.run(
+                        '-ss', start.toString(),
+                        '-t', (duration / speed).toString(),
+                        '-i', 'input.mp4',
+                        '-i', 'palette.png',
+                        '-filter_complex', `[0:v]${filterStr}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5`,
+                        '-f', 'gif',
+                        '-y', 'output.gif'
+                    );
+                }
+
                 const data = ffmpeg.FS('readFile', 'output.gif');
+                if (!data || data.length < 100) {
+                    throw new Error('GIF output is empty — FFmpeg filter may be invalid for this video.');
+                }
                 const url = URL.createObjectURL(new Blob([data.buffer], { type: 'image/gif' }));
 
                 document.getElementById('resultGif').src = url;
