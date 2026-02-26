@@ -1,0 +1,16 @@
+{
+  "name": "SumoSized GIF Maker",
+  "short_name": "SumoGIF",
+  "description": "Professional Browser-Based GIF Studio",
+  "start_url": "/sumosized-gif-maker/",
+  "display": "standalone",
+  "background_color": "#002244",
+  "theme_color": "#4DFF00",
+  "icons": [
+    {
+      "src": "https://sumosizedginger.github.io/sumosized-gif-maker/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

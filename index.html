@@ -18,12 +18,14 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
         rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
     <style>
         :root {
             /* Core Blues (Primary Backgrounds) */
@@ -43,8 +45,9 @@
             --jungle: #1A2421;
 
             /* UI Tokens */
+            --vibe-color: #4DFF00;
             --glass: rgba(0, 34, 68, 0.7);
-            --glass-border: rgba(77, 255, 0, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.08);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.7);
             --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
@@ -602,6 +605,72 @@
             }
         }
 
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Pro Cropper UI */
+        .video-container {
+            position: relative;
+            cursor: crosshair;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .cropper-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 10;
+        }
+
+        .cropper-overlay.active {
+            display: block;
+        }
+
+        .cropper-box {
+            position: absolute;
+            border: 2px solid var(--action-green);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 20px var(--action-green);
+            pointer-events: none;
+        }
+
+        .cropper-box::after {
+            content: 'CROP AREA';
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: var(--action-green);
+            color: var(--navy);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Icon Tweaks */
+        .tab-btn i,
+        .btn i {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -647,7 +716,12 @@
             </div>
 
             <div class="video-section" id="videoSection">
-                <video id="videoPlayer" controls></video>
+                <div class="video-container" id="videoContainer">
+                    <video id="videoPlayer"></video>
+                    <div class="cropper-overlay" id="cropperOverlay">
+                        <div class="cropper-box" id="cropperBox"></div>
+                    </div>
+                </div>
                 <div class="video-info" id="videoInfo"></div>
             </div>
 
@@ -670,9 +744,15 @@
                 </div>
 
                 <div class="feature-tabs">
-                    <button class="tab-btn active" onclick="switchTab('settings')">Settings</button>
-                    <button class="tab-btn" onclick="switchTab('filters')">Filters</button>
-                    <button class="tab-btn" onclick="switchTab('overlays')">Overlays</button>
+                    <button class="tab-btn active" onclick="switchTab('settings')">
+                        <i data-lucide="settings"></i> Settings
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('filters')">
+                        <i data-lucide="sparkles"></i> Filters
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('overlays')">
+                        <i data-lucide="type"></i> Overlays
+                    </button>
                 </div>
 
                 <!-- Settings Panel -->
@@ -696,6 +776,26 @@
                                 <option value="1" selected>1.0x (Normal)</option>
                                 <option value="1.5">1.5x (Fast)</option>
                                 <option value="2">2.0x (Turbo)</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Loop Mode</label>
+                            <select id="loopMode" class="setting-input" onchange="updatePredictor()">
+                                <option value="normal" selected>Normal</option>
+                                <option value="reverse">Reverse</option>
+                                <option value="boomerang">Boomerang</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Pro Crop</label>
+                            <select id="cropRatio" class="setting-input" onchange="toggleCropper(this.value)">
+                                <option value="off" selected>Off (Full)</option>
+                                <option value="original">Free Crop</option>
+                                <option value="9:16">TikTok (9:16)</option>
+                                <option value="1:1">Instagram (1:1)</option>
+                                <option value="4:5">FB/Portalt (4:5)</option>
                             </select>
                         </div>
                     </div>
@@ -811,18 +911,31 @@
         let currentFilter = 'none';
         let currentVideoFile = null;
 
-        // Sync SharedArrayBuffer check
-        (async () => {
-            try {
-                if (!ffmpeg.isLoaded()) {
-                    await ffmpeg.load();
-                    showToast("Elite Processor Ready");
+        const colorThief = new ColorThief();
+
+        // Initialize Lucide Icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        async function syncVibe() {
+            if (!videoPlayer.paused || videoPlayer.currentTime > 0) {
+                const canvas = document.createElement('canvas');
+                canvas.width = videoPlayer.videoWidth;
+                canvas.height = videoPlayer.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(videoPlayer, 0, 0, canvas.width, canvas.height);
+
+                try {
+                    const color = colorThief.getColor(canvas);
+                    const rgb = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                    document.documentElement.style.setProperty('--vibe-color', rgb);
+                    document.documentElement.style.setProperty('--glass-border', `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.3)`);
+                } catch (e) {
+                    console.warn("Vibe sync failed:", e);
                 }
-            } catch (e) {
-                console.error(e);
-                showToast("System Error: Cross-Origin Isolation Required");
             }
-        })();
+        }
 
         videoInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
@@ -834,6 +947,9 @@
 
                 videoPlayer.onloadedmetadata = function () {
                     videoDuration = videoPlayer.duration;
+
+                    // Trigger initial vibe sync after metadata loads
+                    setTimeout(syncVibe, 500);
 
                     document.getElementById('videoInfo').innerHTML = `
                         <span>📹 ${file.name}</span>
@@ -921,18 +1037,116 @@
         startRange.addEventListener('input', updateRange);
         endRange.addEventListener('input', updateRange);
 
+        let cropData = { active: false, x: 0, y: 0, w: 0, h: 0, ratio: 'off' };
+        let isDragging = false;
+        let startX, startY;
+
+        function toggleCropper(ratio) {
+            const overlay = document.getElementById('cropperOverlay');
+            const box = document.getElementById('cropperBox');
+
+            if (ratio === 'off') {
+                overlay.classList.remove('active');
+                cropData.active = false;
+                return;
+            }
+
+            overlay.classList.add('active');
+            cropData.active = true;
+            cropData.ratio = ratio;
+
+            // Reset box to center
+            const rect = videoPlayer.getBoundingClientRect();
+            let w = rect.width * 0.8;
+            let h = rect.height * 0.8;
+
+            if (ratio !== 'original') {
+                const [rW, rH] = ratio.split(':').map(Number);
+                const targetRatio = rW / rH;
+                if (w / h > targetRatio) w = h * targetRatio;
+                else h = w / targetRatio;
+            }
+
+            cropData.w = w;
+            cropData.h = h;
+            cropData.x = (rect.width - w) / 2;
+            cropData.y = (rect.height - h) / 2;
+
+            updateCropperUI();
+        }
+
+        function updateCropperUI() {
+            const box = document.getElementById('cropperBox');
+            box.style.left = cropData.x + 'px';
+            box.style.top = cropData.y + 'px';
+            box.style.width = cropData.w + 'px';
+            box.style.height = cropData.h + 'px';
+        }
+
+        const videoContainer = document.getElementById('videoContainer');
+        videoContainer.addEventListener('mousedown', e => {
+            if (!cropData.active) return;
+            isDragging = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+
+            // If clicking outside box, start new box
+            if (cropData.ratio === 'original') {
+                cropData.x = startX;
+                cropData.y = startY;
+                cropData.w = 0;
+                cropData.h = 0;
+            }
+        });
+
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            const rect = videoContainer.getBoundingClientRect();
+            let curX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+            let curY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+            if (cropData.ratio === 'original') {
+                cropData.w = Math.abs(curX - startX);
+                cropData.h = Math.abs(curY - startY);
+                cropData.x = Math.min(curX, startX);
+                cropData.y = Math.min(curY, startY);
+            } else {
+                // Move logic for fixed ratio (simple center-drag for now)
+                cropData.x = Math.max(0, Math.min(curX - cropData.w / 2, rect.width - cropData.w));
+                cropData.y = Math.max(0, Math.min(curY - cropData.h / 2, rect.height - cropData.h));
+            }
+            updateCropperUI();
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        // Initialize Lucide Icons initially
+        window.addEventListener('load', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+
+        // FFmpeg Initialization
+        (async () => {
+            try {
+                if (!ffmpeg.isLoaded()) {
+                    await ffmpeg.load();
+                    showToast("Elite Processor Ready");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("System Error: Cross-Origin Isolation Required");
+            }
+        })();
+
         async function startConversion() {
             if (isConverting) return;
-            if (!ffmpeg.isLoaded()) {
-                showToast("Processor Loading...");
-                await ffmpeg.load();
-            }
 
             const start = parseFloat(startRange.value);
             const duration = parseFloat(durationDisplay.textContent);
             const width = parseInt(document.getElementById('gifWidth').value);
             const fps = parseInt(document.getElementById('fps').value);
             const speed = parseFloat(document.getElementById('speed').value);
+            const loopMode = document.getElementById('loopMode').value;
 
             isConverting = true;
             const convertBtn = document.getElementById('convertBtn');
@@ -942,13 +1156,31 @@
             const progressStatus = document.getElementById('progressStatus');
 
             convertBtn.disabled = true;
-            convertBtn.textContent = '⚡ Processing...';
+            convertBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Processing...';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
             progressContainer.classList.add('active');
 
             try {
                 ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
 
                 let filters = [];
+
+                // 1. Pro Cropper Logic
+                if (cropData.active && cropData.w > 0) {
+                    const rect = videoPlayer.getBoundingClientRect();
+                    const scaleX = videoPlayer.videoWidth / rect.width;
+                    const scaleY = videoPlayer.videoHeight / rect.height;
+
+                    const cW = Math.round(cropData.w * scaleX);
+                    const cH = Math.round(cropData.h * scaleY);
+                    const cX = Math.round(cropData.x * scaleX);
+                    const cY = Math.round(cropData.y * scaleY);
+
+                    filters.push(`crop=${cW}:${cH}:${cX}:${cY}`);
+                }
+
+                // 2. Speed and Baseline Filters
                 if (speed !== 1) filters.push(`setpts=${1 / speed}*PTS`);
                 if (currentFilter === 'grayscale') filters.push('hue=s=0');
                 if (currentFilter === 'sepia') filters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131');
@@ -958,21 +1190,29 @@
                 filters.push(`scale=${width}:-1:flags=lanczos`);
                 filters.push(`fps=${fps}`);
 
-                // Overlay text via FFmpeg drawtext filter
+                // 3. Overlay text
                 const overlayText = document.getElementById('overlayText').value.trim();
-                const textSize = parseInt(document.getElementById('textSize').value) || 32;
+                const textSize = Math.round(parseInt(document.getElementById('textSize').value) * (width / videoPlayer.videoWidth)) || 32;
                 const textPos = document.getElementById('textPos').value;
                 if (overlayText) {
                     let y_expr = '';
                     if (textPos === 'top') y_expr = `${textSize}`;
                     else if (textPos === 'middle') y_expr = '(h-text_h)/2';
                     else y_expr = `h-text_h-${textSize}`;
-                    // Escape special chars for FFmpeg
                     const safeText = overlayText.replace(/'/g, "\\'").replace(/:/g, "\\:");
                     filters.push(`drawtext=text='${safeText}':fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${y_expr}`);
                 }
 
-                const filterStr = filters.join(',');
+                let filterStr = filters.join(',');
+
+                // 4. Advanced Loop Logic
+                if (loopMode === 'reverse') {
+                    filterStr += ',reverse';
+                } else if (loopMode === 'boomerang') {
+                    const baseFilters = filters.join(',');
+                    filterStr = `${baseFilters},split[f][b];[b]reverse[r];[f][r]concat=n=2:v=1:a=0`;
+                }
+
                 progressStatus.textContent = 'Elite Encoding...';
 
                 await ffmpeg.run(
