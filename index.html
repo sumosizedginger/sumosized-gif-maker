@@ -888,10 +888,15 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        const CONFIG = {
+            FFMPEG_CORE_URL: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+            FONT_URL: 'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf'
+        };
+
         const { createFFmpeg, fetchFile } = FFmpeg;
         const ffmpeg = createFFmpeg({
             log: true,
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+            corePath: CONFIG.FFMPEG_CORE_URL
         });
 
         const videoInput = document.getElementById('videoInput');
@@ -1178,8 +1183,7 @@
 
                 // Load font if overlay text is present
                 if (overlayText) {
-                    const fontUrl = 'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf';
-                    await ffmpeg.FS('writeFile', 'arial.ttf', await fetchFile(fontUrl));
+                    await ffmpeg.FS('writeFile', 'arial.ttf', await fetchFile(CONFIG.FONT_URL));
                 }
 
                 // --- Part 1: Build the Base Filter Chain ---
