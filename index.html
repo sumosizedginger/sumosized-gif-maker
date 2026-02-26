@@ -1262,21 +1262,26 @@
         })();
 
         function wrapText(text, maxChars, wordSpacing = 0) {
-            const spaces = ' '.repeat(wordSpacing + 1);
+            const spacingStr = ' '.repeat(wordSpacing + 1);
             const words = text.split(' ');
             let lines = [];
-            let currentLine = '';
+            let currentLineWords = [];
 
             words.forEach(word => {
-                // Test length without the extra spaces for wrapping calculation
-                if ((currentLine + word).length > maxChars) {
-                    if (currentLine) lines.push(currentLine.trim().split(' ').join(spaces));
-                    currentLine = word + ' ';
+                // Calculate hypothetical length with injected spaces
+                const hyphenatedTest = [...currentLineWords, word];
+                const totalChars = hyphenatedTest.join('').length + (hyphenatedTest.length - 1) * (wordSpacing + 1);
+
+                if (totalChars > maxChars && currentLineWords.length > 0) {
+                    lines.push(currentLineWords.join(spacingStr));
+                    currentLineWords = [word];
                 } else {
-                    currentLine += word + ' ';
+                    currentLineWords.push(word);
                 }
             });
-            if (currentLine) lines.push(currentLine.trim().split(' ').join(spaces));
+            if (currentLineWords.length > 0) {
+                lines.push(currentLineWords.join(spacingStr));
+            }
             return lines.join('\n');
         }
 
@@ -1334,19 +1339,29 @@
                 if (overlayText) {
                     const fontMap = {
                         'arial.ttf': CONFIG.FONT_URL,
-                        'Anton-Regular.ttf': 'https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf',
-                        'Orbitron.ttf': 'https://raw.githubusercontent.com/google/fonts/main/ofl/orbitron/static/Orbitron-Regular.ttf',
-                        'PermanentMarker-Regular.ttf': 'https://raw.githubusercontent.com/google/fonts/main/apache/permanentmarker/PermanentMarker-Regular.ttf',
-                        'Montserrat-Regular.ttf': 'https://raw.githubusercontent.com/JulietaUla/Montserrat/main/fonts/ttf/Montserrat-Regular.ttf'
+                        'Anton-Regular.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/anton/Anton-Regular.ttf',
+                        'Orbitron.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/orbitron/static/Orbitron-Regular.ttf',
+                        'PermanentMarker-Regular.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/apache/permanentmarker/PermanentMarker-Regular.ttf',
+                        'Montserrat-Regular.ttf': 'https://cdn.jsdelivr.net/gh/JulietaUla/Montserrat@main/fonts/ttf/Montserrat-Regular.ttf'
                     };
 
                     const fontUrl = fontMap[fontStyle] || CONFIG.FONT_URL;
                     progressStatus.textContent = 'Loading Font...';
                     ffmpeg.FS('writeFile', fontStyle, await fetchFile(fontUrl));
 
-                    // Smart Wrap Logic: Approximate chars per line
+                    // Smart Wrap Logic: Use font-specific width factors (conservative)
+                    const fontWidthFactors = {
+                        'arial.ttf': 0.6,
+                        'Anton-Regular.ttf': 0.5,
+                        'Orbitron.ttf': 0.9,
+                        'PermanentMarker-Regular.ttf': 0.75,
+                        'Montserrat-Regular.ttf': 0.65
+                    };
+                    const factor = fontWidthFactors[fontStyle] || 0.7;
+
                     const wordSpacing = parseInt(document.getElementById('wordSpacing').value) || 0;
-                    const maxChars = Math.floor(width / (textSize * 0.6));
+                    // Apply a 0.9 safety buffer to prevent edge-to-edge bleed
+                    const maxChars = Math.floor((width * 0.9) / (textSize * factor));
                     const wrapped = wrapText(overlayText.trim(), maxChars, wordSpacing);
 
                     ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
