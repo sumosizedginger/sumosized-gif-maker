@@ -814,11 +814,41 @@
                         <div class="filter-card" onclick="setFilter('sepia', this)">
                             <span class="filter-label">Retro</span>
                         </div>
-                        <div class="filter-card" onclick="setFilter('action-green', this)">
-                            <span class="filter-label">Green Ghost</span>
+                        <div class="filter-card" onclick="setFilter('vibrant', this)">
+                            <span class="filter-label">Vibrant Pop</span>
                         </div>
-                        <div class="filter-card" onclick="setFilter('cyberpunk', this)">
-                            <span class="filter-label">Cyberpunk</span>
+                        <div class="filter-card" onclick="setFilter('8bit', this)">
+                            <span class="filter-label">8-Bit Retro</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('dreamy', this)">
+                            <span class="filter-label">Dreamy Wash</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('golden', this)">
+                            <span class="filter-label">Golden Hour</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('gladiator', this)">
+                            <span class="filter-label">Gladiator</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('nightvision', this)">
+                            <span class="filter-label">Night Vision</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('sulphur', this)">
+                            <span class="filter-label">Sulphur</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('coldblue', this)">
+                            <span class="filter-label">Cold Blue</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('vignette', this)">
+                            <span class="filter-label">Vignette</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('mirror', this)">
+                            <span class="filter-label">Mirror Flip</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('grain', this)">
+                            <span class="filter-label">Film Grain</span>
+                        </div>
+                        <div class="filter-card" onclick="setFilter('invert', this)">
+                            <span class="filter-label">Invert</span>
                         </div>
                     </div>
                 </div>
@@ -842,6 +872,37 @@
                                 <option value="middle">Middle</option>
                                 <option value="bottom" selected>Bottom</option>
                             </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Word Spacing</label>
+                            <input type="number" id="wordSpacing" class="setting-input" value="0" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Line Spacing</label>
+                            <input type="number" id="lineSpacing" class="setting-input" value="10" min="0" max="100">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Text Box</label>
+                            <select id="textBox" class="setting-input">
+                                <option value="0" selected>None</option>
+                                <option value="1">Background Slug</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Text Color</label>
+                            <select id="textColor" class="setting-input">
+                                <option value="white" selected>White</option>
+                                <option value="black">Black</option>
+                                <option value="yellow">Yellow</option>
+                                <option value="red">Red</option>
+                                <option value="cyan">Cyan</option>
+                                <option value="#4DFF00">Action Green</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Box Opacity</label>
+                            <input type="number" id="boxOpacity" class="setting-input" value="0.5" min="0" max="1"
+                                step="0.1">
                         </div>
                     </div>
                 </div>
@@ -1239,8 +1300,18 @@
                 // C. Visual Filters
                 if (currentFilter === 'grayscale') baseFilters.push('hue=s=0');
                 if (currentFilter === 'sepia') baseFilters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131');
-                if (currentFilter === 'action-green') baseFilters.push('hue=h=120:s=2', 'unsharp=5:5:1.0:5:5:0.0');
-                if (currentFilter === 'cyberpunk') baseFilters.push('hue=h=300:s=1.5', 'curves=all=\'0/0 0.5/0.3 1/1\'');
+                if (currentFilter === 'vibrant') baseFilters.push('eq=saturation=1.5:contrast=1.1');
+                if (currentFilter === '8bit') baseFilters.push('scale=iw/4:-1,scale=iw*4:-1:flags=neighbor');
+                if (currentFilter === 'dreamy') baseFilters.push('eq=contrast=0.8:brightness=0.05:saturation=0.7');
+                if (currentFilter === 'golden') baseFilters.push('hue=h=10:s=1.2');
+                if (currentFilter === 'gladiator') baseFilters.push('curves=strong_contrast');
+                if (currentFilter === 'nightvision') baseFilters.push('hue=h=120:s=0,format=gray,colorlevels=rimin=0.1:gimin=0.1:bimin=0.1:rimax=0.5:gimax=1:bimax=0.5');
+                if (currentFilter === 'sulphur') baseFilters.push('hue=h=60:s=2');
+                if (currentFilter === 'coldblue') baseFilters.push('hue=h=200:s=0.5');
+                if (currentFilter === 'vignette') baseFilters.push('vignette');
+                if (currentFilter === 'mirror') baseFilters.push('hflip');
+                if (currentFilter === 'grain') baseFilters.push('noise=all_seed=6:all_strength=10:all_flags=t+u');
+                if (currentFilter === 'invert') baseFilters.push('negate');
 
                 // D. Sizing & FPS
                 // Force even dimensions to prevent "width/height not divisible by 2" errors
@@ -1251,13 +1322,20 @@
                 if (overlayText) {
                     let yPos;
                     switch (textPos) {
-                        case 'top': yPos = '10'; break;
+                        case 'top': yPos = '20'; break;
                         case 'middle': yPos = '(h-text_h)/2'; break;
-                        case 'bottom': yPos = '(h-text_h-10)'; break;
-                        default: yPos = '(h-text_h-10)';
+                        case 'bottom': yPos = '(h-text_h-20)'; break;
+                        default: yPos = '(h-text_h-20)';
                     }
-                    // Use textfile= to avoid FFmpeg filter graph quote-escaping bugs with special characters
-                    baseFilters.push(`drawtext=fontfile=arial.ttf:textfile=overlay_text.txt:fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${yPos}`);
+
+                    const wordSpacing = parseInt(document.getElementById('wordSpacing').value) || 0;
+                    const lineSpacing = parseInt(document.getElementById('lineSpacing').value) || 10;
+                    const useBox = document.getElementById('textBox').value === "1" ? 1 : 0;
+                    const boxPadding = parseInt(document.getElementById('boxPadding').value) || 10;
+                    const textColor = document.getElementById('textColor').value;
+                    const boxOpacity = document.getElementById('boxOpacity').value;
+
+                    baseFilters.push(`drawtext=fontfile=arial.ttf:textfile=overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:word_spacing=${wordSpacing}:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
                 }
 
                 const baseFilterStr = baseFilters.join(',');
