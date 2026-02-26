@@ -1190,9 +1190,10 @@
             try {
                 ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
 
-                // Load font if overlay text is present
+                // Load font and write text file if overlay text is present
                 if (overlayText) {
                     await ffmpeg.FS('writeFile', 'arial.ttf', await fetchFile(CONFIG.FONT_URL));
+                    ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(overlayText));
                 }
 
                 // --- Part 1: Build the Base Filter Chain ---
@@ -1233,14 +1234,8 @@
                         case 'bottom': yPos = '(h-text_h-10)'; break;
                         default: yPos = '(h-text_h-10)';
                     }
-                    // Escape special characters for FFmpeg filter syntax
-                    const safeText = overlayText
-                        .replace(/\\/g, '\\\\') // Escape backslashes
-                        .replace(/'/g, "'\\\\''") // Escape single quotes
-                        .replace(/:/g, '\\:'); // Escape colons
-
-                    // Use a more robust drawtext filter
-                    baseFilters.push(`drawtext=fontfile=arial.ttf:text='${safeText}':fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${yPos}`);
+                    // Use textfile= to avoid FFmpeg filter graph quote-escaping bugs with special characters
+                    baseFilters.push(`drawtext=fontfile=arial.ttf:textfile=overlay_text.txt:fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${yPos}`);
                 }
 
                 const baseFilterStr = baseFilters.join(',');
@@ -1317,6 +1312,7 @@
                     ffmpeg.FS('unlink', 'input.mp4');
                     ffmpeg.FS('unlink', 'palette.png');
                     ffmpeg.FS('unlink', 'output.gif');
+                    if (overlayText) ffmpeg.FS('unlink', 'overlay_text.txt');
                 } catch (e) { }
 
             } catch (error) {
