@@ -972,7 +972,7 @@
     <script>
         const CONFIG = {
             FFMPEG_CORE_URL: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
-            FONT_URL: 'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf'
+            FONT_URL: 'fonts/arial.ttf'
         };
 
         const { createFFmpeg, fetchFile } = FFmpeg;
@@ -1351,10 +1351,10 @@
                 if (overlayText) {
                     const fontMap = {
                         'arial.ttf': CONFIG.FONT_URL,
-                        'Anton-Regular.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/anton/Anton-Regular.ttf',
-                        'Orbitron.ttf': 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/orbitron@0.4.2/static/Orbitron-Regular.ttf',
-                        'PermanentMarker-Regular.ttf': 'https://cdn.jsdelivr.net/gh/google/fonts@main/apache/permanentmarker/PermanentMarker-Regular.ttf',
-                        'Montserrat-Regular.ttf': 'https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-400-normal.ttf'
+                        'Anton-Regular.ttf': 'fonts/Anton-Regular.ttf',
+                        'Orbitron.ttf': 'fonts/Orbitron-Regular.ttf',
+                        'PermanentMarker-Regular.ttf': 'fonts/PermanentMarker-Regular.ttf',
+                        'Montserrat-Regular.ttf': 'fonts/Montserrat-Regular.ttf'
                     };
 
                     const fontUrl = fontMap[fontStyle] || CONFIG.FONT_URL;
