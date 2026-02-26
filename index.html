@@ -1134,11 +1134,16 @@
         });
 
         // FFmpeg Initialization with Logger
+        let ffmpegLogs = [];
         (async () => {
             try {
                 // Enable console logging for diagnostics
                 ffmpeg.setLogger(({ type, message }) => {
                     console.log(`[FFmpeg ${type}] ${message}`);
+                    if (type === 'fferr') {
+                        ffmpegLogs.push(message);
+                        if (ffmpegLogs.length > 5) ffmpegLogs.shift();
+                    }
                 });
 
                 if (!ffmpeg.isLoaded()) {
@@ -1278,11 +1283,13 @@
                 try {
                     data = ffmpeg.FS('readFile', 'output.gif');
                 } catch (e) {
-                    throw new Error("GIF generation failed during encoding. Please check the console logs for detailed FFmpeg errors.");
+                    let logError = ffmpegLogs.length > 0 ? " Last error: " + ffmpegLogs[ffmpegLogs.length - 1] : "";
+                    throw new Error("GIF generation failed during encoding." + logError);
                 }
 
                 if (!data || data.length < 100) {
-                     throw new Error("GIF output is empty — FFmpeg filter may be invalid for this video");
+                    let logError = ffmpegLogs.length > 0 ? " Last error: " + ffmpegLogs[ffmpegLogs.length - 1] : "";
+                     throw new Error("GIF output is empty — FFmpeg filter may be invalid for this video." + logError);
                 }
 
                 const resultGif = document.getElementById('resultGif');
