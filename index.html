@@ -5,7 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video to GIF Converter</title>
-    <script src="coi-serviceworker.js"></script>
+    <script>
+        // Register the COI service worker to enable SharedArrayBuffer for FFmpeg.wasm
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sumosized-gif-maker/coi-serviceworker.js').then(() => {
+                // If the page wasn't already controlled, reload to activate the SW
+                if (!navigator.serviceWorker.controller) {
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
