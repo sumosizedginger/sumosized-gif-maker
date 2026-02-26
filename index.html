@@ -940,6 +940,9 @@
         videoInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
+                if (videoPlayer.src) {
+                    URL.revokeObjectURL(videoPlayer.src);
+                }
                 currentVideoFile = file;
                 const url = URL.createObjectURL(file);
                 videoPlayer.src = url;
@@ -1278,8 +1281,13 @@
                      throw new Error("GIF output is empty — FFmpeg filter may be invalid for this video");
                 }
 
+                const resultGif = document.getElementById('resultGif');
+                if (resultGif.src) {
+                    URL.revokeObjectURL(resultGif.src);
+                }
+
                 const url = URL.createObjectURL(new Blob([data.buffer], { type: 'image/gif' }));
-                document.getElementById('resultGif').src = url;
+                resultGif.src = url;
 
                 // Update download link
                 const downloadBtn = document.getElementById('downloadBtn');
@@ -1315,6 +1323,18 @@
         }
 
         function resetVideo() {
+            if (videoPlayer.src) {
+                URL.revokeObjectURL(videoPlayer.src);
+            }
+            const resultGif = document.getElementById('resultGif');
+            if (resultGif.src) {
+                URL.revokeObjectURL(resultGif.src);
+                resultGif.src = '';
+            }
+            const downloadBtn = document.getElementById('downloadBtn');
+            if (downloadBtn.href) {
+                downloadBtn.href = '';
+            }
             videoPlayer.src = '';
             videoSection.classList.remove('active');
             controlsPanel.style.display = 'none';
