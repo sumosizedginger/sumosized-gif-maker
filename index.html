@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video to GIF Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+    <style>
+        :root {
+            /* Core Blues (Primary Backgrounds) */
+            --navy: #002244;
+            --oxford: #002147;
+            --midnight: #191970;
+            --sapphire: #082567;
+            --prussian: #003153;
+            --charcoal: #1F2328;
+
+            /* Core Greens (Primary Accents) */
+            --action-green: #4DFF00;
+            --forest: #228B22;
+            --racing: #004225;
+            --hunter: #355E3B;
+            --sacramento: #043927;
+            --jungle: #1A2421;
+
+            /* UI Tokens */
+            --glass: rgba(0, 34, 68, 0.7);
+            --glass-border: rgba(77, 255, 0, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, var(--oxford), var(--navy), #000);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Ambient Glows */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: var(--action-green);
+            filter: blur(150px);
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s var(--transition);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to bottom, #fff, var(--text-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--action-green);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(255, 255, 255, 0.02);
+            overflow: hidden;
+            animation: fadeInUp 1s var(--transition);
+        }
+
+        .upload-section {
+            padding: 80px 40px;
+            background: rgba(0, 0, 0, 0.2);
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 18px 48px;
+            background: var(--action-green);
+            color: var(--navy);
+            border-radius: 100px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            box-shadow: 0 0 20px rgba(77, 255, 0, 0.3);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 0 40px rgba(77, 255, 0, 0.5);
+            background: #fff;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .video-section {
+            display: none;
+            padding: 30px;
+            background: #000;
+            position: relative;
+        }
+
+        .video-section.active {
+            display: block;
+        }
+
+        video {
+            width: 100%;
+            max-height: 500px;
+            display: block;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .controls-panel {
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .time-controls {
+            margin-bottom: 40px;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .time-display span span {
+            color: var(--action-green);
+            font-weight: 700;
+        }
+
+        .range-container {
+            position: relative;
+            height: 48px;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .range-slider {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .range-selected {
+            position: absolute;
+            height: 4px;
+            background: var(--action-green);
+            box-shadow: 0 0 15px var(--action-green);
+            border-radius: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        input[type="range"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            pointer-events: none;
+            -webkit-appearance: none;
+            appearance: none;
+            top: 0;
+            margin: 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 4px solid var(--action-green);
+            border-radius: 50%;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            transition: var(--transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--action-green);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .setting-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .setting-input {
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: var(--action-green);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(77, 255, 0, 0.1);
+        }
+
+        .action-section {
+            padding: 40px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 100px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            margin: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: var(--action-green);
+            color: var(--navy);
+            box-shadow: 0 10px 30px rgba(77, 255, 0, 0.2);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(77, 255, 0, 0.4);
+            background: #fff;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.3;
+            filter: grayscale(1);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-container {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--action-green);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 15px var(--action-green);
+        }
+
+        .preview-section {
+            display: none;
+            padding: 50px 40px;
+            background: rgba(0, 0, 0, 0.4);
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .preview-section.active {
+            display: block;
+            animation: fadeIn 0.8s var(--transition);
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 20px;
+            border: 2px solid var(--action-green);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+
+        .video-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--action-green);
+            color: var(--navy);
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .trim-hint {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 12px;
+            font-weight: 500;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                margin: 5px;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Video to GIF Converter</h1>
+            <p class="subtitle">Trim and convert any video section to animated GIF</p>
+        </header>
+
+        <div class="main-card">
+            <div class="upload-section" id="uploadSection">
+                <label for="videoInput" class="upload-btn">
+                    📁 Select Video File
+                </label>
+                <input type="file" id="videoInput" accept="video/*">
+                <p style="margin-top: 15px; color: #6c757d;">Supports MP4, MOV, WebM, AVI, and more</p>
+            </div>
+
+            <div class="video-section" id="videoSection">
+                <video id="videoPlayer" controls></video>
+                <div class="video-info" id="videoInfo"></div>
+            </div>
+
+            <div class="controls-panel" id="controlsPanel" style="display: none;">
+                <div class="time-controls">
+                    <div class="time-display">
+                        <span>Start: <span id="startTimeDisplay">0.0s</span></span>
+                        <span>Duration: <span id="durationDisplay">2.0s</span></span>
+                        <span>End: <span id="endTimeDisplay">2.0s</span></span>
+                    </div>
+
+                    <div class="range-container">
+                        <div class="range-slider"></div>
+                        <div class="range-selected" id="rangeSelected"></div>
+                        <input type="range" id="startRange" min="0" max="100" value="0" step="0.1">
+                        <input type="range" id="endRange" min="0" max="100" value="20" step="0.1">
+                    </div>
+
+                    <p class="trim-hint">Drag handles to trim video section (Max 10 seconds recommended)</p>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <label class="setting-label">Width (px)</label>
+                        <input type="number" id="gifWidth" class="setting-input" value="480" min="100" max="800"
+                            step="10">
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Frame Rate (FPS)</label>
+                        <input type="number" id="fps" class="setting-input" value="15" min="1" max="30" step="1">
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Quality</label>
+                        <select id="quality" class="setting-input">
+                            <option value="1">High (Slow)</option>
+                            <option value="5" selected>Medium</option>
+                            <option value="10">Low (Fast)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-section" id="actionSection" style="display: none;">
+                <button class="btn btn-primary" id="convertBtn" onclick="startConversion()">
+                    ⚡ Convert to GIF
+                </button>
+                <button class="btn btn-secondary" onclick="resetVideo()">
+                    🗑️ New Video
+                </button>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-info">
+                        <span id="progressStatus">Extracting frames...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-section" id="previewSection">
+                <h3 style="margin-bottom: 20px; color: #495057;">✨ Your GIF is Ready!</h3>
+                <img id="resultGif" class="preview-image" src="" alt="Generated GIF">
+                <div>
+                    <a id="downloadBtn" class="btn btn-primary" download="converted.gif">
+                        ⬇️ Download GIF
+                    </a>
+                    <button class="btn btn-secondary" onclick="closePreview()">
+                        🔄 Convert Another Section
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const videoInput = document.getElementById('videoInput');
+        const videoSection = document.getElementById('videoSection');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const controlsPanel = document.getElementById('controlsPanel');
+        const actionSection = document.getElementById('actionSection');
+        const startRange = document.getElementById('startRange');
+        const endRange = document.getElementById('endRange');
+        const rangeSelected = document.getElementById('rangeSelected');
+        const startTimeDisplay = document.getElementById('startTimeDisplay');
+        const endTimeDisplay = document.getElementById('endTimeDisplay');
+        const durationDisplay = document.getElementById('durationDisplay');
+
+        let videoDuration = 0;
+        let isConverting = false;
+
+        videoInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                videoPlayer.src = url;
+                videoSection.classList.add('active');
+
+                videoPlayer.onloadedmetadata = function () {
+                    videoDuration = videoPlayer.duration;
+
+                    document.getElementById('videoInfo').innerHTML = `
+                        <span>📹 ${file.name}</span>
+                        <span>⏱️ ${formatTime(videoDuration)}</span>
+                        <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
+                    `;
+
+                    // Set up range inputs
+                    startRange.max = videoDuration;
+                    endRange.max = videoDuration;
+                    endRange.value = Math.min(2, videoDuration);
+
+                    controlsPanel.style.display = 'block';
+                    actionSection.style.display = 'block';
+                    updateRange();
+                };
+            }
+        });
+
+        function updateRange() {
+            let start = parseFloat(startRange.value);
+            let end = parseFloat(endRange.value);
+
+            // Ensure minimum 0.5s duration and start < end
+            if (end - start < 0.5) {
+                if (event && event.target === startRange) {
+                    start = end - 0.5;
+                    startRange.value = start;
+                } else {
+                    end = start + 0.5;
+                    endRange.value = end;
+                }
+            }
+
+            if (start > end) {
+                const temp = start;
+                start = end;
+                end = temp;
+            }
+
+            // Update visual range
+            const leftPercent = (start / videoDuration) * 100;
+            const widthPercent = ((end - start) / videoDuration) * 100;
+
+            rangeSelected.style.left = leftPercent + '%';
+            rangeSelected.style.width = widthPercent + '%';
+
+            // Update displays
+            startTimeDisplay.textContent = start.toFixed(1) + 's';
+            endTimeDisplay.textContent = end.toFixed(1) + 's';
+            durationDisplay.textContent = (end - start).toFixed(1) + 's';
+        }
+
+        startRange.addEventListener('input', updateRange);
+        endRange.addEventListener('input', updateRange);
+
+        async function startConversion() {
+            if (isConverting) return;
+
+            const start = parseFloat(startRange.value);
+            const end = parseFloat(endRange.value);
+            const width = parseInt(document.getElementById('gifWidth').value);
+            const fps = parseInt(document.getElementById('fps').value);
+            const quality = parseInt(document.getElementById('quality').value);
+
+            if (end - start > 10) {
+                if (!confirm('Sections over 10 seconds may take a long time to convert. Continue?')) {
+                    return;
+                }
+            }
+
+            isConverting = true;
+            const convertBtn = document.getElementById('convertBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressStatus = document.getElementById('progressStatus');
+
+            convertBtn.disabled = true;
+            convertBtn.textContent = '⏳ Converting...';
+            progressContainer.classList.add('active');
+
+            try {
+                // Extract frames
+                const frames = await extractFrames(start, end, fps, width, (progress) => {
+                    progressFill.style.width = (progress * 0.5) + '%';
+                    progressPercent.textContent = Math.round(progress * 0.5) + '%';
+                    progressStatus.textContent = 'Extracting frames...';
+                });
+
+                // Create GIF
+                progressStatus.textContent = 'Generating GIF...';
+
+                gifshot.createGIF({
+                    images: frames,
+                    gifWidth: width,
+                    gifHeight: Math.round(width * (videoPlayer.videoHeight / videoPlayer.videoWidth)),
+                    interval: 1 / fps,
+                    numFrames: frames.length,
+                    frameDuration: 1 / fps,
+                    sampleInterval: quality,
+                    progressCallback: (captureProgress) => {
+                        const totalProgress = 50 + (captureProgress * 50);
+                        progressFill.style.width = totalProgress + '%';
+                        progressPercent.textContent = Math.round(totalProgress) + '%';
+                    }
+                }, function (obj) {
+                    if (!obj.error) {
+                        document.getElementById('resultGif').src = obj.image;
+                        document.getElementById('downloadBtn').href = obj.image;
+                        document.getElementById('previewSection').classList.add('active');
+                        showToast('GIF created successfully!');
+
+                        // Scroll to preview
+                        document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        showToast('Error: ' + obj.errorMsg);
+                    }
+
+                    resetConversionState();
+                });
+
+            } catch (error) {
+                showToast('Error: ' + error.message);
+                resetConversionState();
+            }
+        }
+
+        async function extractFrames(start, end, fps, width, onProgress) {
+            const frames = [];
+            const duration = end - start;
+            const frameCount = Math.floor(duration * fps);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Calculate height maintaining aspect ratio
+            const height = Math.round(width * (videoPlayer.videoHeight / videoPlayer.videoWidth));
+            canvas.width = width;
+            canvas.height = height;
+
+            // Seek to start
+            videoPlayer.currentTime = start;
+            await new Promise(resolve => {
+                videoPlayer.onseeked = resolve;
+            });
+
+            // Extract frames
+            for (let i = 0; i < frameCount; i++) {
+                const currentTime = start + (i / fps);
+                videoPlayer.currentTime = currentTime;
+
+                await new Promise(resolve => {
+                    videoPlayer.onseeked = () => {
+                        ctx.drawImage(videoPlayer, 0, 0, width, height);
+                        frames.push(canvas.toDataURL('image/jpeg', 0.8));
+                        resolve();
+                    };
+                });
+
+                onProgress((i + 1) / frameCount);
+            }
+
+            return frames;
+        }
+
+        function resetConversionState() {
+            isConverting = false;
+            const convertBtn = document.getElementById('convertBtn');
+            convertBtn.disabled = false;
+            convertBtn.textContent = '⚡ Convert to GIF';
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        function resetVideo() {
+            videoPlayer.src = '';
+            videoSection.classList.remove('active');
+            controlsPanel.style.display = 'none';
+            actionSection.style.display = 'none';
+            document.getElementById('previewSection').classList.remove('active');
+            videoInput.value = '';
+            videoDuration = 0;
+        }
+
+        function closePreview() {
+            document.getElementById('previewSection').classList.remove('active');
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
