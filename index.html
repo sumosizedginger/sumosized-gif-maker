@@ -1220,8 +1220,12 @@
                         case 'bottom': yPos = 'h-text_h-10'; break;
                         default: yPos = 'h-text_h-10';
                     }
-                    // Escape single quotes in text
-                    const safeText = overlayText.replace(/'/g, "\\'");
+                    // Escape special characters for FFmpeg filter syntax
+                    const safeText = overlayText
+                        .replace(/\\/g, '\\\\') // Escape backslashes
+                        .replace(/'/g, "'\\\\''") // Escape single quotes
+                        .replace(/:/g, '\\:'); // Escape colons
+
                     // Use a more robust drawtext filter
                     baseFilters.push(`drawtext=fontfile=arial.ttf:text='${safeText}':fontsize=${textSize}:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=${yPos}`);
                 }
@@ -1267,7 +1271,7 @@
                 try {
                     data = ffmpeg.FS('readFile', 'output.gif');
                 } catch (e) {
-                    throw new Error("GIF generation failed during encoding");
+                    throw new Error("GIF generation failed during encoding. Please check the console logs for detailed FFmpeg errors.");
                 }
 
                 if (!data || data.length < 100) {
