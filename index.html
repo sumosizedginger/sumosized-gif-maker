@@ -1157,6 +1157,23 @@
             }
         })();
 
+        function wrapText(text, maxChars) {
+            const words = text.split(' ');
+            let lines = [];
+            let currentLine = '';
+
+            words.forEach(word => {
+                if ((currentLine + word).length > maxChars) {
+                    if (currentLine) lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            if (currentLine) lines.push(currentLine.trim());
+            return lines.join('\n');
+        }
+
         async function startConversion() {
             if (isConverting) return;
             if (!ffmpeg.isLoaded()) {
@@ -1193,7 +1210,12 @@
                 // Load font and write text file if overlay text is present
                 if (overlayText) {
                     await ffmpeg.FS('writeFile', 'arial.ttf', await fetchFile(CONFIG.FONT_URL));
-                    ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(overlayText));
+
+                    // Smart Wrap Logic: Approximate chars per line
+                    const maxChars = Math.floor(width / (textSize * 0.6));
+                    const wrapped = wrapText(overlayText.trim(), maxChars);
+
+                    ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
                 }
 
                 // --- Part 1: Build the Base Filter Chain ---
@@ -1287,7 +1309,7 @@
 
                 if (!data || data.length < 100) {
                     let logError = ffmpegLogs.length > 0 ? " Last error: " + ffmpegLogs[ffmpegLogs.length - 1] : "";
-                     throw new Error("GIF output is empty — FFmpeg filter may be invalid for this video." + logError);
+                    throw new Error("GIF output is empty — FFmpeg filter may be invalid for this video." + logError);
                 }
 
                 const resultGif = document.getElementById('resultGif');
