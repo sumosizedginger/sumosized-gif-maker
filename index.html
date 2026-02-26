@@ -1230,8 +1230,8 @@
                     switch (textPos) {
                         case 'top': yPos = '10'; break;
                         case 'middle': yPos = '(h-text_h)/2'; break;
-                        case 'bottom': yPos = 'h-text_h-10'; break;
-                        default: yPos = 'h-text_h-10';
+                        case 'bottom': yPos = '(h-text_h-10)'; break;
+                        default: yPos = '(h-text_h-10)';
                     }
                     // Escape special characters for FFmpeg filter syntax
                     const safeText = overlayText
@@ -1250,6 +1250,7 @@
 
                 // Pass 1: Simple palettegen from filtered video
                 await ffmpeg.run(
+                    '-fflags', '+genpts',
                     '-ss', start.toString(),
                     '-t', (duration / speed).toString(),
                     '-i', 'input.mp4',
@@ -1271,6 +1272,7 @@
                 }
 
                 await ffmpeg.run(
+                    '-fflags', '+genpts',
                     '-ss', start.toString(),
                     '-t', (duration / speed).toString(),
                     '-i', 'input.mp4',
