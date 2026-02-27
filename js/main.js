@@ -771,7 +771,7 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
     if (rotateAngle === 180) baseFilters.push('hflip,vflip');
     if (rotateAngle === 270) baseFilters.push('transpose=2');
 
-    // C. Visual Filter
+    // C. Visual Filter (Moved up - acts as "Floor")
     const filterMap = {
         grayscale: 'hue=s=0',
         sepia: 'colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131',
@@ -807,6 +807,7 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         posterize: 'posterize=bits=3'
     };
     if (filterMap[currentFilter]) baseFilters.push(filterMap[currentFilter]);
+
 
     // C2. Transparent BG Removal (colorkey filter)
     const transparentBg = document.getElementById('transparentBg')?.value || 'off';
@@ -851,7 +852,11 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         }
 
 
-        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=${borderW}:bordercolor=${borderColor}:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+        // Quote colors and add RGB bridge for overlay purity
+        baseFilters.push('format=rgb24');
+        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor='${textColor}':borderw=${borderW}:bordercolor='${borderColor}':shadowcolor='black@0.4':shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor='black@${boxOpacity}':boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+        baseFilters.push('format=yuv420p');
+
     }
 
     // F. Sticker / Emoji Overlay (drawtext — REMOVED IN FAVOR OF POST-PROCESSING)
