@@ -1170,6 +1170,11 @@
         let currentMode = 'video';
         let slideshowImages = [];
 
+        // *** CRITICAL: Must be declared early — HTML `onchange` calls toggleCropper before script execution reaches later `let` declarations ***
+        let cropData = { active: false, x: 0, y: 0, w: 0, h: 0, ratio: 'off' };
+        let isDragging = false;
+        let startX, startY;
+
         const colorThief = new ColorThief();
 
         function switchMode(mode) {
@@ -1287,46 +1292,7 @@
             }
         });
 
-        document.getElementById('createSlideshowBtn').addEventListener('click', async () => {
-            if (slideshowImages.length < 2) {
-                showToast("Select at least 2 images!");
-                return;
-            }
-
-            const btn = document.getElementById('createSlideshowBtn');
-            btn.disabled = true;
-            btn.textContent = 'Generating...';
-
-            const delay = parseInt(document.getElementById('frameDelay').value) / 1000;
-            const width = parseInt(document.getElementById('slideshowWidth').value);
-
-            gifshot.createGIF({
-                images: slideshowImages,
-                gifWidth: width,
-                interval: delay,
-                numFrames: slideshowImages.length,
-                sampleInterval: 10,
-                numWorkers: 2
-            }, function (obj) {
-                btn.disabled = false;
-                btn.textContent = 'Generate Slideshow GIF';
-
-                if (!obj.error) {
-                    const resultGif = document.getElementById('resultGif');
-                    resultGif.src = obj.image;
-
-                    const downloadBtn = document.getElementById('downloadBtn');
-                    downloadBtn.href = obj.image;
-                    downloadBtn.download = `slideshow-${Date.now()}.gif`;
-
-                    document.getElementById('previewSection').classList.add('active');
-                    showToast('Slideshow Generated!');
-                    document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    showToast('Error generating slideshow');
-                }
-            });
-        });
+        // (Dead code removed: createSlideshowBtn was the old gifshot path. Image GIFs now use the unified convertBtn + FFmpeg engine.)
 
         // Initialize Lucide Icons
         if (typeof lucide !== 'undefined') {
@@ -1355,50 +1321,53 @@
             }
         }
 
-        document.addEventListener('change', function (e) {
-            if (e.target && e.target.id === 'videoInput') {
-                const videoInput = e.target;
-                const videoSection = document.getElementById('videoSection');
-                const videoPlayer = document.getElementById('videoPlayer');
-                const controlsPanel = document.getElementById('controlsPanel');
-                const actionSection = document.getElementById('actionSection');
-                const startRange = document.getElementById('startRange');
-                const endRange = document.getElementById('endRange');
+        // *** CRITICAL FIX: was incorrectly delegating to 'videoInput' — the element is 'videoUpload' ***
+        // This is now the single, authoritative handler for video uploads.
+        document.getElementById('videoUpload').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-                const file = videoInput.files[0];
-                if (file) {
-                    if (videoPlayer.src) {
-                        URL.revokeObjectURL(videoPlayer.src);
-                    }
-                    currentVideoFile = file;
-                    const url = URL.createObjectURL(file);
-                    videoPlayer.src = url;
-                    videoSection.classList.add('active');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const loadingPlaceholder = document.getElementById('loadingPlaceholder');
+            const startRangeEl = document.getElementById('startRange');
+            const endRangeEl = document.getElementById('endRange');
+            const actionSection = document.getElementById('actionSection');
 
-                    videoPlayer.onloadedmetadata = function () {
-                        videoDuration = videoPlayer.duration;
+            if (videoPlayer.src) URL.revokeObjectURL(videoPlayer.src);
+            currentVideoFile = file;
+            videoPlayer.src = URL.createObjectURL(file);
 
-                        // Trigger initial vibe sync after metadata loads
-                        setTimeout(syncVibe, 500);
+            document.getElementById('videoUploadSection').style.display = 'none';
+            videoPlayer.style.display = 'block';
+            if (loadingPlaceholder) loadingPlaceholder.style.display = 'none';
+            if (actionSection) actionSection.style.display = 'block';
 
-                        document.getElementById('videoInfo').innerHTML = `
-                            <span>📹 ${file.name}</span>
-                            <span>⏱️ ${formatTime(videoDuration)}</span>
-                            <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
-                        `;
+            videoPlayer.onloadedmetadata = function () {
+                videoDuration = videoPlayer.duration;
 
-                        startRange.max = videoDuration;
-                        endRange.max = videoDuration;
-                        endRange.value = Math.min(2, videoDuration);
+                setTimeout(syncVibe, 500);
 
-                        controlsPanel.style.display = 'block';
-                        actionSection.style.display = 'block';
-                        updateRange();
-                        updatePredictor();
-                    };
+                document.getElementById('videoInfo').innerHTML = `
+                    <span>📹 ${file.name}</span>
+                    <span>⏱️ ${formatTime(videoDuration)}</span>
+                    <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
+                `;
+
+                if (startRangeEl) {
+                    startRangeEl.max = videoDuration;
+                    startRangeEl.value = 0;
                 }
-            }
+                if (endRangeEl) {
+                    endRangeEl.max = videoDuration;
+                    endRangeEl.value = Math.min(2, videoDuration);
+                }
+
+                updateRange();
+                updatePredictor();
+                showToast('Video Loaded! Trim & Sync Vibe.');
+            };
         });
+
 
         function switchTab(tabId) {
             document.querySelectorAll('.advanced-panel').forEach(p => p.classList.remove('active'));
@@ -1492,9 +1461,7 @@
         if (startRange) startRange.addEventListener('input', updateRange);
         if (endRange) endRange.addEventListener('input', updateRange);
 
-        let cropData = { active: false, x: 0, y: 0, w: 0, h: 0, ratio: 'off' };
-        let isDragging = false;
-        let startX, startY;
+        // cropData and dragging state are declared at the top of the script block (before HTML onchange can fire)
 
         function toggleCropper(ratio) {
             const videoPlayer = document.getElementById('videoPlayer');
