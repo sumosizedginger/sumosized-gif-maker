@@ -734,6 +734,7 @@
             background: rgba(0, 0, 0, 0.5);
             display: none;
             z-index: 10;
+            pointer-events: none;
         }
 
         .cropper-overlay.active {
@@ -1231,23 +1232,7 @@
             closePreview();
         }
 
-        // Update video input handler for new ID
-        document.getElementById('videoUpload').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            currentVideoFile = file;
-
-            const videoPlayer = document.getElementById('videoPlayer');
-            const loadingPlaceholder = document.getElementById('loadingPlaceholder');
-            videoPlayer.src = URL.createObjectURL(file);
-
-            document.getElementById('videoUploadSection').style.display = 'none';
-            videoPlayer.style.display = 'block';
-            loadingPlaceholder.style.display = 'none';
-            document.getElementById('actionSection').style.display = 'block';
-
-            showToast('Video Loaded! Trim & Sync Vibe.');
-        });
+        // (First duplicate listener removed — the authoritative handler with metadata is below)
 
         // Image Slideshow Logic
         document.getElementById('imageUpload').addEventListener('change', async (e) => {
@@ -1488,17 +1473,22 @@
             let h = rect.height * 0.5; // Default to 50% height
 
             if (ratio !== 'original') {
-                // Apply ratio if not 'original'
-                if (ratio === '1:1') h = w;
-                else if (ratio === '16:9') h = w * (9 / 16);
-                else if (ratio === '4:3') h = w * (3 / 4);
+                const [rW, rH] = ratio.split(':').map(Number);
+                const targetRatio = rW / rH;
+                if (w / h > targetRatio) {
+                    w = h * targetRatio;
+                } else {
+                    h = w / targetRatio;
+                }
 
-                // Adjust if calculated height exceeds element height
-                if (h > rect.height) {
-                    h = rect.height * 0.8; // Use 80% of element height
-                    if (ratio === '1:1') w = h;
-                    else if (ratio === '16:9') w = h * (16 / 9);
-                    else if (ratio === '4:3') w = h * (4 / 3);
+                // Clamp to element bounds
+                if (w > rect.width * 0.9) {
+                    w = rect.width * 0.9;
+                    h = w / targetRatio;
+                }
+                if (h > rect.height * 0.9) {
+                    h = rect.height * 0.9;
+                    w = h * targetRatio;
                 }
             }
 
