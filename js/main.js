@@ -817,9 +817,11 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
     };
     if (colorKeyMap[transparentBg]) baseFilters.push(colorKeyMap[transparentBg]);
 
-    // D. Scale + FPS
+    // D. Scale + FPS + Color Space (ensures color text on gray base)
     baseFilters.push(`scale=${resWidth}:-2:flags=lanczos`);
     baseFilters.push(`fps=${currentFps}`);
+    baseFilters.push('format=yuv420p');
+
 
     // E. Text Overlay
     if (overlayText) {
@@ -833,8 +835,11 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         const lineSpacing = parseInt(document.getElementById('lineSpacing')?.value) || 10;
         const useBox = document.getElementById('textBox')?.value === '1' ? 1 : 0;
         const boxPadding = parseInt(document.getElementById('boxPadding')?.value) || 10;
-        const textColor = document.getElementById('textColor')?.value || '#4DFF00';
+        let textColor = document.getElementById('textColor')?.value || '#4DFF00';
+        // Convert hex to 0x for FFmpeg stability
+        if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
         const boxOpacity = document.getElementById('boxOpacity')?.value || '0.5';
+
 
         baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
     }
@@ -844,8 +849,10 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
     // G. Animated Progress Bar
     const pbEnabled = document.getElementById('progressBarEnabled')?.value || 'off';
     if (pbEnabled === 'on') {
-        const pbColor = document.getElementById('progressBarColor')?.value || '#4DFF00';
+        let pbColor = document.getElementById('progressBarColor')?.value || '#4DFF00';
+        if (pbColor.startsWith('#')) pbColor = pbColor.replace('#', '0x');
         const pbPos = document.getElementById('progressBarPos')?.value || 'bottom';
+
         const pbHeight = parseInt(document.getElementById('progressBarHeight')?.value) || 8;
         const pbY = pbPos === 'top' ? 0 : `(h-${pbHeight})`;
         // Animated sweep from 0 to full width over the clip duration
