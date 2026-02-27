@@ -886,11 +886,13 @@
                         <div class="setting-group">
                             <label class="setting-label">Font Family</label>
                             <select id="fontStyle" class="setting-input">
-                                <option value="arial.ttf">Standard (Arial)</option>
+                                <option value="Arimo-Regular.ttf">Standard (Arimo)</option>
+                                <option value="LiberationSans-Regular.ttf">Liberation Sans</option>
+                                <option value="Roboto-Regular.ttf">Roboto (Modern)</option>
                                 <option value="Anton-Regular.ttf">Anton (Headline)</option>
                                 <option value="Orbitron.ttf">Orbitron (Sci-Fi)</option>
                                 <option value="PermanentMarker-Regular.ttf">Marker (Street)</option>
-                                <option value="Montserrat-Regular.ttf">Montserrat (Modern)</option>
+                                <option value="Montserrat-Regular.ttf">Montserrat</option>
                             </select>
                         </div>
                         <div class="setting-group">
@@ -972,7 +974,8 @@
     <script>
         const CONFIG = {
             FFMPEG_CORE_URL: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
-            // Resolve absolute base URL for fonts to satisfy ffmpeg.wasm's fetchFile
+            // Default Font (OSS Arimo - Arial compatible)
+            FONT_URL: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '') + '/fonts/Arimo-Regular.ttf',
             FONT_BASE_URL: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '') + '/fonts/'
         };
 
@@ -1351,7 +1354,9 @@
                 // Load font and write text file if overlay text is present
                 if (overlayText) {
                     const fontMap = {
-                        'arial.ttf': CONFIG.FONT_BASE_URL + 'arial.ttf',
+                        'Arimo-Regular.ttf': CONFIG.FONT_BASE_URL + 'Arimo-Regular.ttf',
+                        'LiberationSans-Regular.ttf': CONFIG.FONT_BASE_URL + 'LiberationSans-Regular.ttf',
+                        'Roboto-Regular.ttf': CONFIG.FONT_BASE_URL + 'Roboto-Regular.ttf',
                         'Anton-Regular.ttf': CONFIG.FONT_BASE_URL + 'Anton-Regular.ttf',
                         'Orbitron.ttf': CONFIG.FONT_BASE_URL + 'Orbitron-Regular.ttf',
                         'PermanentMarker-Regular.ttf': CONFIG.FONT_BASE_URL + 'PermanentMarker-Regular.ttf',
@@ -1364,14 +1369,14 @@
                     progressStatus.textContent = 'Loading Font...';
 
                     // A. Update Browser Font System (for Canvas measurement)
-                    if (fontStyle !== 'arial.ttf') {
+                    if (!document.fonts.check(`${textSize}px "${fontName}"`)) {
                         try {
                             const fontFace = new FontFace(fontName, `url(${fontUrl})`);
                             const loadedFace = await fontFace.load();
                             document.fonts.add(loadedFace);
-                            await document.fonts.ready; // Wait for the font system to stabilize
+                            await document.fonts.ready;
                         } catch (e) {
-                            console.warn("Browser font load failed, falling back to estimation:", e);
+                            console.warn("Browser font load failed:", e);
                         }
                     }
 
