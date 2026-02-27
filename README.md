@@ -26,5 +26,14 @@ cd sumosized-gif-maker
 # Open index.html in a browser supporting SharedArrayBuffer (Chrome/Edge/Firefox)
 ```
 
-## 📜 Legal
-This project is open-source under the **MIT License**. All integrated libraries belong to their respective owners and are used under permissive licenses.
+## 🛡️ Privacy & Security
+- **Zero Server Uploads**: Your video never leaves your machine. All processing happens in your browser's memory using WebAssembly.
+- **No Tracking**: No analytics, no cookies, no BS.
+- **Cross-Origin Isolated**: Built with high-security headers to protect your local environment.
+
+## 📜 Legal & Disclaimer
+- **License**: This project is licensed under the [MIT License](LICENSE).
+- **Disclaimer**: **USE AT YOUR OWN RISK.** The creators of this tool are not responsible for the content you generate. Users must ensure they have the legal right to any video they process and comply with all copyright laws. This software is provided "as is", without warranty of any kind. 🫡
+
+## ⚖️ Attribution
+See [ATTRIBUTION.md](ATTRIBUTION.md) for a full list of dependencies and their respective licenses.
