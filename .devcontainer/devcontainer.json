@@ -8,9 +8,7 @@
         "vscode": {
             "extensions": [
                 "esbenp.prettier-vscode",
-                "dbaeumer.vscode-eslint",
-                "vscode.html-language-features",
-                "vscode.css-language-features"
+                "dbaeumer.vscode-eslint"
             ],
             "settings": {
                 "editor.formatOnSave": true,

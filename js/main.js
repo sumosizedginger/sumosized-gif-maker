@@ -219,22 +219,20 @@ function handleTabListKeydown(e) {
     const tabs = [...e.currentTarget.querySelectorAll('[role="tab"]')];
     const idx = tabs.indexOf(document.activeElement);
     if (idx === -1) return;
-    let next = idx;
+    let next = -1;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault();
         next = (idx + 1) % tabs.length;
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault();
         next = (idx - 1 + tabs.length) % tabs.length;
     } else if (e.key === 'Home') {
-        e.preventDefault();
         next = 0;
     } else if (e.key === 'End') {
-        e.preventDefault();
         next = tabs.length - 1;
-    } else {
-        return;
     }
+
+    if (next === -1) return;
+
+    e.preventDefault();
     tabs[next].focus();
     tabs[next].click();
 }
@@ -765,6 +763,19 @@ function applyGlobalFrameDelay() {
 // ─────────────────────────────────────────────
 // FILTER CHAIN BUILDER
 // ─────────────────────────────────────────────
+/**
+ * Builds the array of FFmpeg filter strings based on user settings.
+ * @async
+ * @param {number} resWidth - Target width for the GIF.
+ * @param {number} fps - Frames per second.
+ * @param {number} speed - Playback speed multiplier.
+ * @param {number} duration - Clip duration in seconds.
+ * @param {string} overlayText - Caption text.
+ * @param {string} fontName - Filename of the bundled font.
+ * @param {number} textSize - Font size (ffmpeg units).
+ * @param {string} textPos - Text position ('top', 'middle', 'bottom').
+ * @returns {Promise<string[]>} Array of filter strings.
+ */
 async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayText, fontStyle, textSize, textPos) {
     const baseFilters = [];
     const videoPlayer = document.getElementById('videoPlayer');
@@ -932,6 +943,11 @@ function wrapText(text, maxWidth, fontSize, fontName, wordSpacing = 0) {
 // ─────────────────────────────────────────────
 // FEATURE 2 — CONVERSION (GIF / MP4 / WebM)
 // ─────────────────────────────────────────────
+/**
+ * The main entry point for GIF generation. Orchestrates frame extraction,
+ * filter application, and palette generation.
+ * @async
+ */
 async function startConversion() {
     if (isConverting) return;
     // FIX: Set immediately to prevent double-click race
@@ -1094,7 +1110,7 @@ async function startConversion() {
                 '-i',
                 '/palette.png',
                 '-filter_complex',
-                `[0:v]${concatFilters}[vid];[vid][1:v]paletteuse`,
+                `[0:v]${baseFilterStr}[vid];[vid][1:v]paletteuse`,
                 '-f',
                 'gif',
                 '-y',
@@ -1197,16 +1213,22 @@ async function startConversion() {
             ['input.mp4', 'palette.png', 'output.gif', 'overlay_text.txt', 'concat.txt'].forEach((f) => {
                 try {
                     ffmpeg.FS('unlink', '/' + f);
-                } catch { }
+                } catch {
+                    // Ignore missing FS artifacts during cleanup
+                }
             });
             if (currentMode !== 'video') {
                 for (let i = 0; i < slideshowImages.length; i++) {
                     try {
                         ffmpeg.FS('unlink', `/img${(i + 1).toString().padStart(3, '0')}.jpg`);
-                    } catch { }
+                    } catch {
+                        // Ignore missing frames
+                    }
                 }
             }
-        } catch { }
+        } catch {
+            // Ignore top-level FS errors
+        }
     } catch (error) {
         console.error('Conversion Error:', error);
         showToast('Processing Error: ' + error.message);
@@ -1221,6 +1243,14 @@ async function startConversion() {
     }
 }
 
+/**
+ * Finalizes the GIF output by reading the FS and updating the DOM results.
+ * @async
+ * @param {string} outputPath - Path in ffmpeg.wasm filesystem.
+ * @param {string} mimeType - Output mime type.
+ * @param {HTMLElement} progressFill - Progress bar element.
+ * @param {HTMLElement} progressBar - Progress wrapper element.
+ */
 async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
     try {
         if (progressFill) progressFill.style.width = '100%';
