@@ -837,14 +837,29 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         const boxOpacity = document.getElementById('boxOpacity')?.value || '0.5';
 
         let textColor = document.getElementById('textColor')?.value || '#4DFF00';
-        // Both # and 0x work, but 0x avoids any accidental bash-comment edge cases in the filter string
-        if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
+        let borderColor = document.getElementById('borderColor')?.value || 'black';
+        let borderW = borderColor === 'none' ? 0 : 1;
+        let actualBorderColor = borderColor === 'none' ? 'black' : borderColor;
 
-        // FIX 1: Convert stream to RGB *before* drawing text to prevent YUV color clamping
-        baseFilters.push('format=rgb24');
+        // The absolute fix for ffmpeg.wasm drawtext color:
+        // 1. Keep the # hash
+        // 2. Wrap the entire fontcolor value in single quotes
+        // 3. Escape the # with a backslash so the CLI parser doesn't treat it as a comment
+        if (textColor.startsWith('#')) {
+            textColor = `\\'\\${textColor}\\'`;
+        } else {
+            textColor = `\\'${textColor}\\'`;
+        }
 
-        // FIX 2: Reduce borderw to 1 so it doesn't swallow the text color at size 32
-        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=1:bordercolor=black:shadowcolor=black@0.4:shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+        if (actualBorderColor.startsWith('#')) {
+            actualBorderColor = `\\'\\${actualBorderColor}\\'`;
+        } else {
+            actualBorderColor = `\\'${actualBorderColor}\\'`;
+        }
+
+        // Remove the format=rgb24 filter as it interferes with palettegen
+
+        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=${borderW}:bordercolor=${actualBorderColor}:shadowcolor=black@0.4:shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
     }
 
     // F. Sticker / Emoji Overlay (drawtext — REMOVED IN FAVOR OF POST-PROCESSING)
