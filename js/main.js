@@ -101,10 +101,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cropRatio')?.addEventListener('change', (e) => toggleCropper(e.target.value));
 
     // Predictor updates on input changes
-    ['gifWidth', 'fps', 'speed', 'overlayText', 'stickerEmoji', 'stickerSize', 'stickerPos'].forEach(id => {
+    [
+        'gifWidth', 'fps', 'speed',
+        'overlayText', 'fontStyle', 'textSize', 'textColor', 'textPos',
+        'lineSpacing', 'wordSpacing', 'textBox', 'boxPadding', 'boxOpacity',
+        'stickerEmoji', 'stickerSize', 'stickerPos'
+    ].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updatePredictor);
         document.getElementById(id)?.addEventListener('change', updatePredictor);
     });
+
 
     // Action buttons
     document.getElementById('convertBtn')?.addEventListener('click', startConversion);
