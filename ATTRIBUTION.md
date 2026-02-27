@@ -11,12 +11,9 @@ This project is built using high-quality Open Source Software (OSS). We believe 
 | Dependency | License | Role |
 | :--- | :--- | :--- |
 | **FFmpeg.wasm** | [LGPL 2.1+](https://github.com/ffmpegwasm/ffmpeg.wasm/blob/master/LICENSE) | The core GIF processing engine. |
-| **gifshot** | [MIT](https://github.com/yahoo/gifshot) | Secondary GIF previewer and utility. |
 | **Color Thief** | [MIT](https://github.com/lokesh/color-thief) | Vibe Sync engine for dynamic UI colors. |
 | **Lucide Icons** | [ISC](https://github.com/lucide-icons/lucide/blob/main/LICENSE) | Premium iconography system. |
 | **COI Service Worker** | [MIT](https://github.com/gzuidhof/coi-serviceworker) | Cross-Origin Isolation handler. |
-| **gif.js** | [MIT](https://github.com/jnordberg/gif.js) | Elite client-side GIF encoder for sticker overlays. |
-| **omggif** | [MIT](https://github.com/deanm/omggif) | High-performance GIF binary reader/decoder. |
 
 ## Typography Treasury (All 100% OSS)
 

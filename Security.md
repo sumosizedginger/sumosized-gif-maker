@@ -28,7 +28,7 @@ You can expect an acknowledgment within **72 hours**. If confirmed, a fix will b
 Things in scope:
 - Malicious input handling in FFmpeg filter/overlay parameters
 - Cross-origin isolation bypass via `coi-serviceworker`
-- Dependency vulnerabilities in `ffmpeg.wasm` or `gifshot`
+- Dependency vulnerabilities in `ffmpeg.wasm` or core engine components
 
 Out of scope:
 - Issues in browsers themselves

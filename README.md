@@ -1,6 +1,6 @@
 # SumoSized GIF Maker — Free Browser-Based Video to GIF Converter
 
-Convert video to GIF directly in your browser. No uploads, no server, no dependency vulnerabilities in `ffmpeg.wasm`, `gif.js`, or `omggif`. Powered by FFmpeg.wasm. [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
+Convert video to GIF directly in your browser. No uploads, no server, no dependency vulnerabilities. Powered by FFmpeg.wasm. [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 The undisputed king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
