@@ -857,19 +857,7 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
     // Convert to YUV *after* drawing the text, right before palettegen
     baseFilters.push('format=yuv420p');
 
-    // G. Animated Progress Bar
-    const pbEnabled = document.getElementById('progressBarEnabled')?.value || 'off';
-    if (pbEnabled === 'on') {
-        let pbColor = document.getElementById('progressBarColor')?.value || '#4DFF00';
-        if (pbColor.startsWith('#')) pbColor = pbColor.replace('#', '0x');
-        const pbPos = document.getElementById('progressBarPos')?.value || 'bottom';
-
-        const pbHeight = parseInt(document.getElementById('progressBarHeight')?.value) || 8;
-        const pbY = pbPos === 'top' ? 0 : `(h-${pbHeight})`;
-        // Animated sweep from 0 to full width over the clip duration
-        const clipDuration = (duration / speed).toFixed(3);
-        baseFilters.push(`drawbox=x=0:y=${pbY}:w='iw*min(t,${clipDuration})/${clipDuration}':h=${pbHeight}:color=${pbColor}:t=fill`);
-    }
+    // Progress bar removed from simple filters; now handled via complex overlay in startConversion.
 
     return baseFilters;
 }
@@ -1014,12 +1002,41 @@ async function startConversion() {
             if (progressBar) progressBar.setAttribute('aria-valuenow', '40');
             // Create and apply filters
             showToast('⚙️ Processing Advanced Filters...');
-            const concatFilters = (await buildBaseFilters(resWidth, fps, 1, duration, overlayText, fontStyle, textSize, textPos)).join(',');
+            const baseFiltersConfig = await buildBaseFilters(resWidth, fps, 1, duration, overlayText, fontStyle, textSize, textPos);
+            const baseFilterStr = baseFiltersConfig.join(',');
 
-            await ffmpeg.run(
-                '-f', 'concat', '-safe', '0', '-i', '/concat.txt',
-                '-vf', `${concatFilters},palettegen`, '-y', '/palette.png'
-            );
+            // Determine if Progress Bar is active for complex filter mapping
+            const pbEnabled = document.getElementById('progressBarEnabled')?.value || 'off';
+            let finalCommand = [];
+
+            if (pbEnabled === 'on') {
+                let pbColor = document.getElementById('progressBarColor')?.value || '#4DFF00';
+                pbColor = pbColor.replace('0x', ''); // Ensure clean hex or name for color filter
+                const pbPos = document.getElementById('progressBarPos')?.value || 'bottom';
+                const pbHeight = parseInt(document.getElementById('progressBarHeight')?.value) || 8;
+                // Calculate Y natively within overlay filter expressions
+                const pbYExpr = pbPos === 'top' ? '0' : `(H-h)`;
+                const cdSecs = (duration / speed).toFixed(3);
+
+                // Complex filtergraph:
+                // [0:v] passes through baseFilters -> [v_main]
+                // Generate color layer -> [pb_layer]
+                // Overlay [pb_layer] on [v_main], animating X position from -W to 0 over duration
+                const complexStr = `[0:v]${baseFilterStr}[v_main]; color=c=${pbColor}:s=${resWidth}x${pbHeight}[pb_layer]; [v_main][pb_layer]overlay=x='-W+(W*(t/${cdSecs}))':y=${pbYExpr}`;
+
+                finalCommand = [
+                    '-f', 'concat', '-safe', '0', '-i', '/concat.txt',
+                    '-filter_complex', `${complexStr},palettegen`, '-y', '/palette.png'
+                ];
+            } else {
+                // Standard linear chain
+                finalCommand = [
+                    '-f', 'concat', '-safe', '0', '-i', '/concat.txt',
+                    '-vf', `${baseFilterStr},palettegen`, '-y', '/palette.png'
+                ];
+            }
+
+            await ffmpeg.run(...finalCommand);
 
             progressStatus.textContent = 'Pass 2: Encoding GIF...';
             if (progressFill) progressFill.style.width = '70%';
