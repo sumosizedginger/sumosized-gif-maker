@@ -720,7 +720,7 @@ function applyGlobalFrameDelay() {
 // ─────────────────────────────────────────────
 // FILTER CHAIN BUILDER
 // ─────────────────────────────────────────────
-function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontStyle, textSize, textPos) {
+async function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontStyle, textSize, textPos) {
     const baseFilters = [];
     const videoPlayer = document.getElementById('videoPlayer');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
@@ -753,6 +753,12 @@ function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontStyle, t
 
     // B. Speed
     if (speed !== 1 && currentMode === 'video') baseFilters.push(`setpts=${1 / speed}*PTS`);
+
+    // B2. Rotate
+    const rotateAngle = parseInt(document.getElementById('rotateAngle')?.value) || 0;
+    if (rotateAngle === 90) baseFilters.push('transpose=1');
+    if (rotateAngle === 180) baseFilters.push('hflip,vflip');
+    if (rotateAngle === 270) baseFilters.push('transpose=2');
 
     // C. Visual Filter
     const filterMap = {
@@ -791,6 +797,15 @@ function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontStyle, t
     };
     if (filterMap[currentFilter]) baseFilters.push(filterMap[currentFilter]);
 
+    // C2. Transparent BG Removal (colorkey filter)
+    const transparentBg = document.getElementById('transparentBg')?.value || 'off';
+    const colorKeyMap = {
+        white: 'colorkey=color=0xffffff:similarity=0.3:blend=0.1',
+        black: 'colorkey=color=0x000000:similarity=0.3:blend=0.1',
+        green: 'colorkey=color=0x00ff00:similarity=0.4:blend=0.1'
+    };
+    if (colorKeyMap[transparentBg]) baseFilters.push(colorKeyMap[transparentBg]);
+
     // D. Scale + FPS
     baseFilters.push(`scale=${resWidth}:-2:flags=lanczos`);
     baseFilters.push(`fps=${currentFps}`);
@@ -811,6 +826,41 @@ function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontStyle, t
         const boxOpacity = document.getElementById('boxOpacity')?.value || '0.5';
 
         baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+    }
+
+    // F. Sticker / Emoji Overlay (drawtext — stays in simple comma chain)
+    const stickerEmoji = document.getElementById('stickerEmoji')?.value?.trim();
+    if (stickerEmoji) {
+        const stickerSize = parseInt(document.getElementById('stickerSize')?.value) || 64;
+        const stickerPos = document.getElementById('stickerPos')?.value || 'topright';
+        const margin = 12;
+
+        const stickerPosMap = {
+            topright: { x: `(w-text_w-${margin})`, y: `${margin}` },
+            topleft: { x: `${margin}`, y: `${margin}` },
+            bottomright: { x: `(w-text_w-${margin})`, y: `(h-text_h-${margin})` },
+            bottomleft: { x: `${margin}`, y: `(h-text_h-${margin})` },
+            center: { x: `(w-text_w)/2`, y: `(h-text_h)/2` }
+        };
+        const pos = stickerPosMap[stickerPos] || stickerPosMap.topright;
+
+        // Write emoji text to a temp file so drawtext can render it (supports Unicode/emoji via system font)
+        ffmpeg.FS('writeFile', '/sticker_text.txt', new TextEncoder().encode(stickerEmoji));
+        baseFilters.push(`drawtext=textfile=/sticker_text.txt:fontsize=${stickerSize}:font=sans-serif:x=${pos.x}:y=${pos.y}`);
+    }
+
+    // G. Animated Progress Bar
+    const pbEnabled = document.getElementById('progressBarEnabled')?.value || 'off';
+    if (pbEnabled === 'on') {
+        const pbColor = document.getElementById('progressBarColor')?.value || '#4DFF00';
+        const pbPos = document.getElementById('progressBarPos')?.value || 'bottom';
+        const pbHeight = parseInt(document.getElementById('progressBarHeight')?.value) || 8;
+        const pbY = pbPos === 'top' ? 0 : `(h-${pbHeight})`;
+        // Animated sweep from 0 to full width over the clip duration
+        baseFilters.push(`drawbox=x=0:y=${pbY}:w='iw*t/#{DURATION}':h=${pbHeight}:color=${pbColor}:t=fill`.replace('#{DURATION}', 'dur'));
+        // Use FFmpeg's `dur` variable — must use setpts so we know duration
+        // Replace placeholder with actual seconds via a pts-based expression
+        baseFilters[baseFilters.length - 1] = `drawbox=x=0:y=${pbY}:w='iw*min(t,dur)/dur':h=${pbHeight}:color=${pbColor}:t=fill`;
     }
 
     return baseFilters;
@@ -925,7 +975,7 @@ async function startConversion() {
         }
 
         const baseFilters = buildBaseFilters(resWidth, fps, speed, overlayText, fontStyle, textSize, textPos);
-        const baseFilterStr = baseFilters.join(',');
+        const baseFilterStr = (await baseFilters).join(',');
 
         // ── GIF via frame editor (concat demuxer) ──
         if (outputFormat === 'gif' && frameData.length > 0 && currentMode === 'video') {
@@ -957,7 +1007,7 @@ async function startConversion() {
             if (progressBar) progressBar.setAttribute('aria-valuenow', '40');
 
             // Rebuild filters without scale/fps (already done at extract time)
-            const concatFilters = buildBaseFilters(resWidth, fps, 1, overlayText, fontStyle, textSize, textPos).join(',');
+            const concatFilters = (await buildBaseFilters(resWidth, fps, 1, overlayText, fontStyle, textSize, textPos)).join(',');
 
             await ffmpeg.run(
                 '-f', 'concat', '-safe', '0', '-i', '/concat.txt',

@@ -241,6 +241,27 @@
                                 <option value="4:5">FB/Portrait (4:5)</option>
                             </select>
                         </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label" for="rotateAngle">Rotate</label>
+                            <select id="rotateAngle" class="setting-input">
+                                <option value="0" selected>Off (0°)</option>
+                                <option value="90">90° Clockwise</option>
+                                <option value="180">180° Flip</option>
+                                <option value="270">90° Counter-CW</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label" for="transparentBg">Transparent BG Removal</label>
+                            <select id="transparentBg" class="setting-input">
+                                <option value="off" selected>Off</option>
+                                <option value="white">Remove White BG</option>
+                                <option value="black">Remove Black BG</option>
+                                <option value="green">Remove Green Screen</option>
+                            </select>
+                        </div>
+
                     </div>
                 </div>
 
@@ -381,6 +402,70 @@
                                 step="0.1">
                         </div>
                     </div>
+
+                    <!-- STICKER / EMOJI OVERLAY -->
+                    <div style="margin-top: 24px; border-top: 1px solid rgba(77,255,0,0.1); padding-top: 20px;">
+                        <div class="setting-label" style="margin-bottom: 14px;">🎭 Sticker / Emoji Overlay</div>
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <label class="setting-label" for="stickerEmoji">Emoji / Symbol</label>
+                                <input type="text" id="stickerEmoji" class="setting-input" placeholder="🔥 💯 🚀 😎 ✨"
+                                    maxlength="8">
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="stickerSize">Size (px)</label>
+                                <input type="number" id="stickerSize" class="setting-input" value="64" min="16"
+                                    max="200">
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="stickerPos">Position</label>
+                                <select id="stickerPos" class="setting-input">
+                                    <option value="topright" selected>Top Right</option>
+                                    <option value="topleft">Top Left</option>
+                                    <option value="bottomright">Bottom Right</option>
+                                    <option value="bottomleft">Bottom Left</option>
+                                    <option value="center">Center</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PROGRESS BAR OVERLAY -->
+                    <div style="margin-top: 24px; border-top: 1px solid rgba(77,255,0,0.1); padding-top: 20px;">
+                        <div class="setting-label" style="margin-bottom: 14px;">📊 Animated Progress Bar</div>
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <label class="setting-label" for="progressBarEnabled">Enable</label>
+                                <select id="progressBarEnabled" class="setting-input">
+                                    <option value="off" selected>Off</option>
+                                    <option value="on">On</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="progressBarColor">Bar Color</label>
+                                <select id="progressBarColor" class="setting-input">
+                                    <option value="#4DFF00" selected>Action Green</option>
+                                    <option value="white">White</option>
+                                    <option value="cyan">Cyan</option>
+                                    <option value="red">Red</option>
+                                    <option value="yellow">Yellow</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="progressBarPos">Position</label>
+                                <select id="progressBarPos" class="setting-input">
+                                    <option value="bottom" selected>Bottom</option>
+                                    <option value="top">Top</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="progressBarHeight">Height (px)</label>
+                                <input type="number" id="progressBarHeight" class="setting-input" value="8" min="2"
+                                    max="40">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- ── FRAMES PANEL ── -->
