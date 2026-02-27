@@ -812,27 +812,7 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
     }
 
-    // F. Sticker / Emoji Overlay (drawtext — stays in simple comma chain)
-    const stickerEmoji = document.getElementById('stickerEmoji')?.value?.trim();
-    if (stickerEmoji) {
-        const stickerSize = parseInt(document.getElementById('stickerSize')?.value) || 64;
-        const stickerPos = document.getElementById('stickerPos')?.value || 'topright';
-        const margin = 12;
-
-        const stickerPosMap = {
-            topright: { x: `(w-text_w-${margin})`, y: `${margin}` },
-            topleft: { x: `${margin}`, y: `${margin}` },
-            bottomright: { x: `(w-text_w-${margin})`, y: `(h-text_h-${margin})` },
-            bottomleft: { x: `${margin}`, y: `(h-text_h-${margin})` },
-            center: { x: `(w-text_w)/2`, y: `(h-text_h)/2` }
-        };
-        const pos = stickerPosMap[stickerPos] || stickerPosMap.topright;
-
-        // Write emoji text to a temp file so drawtext can render it (supports Unicode/emoji via system font)
-        // REMOVED IN FAVOR OF POST-PROCESSING
-        // ffmpeg.FS('writeFile', '/sticker_text.txt', new TextEncoder().encode(stickerEmoji));
-        // baseFilters.push(`drawtext=textfile=/sticker_text.txt:fontsize=${stickerSize}:font=sans-serif:x=${pos.x}:y=${pos.y}`);
-    }
+    // F. Sticker / Emoji Overlay (drawtext — REMOVED IN FAVOR OF POST-PROCESSING)
 
     // G. Animated Progress Bar
     const pbEnabled = document.getElementById('progressBarEnabled')?.value || 'off';
@@ -987,8 +967,8 @@ async function startConversion() {
             progressStatus.textContent = 'Pass 1: Palette analysis...';
             if (progressFill) progressFill.style.width = '40%';
             if (progressBar) progressBar.setAttribute('aria-valuenow', '40');
-
-            // Rebuild filters without scale/fps (already done at extract time)
+            // Create and apply filters
+            showToast('⚙️ Processing Advanced Filters...');
             const concatFilters = (await buildBaseFilters(resWidth, fps, 1, duration, overlayText, fontStyle, textSize, textPos)).join(',');
 
             await ffmpeg.run(
@@ -1071,12 +1051,20 @@ async function startConversion() {
         showToast('Processing Error: ' + error.message);
     } finally {
         resetConversionState();
+        try {
+            ffmpeg.FS('unlink', 'input.mp4');
+            ffmpeg.FS('unlink', 'input.gif');
+            ffmpeg.FS('unlink', '/output.gif');
+        } catch (e) { /* ignore cleanup errors */ }
     }
 }
 
-async function finalizeOutput() {
+async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
     try {
-        const rawData = ffmpeg.FS('readFile', '/output.gif');
+        if (progressFill) progressFill.style.width = '100%';
+        if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
+
+        const rawData = ffmpeg.FS('readFile', outputPath);
         const stickerEmoji = document.getElementById('stickerEmoji')?.value?.trim();
         const stickerSize = parseInt(document.getElementById('stickerSize')?.value) || 64;
         const stickerPos = document.getElementById('stickerPos')?.value || 'topright';

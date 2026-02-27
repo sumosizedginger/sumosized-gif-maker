@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sumosizedginger.github.io/sumosized-gif-maker/sitemap.xml

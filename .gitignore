@@ -2,6 +2,12 @@
 .DS_Store
 Thumbs.db
 
+# Dev Artifacts
+.dev_artifacts/
+*.py
+debug/
+temp/
+
 # IDE Folders
 .vscode/
 .idea/
