@@ -834,6 +834,10 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
 
         const lineSpacing = parseInt(document.getElementById('lineSpacing')?.value) || 10;
+        const useBox = document.getElementById('textBox')?.value === '1' ? 1 : 0;
+        const boxPadding = parseInt(document.getElementById('boxPadding')?.value) || 10;
+        const boxOpacity = document.getElementById('boxOpacity')?.value || '0.5';
+
         let textColor = document.getElementById('textColor')?.value || '#4DFF00';
         let borderColor = document.getElementById('borderColor')?.value || 'black';
         let borderW = borderColor === 'none' ? 0 : 1;
