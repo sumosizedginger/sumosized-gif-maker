@@ -31,8 +31,9 @@ The following fonts are bundled with this project in the `/fonts` directory. All
 | **Orbitron** | [SIL OFL](https://fonts.google.com/specimen/Orbitron/about) | Futuristic sci-fi typography. |
 | **Permanent Marker** | [Apache 2.0](https://fonts.google.com/specimen/Permanent+Marker/about) | Handwritten street typography. |
 | **Montserrat** | [SIL OFL](https://fonts.google.com/specimen/Montserrat/about) | Classic geometric sans-serif. |
-| **Inter** | [SIL OFL](https://rsms.me/inter/) | High-readability UI font. |
-| **Outfit** | [SIL OFL](https://fonts.google.com/specimen/Outfit/about) | Vibrant, modern geometric font. |
+| **Inter** | [SIL OFL](https://fonts.google.com/specimen/Inter/about) | High-readability UI font (Google Fonts). |
+| **Outfit** | [SIL OFL](https://fonts.google.com/specimen/Outfit/about) | Vibrant, modern geometric font (Google Fonts). |
+
 
 ---
 

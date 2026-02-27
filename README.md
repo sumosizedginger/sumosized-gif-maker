@@ -11,8 +11,7 @@ The undisputed king of browser-based GIF creation. No servers, no tracking, just
 - **Precision Control**: Frame-level editor, variable speed, and aspect-ratio cropping.
 - **Pro Overlays**: High-readability text with independent Border & Shadow controls.
 - **Vibe Sync**: Dynamic UI color-matching based on your video content.
-- **Advanced GIF Optimization**: Fine-tuned color palettes and dithering for smaller file sizes.
-- **Direct Video Download**: Save your processed video directly, no GIF conversion needed.
+
 
 ## 🛠️ The Tech Stack
 - **Core**: HTML5, Vanilla CSS3, Modern JavaScript
