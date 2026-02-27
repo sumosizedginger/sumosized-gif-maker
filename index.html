@@ -916,7 +916,8 @@
                         <input type="range" id="endRange" min="0" max="100" value="20" step="0.1">
                     </div>
 
-                    <p class="trim-hint">Drag handles to trim video section (Max 10 seconds recommended)</p>
+                    <p class="trim-hint">Drag handles to select clip region &mdash; <strong id="sliderMaxLabel">max
+                            10s</strong> recommended</p>
                 </div>
 
                 <div class="feature-tabs">
@@ -1344,7 +1345,10 @@
                 }
                 if (endRangeEl) {
                     endRangeEl.max = videoDuration;
-                    endRangeEl.value = Math.min(2, videoDuration);
+                    const GIF_MAX = Math.min(10, videoDuration);
+                    endRangeEl.value = GIF_MAX;
+                    const label = document.getElementById('sliderMaxLabel');
+                    if (label) label.textContent = `max ${GIF_MAX.toFixed(1)}s (video: ${videoDuration.toFixed(1)}s)`;
                 }
 
                 updateRange();
@@ -1719,34 +1723,63 @@
                 const currentTextSize = parseInt(textSizeInput.value) || 32;
                 const currentTextPos = textPosSelect.value;
 
-                // A. Cropping
+                // A. Cropping — accounts for object-fit:contain letterboxing
                 if (cropData.active && cropData.w > 0) {
                     const rect = targetEl.getBoundingClientRect();
                     const realW = currentMode === 'video' ? videoPlayer.videoWidth : imagePlaceholder.naturalWidth;
                     const realH = currentMode === 'video' ? videoPlayer.videoHeight : imagePlaceholder.naturalHeight;
 
-                    const scaleX = realW / rect.width;
-                    const scaleY = realH / rect.height;
+                    // Calculate the actual rendered size of the video inside the element (letterbox math)
+                    const elAspect = rect.width / rect.height;
+                    const vidAspect = realW / realH;
+                    let rendW, rendH, offsetX, offsetY;
+                    if (vidAspect > elAspect) {
+                        // Pillarbox: video is wider than element
+                        rendW = rect.width;
+                        rendH = rect.width / vidAspect;
+                        offsetX = 0;
+                        offsetY = (rect.height - rendH) / 2;
+                    } else {
+                        // Letterbox: video is taller than element
+                        rendH = rect.height;
+                        rendW = rect.height * vidAspect;
+                        offsetX = (rect.width - rendW) / 2;
+                        offsetY = 0;
+                    }
+
+                    // Crop coords are relative to container; subtract letterbox offset first
+                    const scaleX = realW / rendW;
+                    const scaleY = realH / rendH;
+                    const cX = Math.round(Math.max(0, cropData.x - offsetX) * scaleX);
+                    const cY = Math.round(Math.max(0, cropData.y - offsetY) * scaleY);
                     const cW = Math.round(cropData.w * scaleX);
                     const cH = Math.round(cropData.h * scaleY);
-                    const cX = Math.round(cropData.x * scaleX);
-                    const cY = Math.round(cropData.y * scaleY);
-                    baseFilters.push(`crop=${cW}:${cH}:${cX}:${cY}`);
+                    // Clamp to actual video dimensions
+                    const safeCW = Math.min(cW, realW - cX);
+                    const safeCH = Math.min(cH, realH - cY);
+                    if (safeCW > 0 && safeCH > 0) baseFilters.push(`crop=${safeCW}:${safeCH}:${cX}:${cY}`);
                 }
 
                 // B. Speed
                 if (currentSpeed !== 1 && currentMode === 'video') baseFilters.push(`setpts=${1 / currentSpeed}*PTS`);
 
-                // C. Visual Filters
+                // C. Visual Filters — full arsenal
                 if (currentFilter === 'grayscale') baseFilters.push('hue=s=0');
                 if (currentFilter === 'sepia') baseFilters.push('colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131');
                 if (currentFilter === 'vibrant') baseFilters.push('eq=saturation=1.5:contrast=1.1');
-                if (currentFilter === '8bit') baseFilters.push('scale=iw/4:-1,scale=iw*4:-1:flags=neighbor');
+                if (currentFilter === '8bit') baseFilters.push('scale=iw/4:-2,scale=iw*4:-2:flags=neighbor');
                 if (currentFilter === 'dreamy') baseFilters.push('eq=contrast=0.8:brightness=0.05:saturation=0.7');
-                if (currentFilter === 'golden') baseFilters.push('hue=h=10:s=1.2');
-                if (currentFilter === 'nightvision') baseFilters.push('hue=h=120:s=0,format=gray,colorlevels=rimin=0.1:gimin=0.1:bimin=0.1:rimax=0.5:gimax=1:bimax=0.5');
-                if (currentFilter === 'vhs') baseFilters.push('hue=s=0.5,noise=alls=10:allf=t+u,boxblur=1:1');
-                if (currentFilter === 'psychedelic') baseFilters.push('hue=h=\'t*100\',curves=all=\'0/0 0.5/1 1/0\'');
+                if (currentFilter === 'golden') baseFilters.push('curves=red=\'0/0 0.5/0.6 1/1\':green=\'0/0 0.5/0.45 1/0.9\':blue=\'0/0 0.5/0.3 1/0.7\'');
+                if (currentFilter === 'gladiator') baseFilters.push('eq=contrast=1.4:saturation=0.6:brightness=-0.05,colorchannelmixer=1.1:0:0:0:0:0.9:0:0:0:0:0.7:0');
+                if (currentFilter === 'nightvision') baseFilters.push('colorchannelmixer=0:0:0:0:0.5:0.5:0:0:0:0:0:0,eq=brightness=0.1:saturation=2');
+                if (currentFilter === 'sulphur') baseFilters.push('curves=red=\'0/0 0.5/0.8 1/1\':green=\'0/0 0.5/0.7 1/0.9\':blue=\'0/0 0.5/0.1 1/0.2\'');
+                if (currentFilter === 'coldblue') baseFilters.push('curves=red=\'0/0 0.5/0.3 1/0.7\':green=\'0/0 0.5/0.5 1/0.8\':blue=\'0/0 0.5/0.7 1/1\'');
+                if (currentFilter === 'vignette') baseFilters.push('vignette=PI/4');
+                if (currentFilter === 'mirror') baseFilters.push('hflip');
+                if (currentFilter === 'grain') baseFilters.push('noise=alls=20:allf=t+u');
+                if (currentFilter === 'invert') baseFilters.push('negate');
+                if (currentFilter === 'vhs') baseFilters.push('hue=s=0.5,noise=alls=10:allf=t+u,boxblur=lx=1:ly=1');
+                if (currentFilter === 'psychedelic') baseFilters.push('hue=h=\'t*50\',eq=saturation=2');
 
                 // D. Sizing & FPS
                 baseFilters.push(`scale=${resWidth}:-2:flags=lanczos`);
