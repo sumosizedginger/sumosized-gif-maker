@@ -1,0 +1,301 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 130" width="420" height="130">
+   <defs>
+      <!-- Glow filters -->
+     <filter id="glowGreen" x="-30%" y="-30%" width="160%" height="160%">
+       <feGaussianBlur stdDeviation="3" result="blur"/>
+       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+     </filter>
+     <filter id="glowBlue" x="-40%" y="-40%" width="180%" height="180%">
+       <feGaussianBlur stdDeviation="5" result="blur"/>
+       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+     </filter>
+     <filter id="glowSoft" x="-20%" y="-20%" width="140%" height="140%">
+       <feGaussianBlur stdDeviation="2" result="blur"/>
+       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+     </filter>
+     <filter id="textGlow" x="-10%" y="-30%" width="120%" height="160%">
+       <feGaussianBlur stdDeviation="4" result="blur"/>
+       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+     </filter>
+     <filter id="deepShadow">
+       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.6"/>
+     </filter>
+
+      <!-- Background gradient: deep navy to near-black -->
+     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+       <stop offset="0%"   stop-color="#001428"/>
+       <stop offset="50%"  stop-color="#001f3f"/>
+       <stop offset="100%" stop-color="#000d1a"/>
+     </linearGradient>
+
+      <!-- Green shimmer gradient for text -->
+     <linearGradient id="textShimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%"   stop-color="#69BE28"/>
+       <stop offset="40%"  stop-color="#a8ff47"/>
+       <stop offset="60%"  stop-color="#ffffff"/>
+       <stop offset="100%" stop-color="#69BE28"/>
+       <animateTransform attributeName="gradientTransform" type="translate"
+         values="-1 0; 1 0; -1 0" dur="2.5s" repeatCount="indefinite"/>
+     </linearGradient>
+
+      <!-- Blue shimmer for subtitle -->
+     <linearGradient id="subShimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%"   stop-color="#4B92DB"/>
+       <stop offset="50%"  stop-color="#a0d4ff"/>
+       <stop offset="100%" stop-color="#4B92DB"/>
+       <animateTransform attributeName="gradientTransform" type="translate"
+         values="-1 0; 1 0; -1 0" dur="3s" repeatCount="indefinite"/>
+     </linearGradient>
+
+      <!-- Belt pulse gradient -->
+     <linearGradient id="beltGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%"   stop-color="#002244"/>
+       <stop offset="50%"  stop-color="#4B92DB">
+         <animate attributeName="stop-color"
+           values="#4B92DB;#69BE28;#4B92DB" dur="1.8s" repeatCount="indefinite"/>
+       </stop>
+       <stop offset="100%" stop-color="#002244"/>
+     </linearGradient>
+
+      <!-- Progress bar gradient -->
+     <linearGradient id="barGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%"   stop-color="#4B92DB"/>
+       <stop offset="60%"  stop-color="#69BE28"/>
+       <stop offset="100%" stop-color="#a8ff47"/>
+     </linearGradient>
+
+      <!-- Scanline pattern -->
+     <pattern id="scanlines" x="0" y="0" width="420" height="2" patternUnits="userSpaceOnUse">
+       <rect width="420" height="1" fill="rgba(0,0,0,0.12)"/>
+       <rect y="1" width="420" height="1" fill="transparent"/>
+     </pattern>
+
+      <!-- Clip for progress bar -->
+     <clipPath id="barClip">
+       <rect id="barClipRect" x="148" y="92" width="0" height="14" rx="6">
+         <animate attributeName="width"
+           values="0;196;196;0" keyTimes="0;0.6;0.85;1"
+           dur="2.8s" repeatCount="indefinite" calcMode="spline"
+           keySplines="0.4 0 0.2 1; 0 0 1 1; 0.4 0 0.6 1"/>
+       </rect>
+     </clipPath>
+   </defs>
+
+   <!-- ═══════════ EXPANDED BACKGROUND ═══════════ -->
+   <rect width="420" height="130" rx="14" fill="url(#bgGrad)"/>
+   
+   <!-- Outer border glow -->
+   <rect width="420" height="130" rx="14" fill="none"
+     stroke="#4B92DB" stroke-width="1.2" opacity="0.5"/>
+   <rect x="1.5" y="1.5" width="417" height="127" rx="13" fill="none"
+     stroke="#69BE28" stroke-width="0.4" opacity="0.3"/>
+
+   <!-- Scanlines overlay -->
+   <rect width="420" height="130" rx="14" fill="url(#scanlines)" opacity="0.6"/>
+
+   <!-- Ambient orb top-left (Centered behind Sumo) -->
+   <circle cx="45" cy="55" r="46" fill="#002244" opacity="0.5"/>
+   
+   <!-- Ambient orb right -->
+   <circle cx="390" cy="100" r="50" fill="#001f4d" opacity="0.4"/>
+
+
+   <!-- ═══════════ GINGER SUMO CHARACTER ═══════════ -->
+   <g filter="url(#deepShadow)">
+     <!-- Shadow blob on ground -->
+     <ellipse cx="45" cy="109" rx="28" ry="5" fill="#000" opacity="0.35">
+       <animate attributeName="rx" values="28;22;28" dur="1.2s" repeatCount="indefinite"/>
+       <animate attributeName="opacity" values="0.35;0.2;0.35" dur="1.2s" repeatCount="indefinite"/>
+     </ellipse>
+   </g>
+
+   <!-- Body group: bounces -->
+   <g>
+     <animateTransform attributeName="transform" type="translate"
+       values="0,2; 0,-4; 0,2" keyTimes="0; 0.5; 1"
+       dur="1.2s" repeatCount="indefinite"
+       calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"/>
+
+     <!-- ─ LEFT ARM (Pivot at shoulder 20,54) -->
+     <g>
+       <animateTransform attributeName="transform" type="rotate"
+         values="0 20 54; 45 20 54; 0 20 54" keyTimes="0;0.5;1"
+         dur="1.2s" repeatCount="indefinite" additive="sum"
+         calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"/>
+       <rect x="14" y="48" width="12" height="22" rx="6" fill="#FAD6B1"/>
+       <circle cx="20" cy="70" r="6" fill="#ECAE81"/>
+     </g>
+
+     <!-- ─ RIGHT ARM (Pivot at shoulder 70,54) -->
+     <g>
+       <animateTransform attributeName="transform" type="rotate"
+         values="0 70 54; -45 70 54; 0 70 54" keyTimes="0;0.5;1"
+         dur="1.2s" repeatCount="indefinite" additive="sum"
+         calcMode="spline" keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"/>
+       <rect x="64" y="48" width="12" height="22" rx="6" fill="#FAD6B1"/>
+       <circle cx="70" cy="70" r="6" fill="#ECAE81"/>
+     </g>
+
+     <!-- ─ ORGANIC TORSO -->
+     <ellipse cx="45" cy="54" rx="26" ry="14" fill="#FAD6B1"/>
+     <ellipse cx="45" cy="64" rx="30" ry="16" fill="#FAD6B1"/>
+     <!-- Chest shading / pecs -->
+     <path d="M 30 58 Q 45 64 60 58" fill="none" stroke="#ECAE81" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+     <!-- ─ CURVED BELT / MAWASHI -->
+     <path d="M 15 66 Q 45 74 75 66 L 73 76 Q 45 84 17 76 Z" fill="url(#beltGrad)"/>
+     <!-- Belt center knot -->
+     <rect x="38" y="65" width="14" height="14" rx="4" fill="#69BE28" filter="url(#glowGreen)">
+       <animate attributeName="fill" values="#69BE28;#a8ff47;#69BE28" dur="1.8s" repeatCount="indefinite"/>
+     </rect>
+     <ellipse cx="45" cy="70" rx="4" ry="2" fill="rgba(255,255,255,0.4)"/>
+
+     <!-- ─ LEGS & FEET -->
+     <rect x="20" y="76" width="18" height="22" rx="7" fill="#FAD6B1"/>
+     <rect x="52" y="76" width="18" height="22" rx="7" fill="#FAD6B1"/>
+     <rect x="20" y="76" width="18" height="22" rx="7" fill="rgba(204, 68, 0, 0.08)"/>
+     <rect x="52" y="76" width="18" height="22" rx="7" fill="rgba(204, 68, 0, 0.08)"/>
+     <ellipse cx="29" cy="96" rx="10" ry="5" fill="#ECAE81"/>
+     <ellipse cx="61" cy="96" rx="10" ry="5" fill="#ECAE81"/>
+
+     <!-- ─ NECK -->
+     <rect x="37" y="40" width="16" height="10" rx="4" fill="#ECAE81"/>
+
+     <!-- ─ REFINED ROUNDED HEAD -->
+     <rect x="22" y="18" width="46" height="32" rx="14" fill="#FAD6B1"/>
+     <ellipse cx="30" cy="42" rx="10" ry="8" fill="#FAD6B1"/>
+     <ellipse cx="60" cy="42" rx="10" ry="8" fill="#FAD6B1"/>
+     <ellipse cx="45" cy="46" rx="15" ry="8" fill="#FAD6B1"/>
+     <!-- Head highlight -->
+     <ellipse cx="38" cy="24" rx="10" ry="4" fill="rgba(255,255,255,0.25)"/>
+
+     <!-- ─ GINGER HAIR & TOPKNOT -->
+     <!-- Hairline base swept back -->
+     <rect x="23" y="16" width="44" height="12" rx="6" fill="#cc4400"/>
+     <!-- Sideburns -->
+     <rect x="21" y="24" width="4" height="10" rx="2" fill="#cc4400"/>
+     <rect x="65" y="24" width="4" height="10" rx="2" fill="#cc4400"/>
+     <!-- Topknot -->
+     <ellipse cx="45" cy="15" rx="12" ry="7" fill="#b33900"/>
+     <ellipse cx="45" cy="13" rx="8" ry="4" fill="#ff6600"/>
+     <!-- Topknot pin highlight -->
+     <ellipse cx="45" cy="12" rx="2" ry="1" fill="#69BE28" opacity="0.9" filter="url(#glowGreen)"/>
+
+     <!-- ─ EYES -->
+     <!-- Left -->
+     <ellipse cx="36" cy="34" rx="5" ry="5.5" fill="#fff"/>
+     <ellipse cx="36" cy="35" rx="3" ry="3.5" fill="#002244">
+       <animate attributeName="ry" values="3.5;0.2;3.5" keyTimes="0;0.5;1" dur="4s" repeatCount="indefinite"/>
+     </ellipse>
+     <circle cx="37.5" cy="33" r="1.2" fill="white" opacity="0.9"/>
+     <!-- Right -->
+     <ellipse cx="54" cy="34" rx="5" ry="5.5" fill="#fff"/>
+     <ellipse cx="54" cy="35" rx="3" ry="3.5" fill="#002244">
+       <animate attributeName="ry" values="3.5;0.2;3.5" keyTimes="0;0.5;1" dur="4s" repeatCount="indefinite"/>
+     </ellipse>
+     <circle cx="55.5" cy="33" r="1.2" fill="white" opacity="0.9"/>
+
+     <!-- ─ GINGER EYEBROWS -->
+     <line x1="30" y1="28" x2="41" y2="30" stroke="#cc4400" stroke-width="3" stroke-linecap="round"/>
+     <line x1="50" y1="30" x2="60" y2="28" stroke="#cc4400" stroke-width="3" stroke-linecap="round"/>
+
+     <!-- ─ MOUTH -->
+     <path d="M 39 43 Q 45 47 51 43" fill="none" stroke="#A84A1C" stroke-width="2" stroke-linecap="round"/>
+
+     <!-- ─ CHEEKS & GINGER FRECKLES -->
+     <ellipse cx="30" cy="40" rx="5" ry="3" fill="#ff7777" opacity="0.3"/>
+     <ellipse cx="60" cy="40" rx="5" ry="3" fill="#ff7777" opacity="0.3"/>
+     <!-- Left freckles -->
+     <circle cx="28" cy="39" r="1.2" fill="#D57A50" opacity="0.8"/>
+     <circle cx="32" cy="41" r="1.0" fill="#D57A50" opacity="0.8"/>
+     <circle cx="27" cy="42" r="0.9" fill="#D57A50" opacity="0.6"/>
+     <!-- Right freckles -->
+     <circle cx="62" cy="39" r="1.2" fill="#D57A50" opacity="0.8"/>
+     <circle cx="58" cy="41" r="1.0" fill="#D57A50" opacity="0.8"/>
+     <circle cx="63" cy="42" r="0.9" fill="#D57A50" opacity="0.6"/>
+   </g>
+
+   <!-- ═══════════ DIVIDER LINE ═══════════ -->
+   <line x1="108" y1="15" x2="108" y2="115" stroke="#4B92DB" stroke-width="0.5" opacity="0.4"/>
+
+
+   <!-- ═══════════ REFINED LOGO TEXT ═══════════ -->
+   <!-- "SumoSized" -->
+   <text x="125" y="54"
+     font-family="'Montserrat', 'Inter', 'Segoe UI', sans-serif"
+     font-size="32" font-weight="800"
+     fill="url(#textShimmer)"
+     filter="url(#textGlow)"
+     letter-spacing="2">SumoSized</text>
+
+   <!-- "GIF MAKER" subtitle -->
+   <text x="128" y="72"
+     font-family="'Inter', 'Segoe UI', sans-serif"
+     font-size="10" font-weight="700"
+     fill="url(#subShimmer)"
+     letter-spacing="6">GIF MAKER</text>
+
+   <!-- "ELITE BROWSER STUDIO" micro-tagline -->
+   <text x="128" y="84"
+     font-family="'Inter', 'Segoe UI', sans-serif"
+     font-size="7" font-weight="600"
+     fill="#4B92DB" letter-spacing="3.5" opacity="0.8">ELITE BROWSER STUDIO</text>
+
+
+   <!-- ═══════════ PROGRESS BAR ═══════════ -->
+   <!-- Track -->
+   <rect x="148" y="92" width="196" height="14" rx="6" fill="#0a1e35"/>
+   <rect x="148" y="92" width="196" height="14" rx="6" fill="none"
+     stroke="#4B92DB" stroke-width="0.8" opacity="0.4"/>
+
+   <!-- Animated fill using clipPath -->
+   <rect x="148" y="92" width="196" height="14" rx="6"
+     fill="url(#barGrad)" clip-path="url(#barClip)" filter="url(#glowGreen)"/>
+
+   <!-- Shimmer sweep on bar -->
+   <rect x="148" y="92" width="196" height="14" rx="6"
+     fill="url(#barGrad)" clip-path="url(#barClip)" opacity="0.5"/>
+
+   <!-- Label -->
+   <text x="152" y="103"
+     font-family="'JetBrains Mono', 'Courier New', monospace"
+     font-size="8" font-weight="700"
+     fill="#fff" letter-spacing="2" opacity="0.9">⚡ ENCODING GIF...</text>
+
+   <!-- Animated dots after label -->
+   <text x="265" y="103" font-family="monospace" font-size="8" fill="#69BE28" filter="url(#glowGreen)">
+     <animate attributeName="opacity" values="0;1;0" dur="0.6s" begin="0s" repeatCount="indefinite"/>●
+   </text>
+   <text x="275" y="103" font-family="monospace" font-size="8" fill="#69BE28" filter="url(#glowGreen)">
+     <animate attributeName="opacity" values="0;1;0" dur="0.6s" begin="0.2s" repeatCount="indefinite"/>●
+   </text>
+   <text x="285" y="103" font-family="monospace" font-size="8" fill="#69BE28" filter="url(#glowGreen)">
+     <animate attributeName="opacity" values="0;1;0" dur="0.6s" begin="0.4s" repeatCount="indefinite"/>●
+   </text>
+
+
+   <!-- ═══════════ FLOATING PARTICLES ═══════════ -->
+   <circle cx="115" cy="40" r="1.5" fill="#69BE28" opacity="0.7" filter="url(#glowGreen)">
+     <animate attributeName="cy" values="40;20;40" dur="3.5s" repeatCount="indefinite"/>
+     <animate attributeName="opacity" values="0.7;0;0.7" dur="3.5s" repeatCount="indefinite"/>
+   </circle>
+   <circle cx="400" cy="30" r="1.2" fill="#4B92DB" opacity="0.6" filter="url(#glowBlue)">
+     <animate attributeName="cy" values="30;15;30" dur="4s" repeatCount="indefinite" begin="1s"/>
+     <animate attributeName="opacity" values="0.6;0;0.6" dur="4s" repeatCount="indefinite" begin="1s"/>
+   </circle>
+   <circle cx="380" cy="60" r="1" fill="#a8ff47" opacity="0.5">
+     <animate attributeName="cy" values="60;45;60" dur="2.8s" repeatCount="indefinite" begin="0.5s"/>
+     <animate attributeName="opacity" values="0.5;0;0.5" dur="2.8s" repeatCount="indefinite" begin="0.5s"/>
+   </circle>
+   <circle cx="135" cy="100" r="1" fill="#69BE28" opacity="0.4">
+     <animate attributeName="cy" values="100;85;100" dur="3.2s" repeatCount="indefinite" begin="1.5s"/>
+     <animate attributeName="opacity" values="0.4;0;0.4" dur="3.2s" repeatCount="indefinite" begin="1.5s"/>
+   </circle>
+
+   <!-- Top-right corner accent -->
+   <circle cx="408" cy="15" r="3" fill="#69BE28" opacity="0.5" filter="url(#glowGreen)">
+     <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+     <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
+   </circle>
+   <circle cx="408" cy="15" r="1.5" fill="#fff" opacity="0.8"/>
+</svg>
