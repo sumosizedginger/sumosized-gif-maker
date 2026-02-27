@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cropRatio')?.addEventListener('change', (e) => toggleCropper(e.target.value));
 
     // Predictor updates on input changes
-    ['gifWidth', 'fps', 'speed', 'overlayText'].forEach(id => {
+    ['gifWidth', 'fps', 'speed', 'overlayText', 'stickerEmoji', 'stickerSize', 'stickerPos'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updatePredictor);
         document.getElementById(id)?.addEventListener('change', updatePredictor);
     });
@@ -1114,19 +1114,19 @@ async function finalizeOutput() {
             gr.decodeAndBlitFrameRGBA(i, pixels);
             ctx.putImageData(new ImageData(pixels, width, height), 0, 0);
 
-            // Browser renders emoji natively — no font needed
-            ctx.font = `${stickerSize}px serif`;
-            ctx.textAlign = 'left';
+            // Robust Emoji Font Stack
+            ctx.font = `${stickerSize}px "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif`;
             ctx.textBaseline = 'top';
 
             const posMap = {
-                topright: { x: width - stickerSize - margin, y: margin },
-                topleft: { x: margin, y: margin },
-                bottomright: { x: width - stickerSize - margin, y: height - stickerSize - margin },
-                bottomleft: { x: margin, y: height - stickerSize - margin },
-                center: { x: (width - stickerSize) / 2, y: (height - stickerSize) / 2 }
+                topright: { x: width - margin, y: margin, align: 'right' },
+                topleft: { x: margin, y: margin, align: 'left' },
+                bottomright: { x: width - margin, y: height - stickerSize - margin, align: 'right' },
+                bottomleft: { x: margin, y: height - stickerSize - margin, align: 'left' },
+                center: { x: width / 2, y: (height - stickerSize) / 2, align: 'center' }
             };
             const pos = posMap[stickerPos] || posMap.topright;
+            ctx.textAlign = pos.align;
             ctx.fillText(stickerEmoji, pos.x, pos.y);
 
             gif.addFrame(canvas, { delay: (info.delay || 10) * 10, copy: true });
