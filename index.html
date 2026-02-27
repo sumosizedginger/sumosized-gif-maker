@@ -150,7 +150,9 @@
         .mode-btn.active {
             background: var(--action-green);
             color: var(--navy) !important;
+            -webkit-text-fill-color: var(--navy) !important;
             box-shadow: 0 5px 15px rgba(77, 255, 0, 0.2);
+            forced-color-adjust: none;
         }
 
         .mode-btn.active i {
@@ -179,7 +181,8 @@
             display: inline-block;
             padding: 18px 48px;
             background: var(--action-green);
-            color: var(--navy);
+            color: var(--navy) !important;
+            -webkit-text-fill-color: var(--navy) !important;
             border-radius: 100px;
             cursor: pointer;
             font-weight: 800;
@@ -189,6 +192,7 @@
             transition: var(--transition);
             box-shadow: 0 0 20px rgba(77, 255, 0, 0.3);
             font-family: 'Outfit', sans-serif;
+            forced-color-adjust: none;
         }
 
         .upload-btn:hover {
@@ -486,7 +490,9 @@
         .tab-btn.active {
             background: var(--action-green);
             color: var(--navy) !important;
+            -webkit-text-fill-color: var(--navy) !important;
             box-shadow: 0 5px 15px rgba(77, 255, 0, 0.2);
+            forced-color-adjust: none;
         }
 
         .tab-btn.active i {
@@ -610,11 +616,13 @@
         .btn-primary {
             background: var(--action-green);
             color: var(--navy) !important;
+            -webkit-text-fill-color: var(--navy) !important;
             box-shadow: 0 10px 30px rgba(77, 255, 0, 0.2);
+            forced-color-adjust: none;
         }
 
         .btn i {
-            color: inherit;
+            color: inherit !important;
         }
 
         .btn-primary:hover:not(:disabled) {
