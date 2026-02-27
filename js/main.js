@@ -162,6 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Run initial predictor state
     updatePredictor();
+
+    // Quick Emoji Select
+    document.getElementById('quickEmojiBar')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.emoji-btn');
+        if (!btn) return;
+        const input = document.getElementById('stickerEmoji');
+        if (input) {
+            input.value += btn.textContent;
+            input.dispatchEvent(new Event('input'));
+            input.dispatchEvent(new Event('change'));
+        }
+    });
 });
 
 // Also init icons after defer scripts load
