@@ -834,27 +834,17 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         const lineSpacing = parseInt(document.getElementById('lineSpacing')?.value) || 10;
         const useBox = document.getElementById('textBox')?.value === '1' ? 1 : 0;
         const boxPadding = parseInt(document.getElementById('boxPadding')?.value) || 10;
-        let textColor = document.getElementById('textColor')?.value || '#4DFF00';
-        let borderColor = document.getElementById('borderColor')?.value || 'black';
         const boxOpacity = document.getElementById('boxOpacity')?.value || '0.5';
 
-        // Convert hex to 0x for FFmpeg stability
+        let textColor = document.getElementById('textColor')?.value || '#4DFF00';
+        // Both # and 0x work, but 0x avoids any accidental bash-comment edge cases in the filter string
         if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
 
-        let borderW = 2;
-        if (borderColor === 'none') {
-            borderW = 0;
-            borderColor = 'black'; // fallback needed for filter syntax even if width is 0
-        } else if (borderColor.startsWith('#')) {
-            borderColor = borderColor.replace('#', '0x');
-        }
-
-
-        // Quote colors and add RGB bridge for overlay purity
+        // FIX 1: Convert stream to RGB *before* drawing text to prevent YUV color clamping
         baseFilters.push('format=rgb24');
-        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor='${textColor}':borderw=${borderW}:bordercolor='${borderColor}':shadowcolor='black@0.4':shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor='black@${boxOpacity}':boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
-        baseFilters.push('format=yuv420p');
 
+        // FIX 2: Reduce borderw to 1 so it doesn't swallow the text color at size 32
+        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=1:bordercolor=black:shadowcolor=black@0.4:shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
     }
 
     // F. Sticker / Emoji Overlay (drawtext — REMOVED IN FAVOR OF POST-PROCESSING)
