@@ -3,7 +3,7 @@
 [![Live Site](https://img.shields.io/badge/Live-Demo-brightgreen)](https://sumosizedginger.github.io/sumosized-gif-maker/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The undisputed king of browser-based GIF creation. No servers, no tracking, just professional-grade video processing directly in your browser using **FFmpeg.wasm**.
+The undisputed king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
 
 ## 🚀 The "Jealousy" Features
 - **Elite FFmpeg Engine**: High-fidelity video encoding without server lag.

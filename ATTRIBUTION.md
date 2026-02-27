@@ -15,6 +15,8 @@ This project is built using high-quality Open Source Software (OSS). We believe 
 | **Color Thief** | [MIT](https://github.com/lokesh/color-thief) | Vibe Sync engine for dynamic UI colors. |
 | **Lucide Icons** | [ISC](https://github.com/lucide-icons/lucide/blob/main/LICENSE) | Premium iconography system. |
 | **COI Service Worker** | [MIT](https://github.com/gzuidhof/coi-serviceworker) | Cross-Origin Isolation handler. |
+| **gif.js** | [MIT](https://github.com/jnordberg/gif.js) | Elite client-side GIF encoder for sticker overlays. |
+| **omggif** | [MIT](https://github.com/deanm/omggif) | High-performance GIF binary reader/decoder. |
 
 ## Typography Treasury (All 100% OSS)
 

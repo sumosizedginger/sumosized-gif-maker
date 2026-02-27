@@ -769,7 +769,7 @@ async function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontSt
         blueprint: 'negate,hue=h=240:s=1,eq=contrast=1.2',
         matrix: 'format=gray,colorlevels=rimin=0.05:gimin=0.05:bimin=0.05:rimax=0.1:gimax=0.9:bimax=0.1,eq=contrast=1.5,hue=h=120:s=1',
         oldmovie: "format=gray,noise=alls=20:allf=t+u,curves=all='0/0 0.5/0.4 1/1'",
-        mirrormode: 'split[main][tmp];[tmp]hflip[left];[main][left]hstack',
+        mirrormode_disabled: 'split[main][tmp];[tmp]hflip[left];[main][left]hstack',
         comic: 'edgedetect=low=0.1:high=0.2,negate,eq=contrast=1.5:saturation=2,format=gray,colorlevels=rimax=0.8:gimax=0.8:bimax=0.8',
         acid: "hue=h='t*180':s=2,curves=all='0/0 0.5/1 1/0'",
         sketch: 'edgedetect=low=0.1:high=0.2,negate,format=gray,noise=alls=5:allf=t+u',
@@ -829,8 +829,9 @@ async function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontSt
         const pos = stickerPosMap[stickerPos] || stickerPosMap.topright;
 
         // Write emoji text to a temp file so drawtext can render it (supports Unicode/emoji via system font)
-        ffmpeg.FS('writeFile', '/sticker_text.txt', new TextEncoder().encode(stickerEmoji));
-        baseFilters.push(`drawtext=textfile=/sticker_text.txt:fontsize=${stickerSize}:font=sans-serif:x=${pos.x}:y=${pos.y}`);
+        // REMOVED IN FAVOR OF POST-PROCESSING
+        // ffmpeg.FS('writeFile', '/sticker_text.txt', new TextEncoder().encode(stickerEmoji));
+        // baseFilters.push(`drawtext=textfile=/sticker_text.txt:fontsize=${stickerSize}:font=sans-serif:x=${pos.x}:y=${pos.y}`);
     }
 
     // G. Animated Progress Bar
@@ -841,10 +842,8 @@ async function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontSt
         const pbHeight = parseInt(document.getElementById('progressBarHeight')?.value) || 8;
         const pbY = pbPos === 'top' ? 0 : `(h-${pbHeight})`;
         // Animated sweep from 0 to full width over the clip duration
-        baseFilters.push(`drawbox=x=0:y=${pbY}:w='iw*t/#{DURATION}':h=${pbHeight}:color=${pbColor}:t=fill`.replace('#{DURATION}', 'dur'));
-        // Use FFmpeg's `dur` variable — must use setpts so we know duration
-        // Replace placeholder with actual seconds via a pts-based expression
-        baseFilters[baseFilters.length - 1] = `drawbox=x=0:y=${pbY}:w='iw*min(t,dur)/dur':h=${pbHeight}:color=${pbColor}:t=fill`;
+        const clipDuration = (duration / speed).toFixed(3);
+        baseFilters.push(`drawbox=x=0:y=${pbY}:w='iw*min(t,${clipDuration})/${clipDuration}':h=${pbHeight}:color=${pbColor}:t=fill`);
     }
 
     return baseFilters;
@@ -1071,41 +1070,108 @@ async function startConversion() {
         console.error('Conversion Error:', error);
         showToast('Processing Error: ' + error.message);
     } finally {
-        isConverting = false;
-        convertBtn.disabled = false;
-        convertBtn.innerHTML = '⚡ Convert';
-        progressContainer.classList.remove('active');
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        resetConversionState();
     }
 }
 
-async function finalizeOutput(fsPath, mimeType, progressFill, progressBar) {
-    // Check if file exists before reading
+async function finalizeOutput() {
     try {
-        const data = ffmpeg.FS('readFile', fsPath);
-        const blob = new Blob([data.buffer], { type: mimeType });
-        const objectUrl = URL.createObjectURL(blob);
+        const rawData = ffmpeg.FS('readFile', '/output.gif');
+        const stickerEmoji = document.getElementById('stickerEmoji')?.value?.trim();
+        const stickerSize = parseInt(document.getElementById('stickerSize')?.value) || 64;
+        const stickerPos = document.getElementById('stickerPos')?.value || 'topright';
 
-        const resultGif = document.getElementById('resultGif');
-        const downloadBtn = document.getElementById('downloadBtn');
+        if (!stickerEmoji) {
+            outputResult(new Uint8Array(rawData.buffer));
+            return;
+        }
 
-        if (progressFill) progressFill.style.width = '100%';
-        if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
+        showToast('🎨 Applying Sticker Overlay...');
 
-        if (resultGif.src) URL.revokeObjectURL(resultGif.src);
-        resultGif.src = objectUrl;
-        resultGif.style.display = 'block';
-        downloadBtn.href = objectUrl;
-        downloadBtn.download = `sumosized-${Date.now()}.gif`;
-        downloadBtn.textContent = '⬇️ Download GIF';
+        // Decode GIF frames using omggif
+        const gr = new GifReader(new Uint8Array(rawData.buffer));
+        const width = gr.width;
+        const height = gr.height;
+        const frameCount = gr.numFrames();
 
-        document.getElementById('previewSection').classList.add('active');
-        showToast('🔥 Elite GIF Generated!');
-        document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+        const gif = new GIF({
+            workers: 2,
+            quality: 10,
+            width,
+            height,
+            workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const margin = 12;
+
+        for (let i = 0; i < frameCount; i++) {
+            const info = gr.frameInfo(i);
+            const pixels = new Uint8ClampedArray(width * height * 4);
+            gr.decodeAndBlitFrameRGBA(i, pixels);
+            ctx.putImageData(new ImageData(pixels, width, height), 0, 0);
+
+            // Browser renders emoji natively — no font needed
+            ctx.font = `${stickerSize}px serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            const posMap = {
+                topright: { x: width - stickerSize - margin, y: margin },
+                topleft: { x: margin, y: margin },
+                bottomright: { x: width - stickerSize - margin, y: height - stickerSize - margin },
+                bottomleft: { x: margin, y: height - stickerSize - margin },
+                center: { x: (width - stickerSize) / 2, y: (height - stickerSize) / 2 }
+            };
+            const pos = posMap[stickerPos] || posMap.topright;
+            ctx.fillText(stickerEmoji, pos.x, pos.y);
+
+            gif.addFrame(canvas, { delay: (info.delay || 10) * 10, copy: true });
+        }
+
+        gif.on('finished', (blob) => {
+            blob.arrayBuffer().then(buf => outputResult(new Uint8Array(buf)));
+        });
+        gif.render();
+
     } catch (e) {
         console.error('Finalize Error:', e);
-        throw new Error(`Output file not created. This usually happens due to a filter error or browser memory limits.`);
+        showToast('Finalize Error: Check console for details.');
+        resetConversionState();
     }
+}
+
+function outputResult(uint8data) {
+    const url = URL.createObjectURL(new Blob([uint8data], { type: 'image/gif' }));
+    const resultGif = document.getElementById('resultGif');
+    if (resultGif.src) URL.revokeObjectURL(resultGif.src);
+    resultGif.src = url;
+    resultGif.style.display = 'block';
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.href = url;
+    downloadBtn.download = `sumosized-${Date.now()}.gif`;
+    downloadBtn.textContent = '⬇️ Download GIF';
+
+    document.getElementById('previewSection').classList.add('active');
+    showToast('🔥 Elite GIF Generated!');
+    document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+    resetConversionState();
+}
+
+function resetConversionState() {
+    isConverting = false;
+    const convertBtn = document.getElementById('convertBtn');
+    if (convertBtn) {
+        convertBtn.disabled = false;
+        convertBtn.innerHTML = '⚡ Convert to GIF';
+    }
+    const progressContainer = document.getElementById('progressContainer');
+    if (progressContainer) progressContainer.classList.remove('active');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // ─────────────────────────────────────────────

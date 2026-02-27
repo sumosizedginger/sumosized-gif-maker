@@ -46,7 +46,8 @@
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js" defer crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js" defer
         crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/lucide@0.441.0/dist/umd/lucide.min.js" defer crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js" defer crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/omggif@1.0.10/omggif.js" defer crossorigin="anonymous"></script>
     <script src="js/main.js" defer></script>
 </head>
 
@@ -82,13 +83,13 @@
                 <input type="file" id="videoUpload" accept="video/mp4,video/x-m4v,video/*"
                     aria-label="Upload video file">
                 <p style="margin-top: 25px; color: var(--text-secondary); font-size: 0.9rem;">
-                    MP4, MOV, or WEBM up to 50MB
+                    Upload Elite Video (up to 50MB)
                 </p>
 
                 <!-- URL Import -->
                 <div class="url-import-row">
                     <input type="url" id="videoUrlInput" class="url-import-input"
-                        placeholder="https://example.com/video.mp4" aria-label="Video URL to import">
+                        placeholder="https://example.com/elite-video" aria-label="Video URL to import">
                     <button id="videoUrlBtn" class="url-load-btn">Load URL</button>
                 </div>
                 <details class="url-help-details" id="videoUrlHelp">
