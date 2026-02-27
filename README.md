@@ -1,9 +1,18 @@
 # SumoSized GIF Maker — Free Browser-Based Video to GIF Converter
 
 Convert video to GIF directly in your browser. No uploads, no server, no dependency vulnerabilities. Powered by FFmpeg.wasm. [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The undisputed king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)](#)
+[![Client Side Processing](https://img.shields.io/badge/Processing-100%25_Browser-blue.svg)](#)
+[![FFmpeg](https://img.shields.io/badge/Engine-FFmpeg.wasm-red.svg)](https://github.com/ffmpegwasm/ffmpeg.wasm)
+
+<div align="center">
+  <!-- TODO: Replace with an actual high-quality demonstration GIF of the UI in action -->
+  <img src="https://via.placeholder.com/800x450?text=SumoSized+GIF+Maker+Demo" alt="SumoSized GIF Maker Dashboard preview" width="800"/>
+</div>
+
+The undirected king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
 
 ## 🚀 The "Jealousy" Features
 - **Elite FFmpeg Engine**: High-fidelity video encoding without server lag.

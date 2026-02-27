@@ -1,489 +1,710 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- SEO Core -->
+        <title>SumoSized GIF Maker — Free Video to GIF Converter | No Upload Required</title>
+        <meta
+            name="description"
+            content="Convert any video to GIF free in your browser. No file uploads, no server, no tracking. FFmpeg-powered with filters, text overlays, emoji stickers, and boomerang loops."
+        />
+        <meta
+            name="keywords"
+            content="video to gif, gif maker, ffmpeg wasm, browser gif converter, free gif maker, no upload gif, mp4 to gif"
+        />
+        <link rel="canonical" href="https://sumosizedginger.github.io/sumosized-gif-maker/" />
 
-    <!-- SEO Core -->
-    <title>SumoSized GIF Maker — Free Video to GIF Converter | No Upload Required</title>
-    <meta name="description"
-        content="Convert any video to GIF free in your browser. No file uploads, no server, no tracking. FFmpeg-powered with filters, text overlays, emoji stickers, and boomerang loops.">
-    <meta name="keywords"
-        content="video to gif, gif maker, ffmpeg wasm, browser gif converter, free gif maker, no upload gif, mp4 to gif">
-    <link rel="canonical" href="https://sumosizedginger.github.io/sumosized-gif-maker/">
+        <!-- Open Graph (Facebook, LinkedIn, Discord previews) -->
+        <meta property="og:title" content="SumoSized GIF Maker — Free Video to GIF Converter" />
+        <meta
+            property="og:description"
+            content="Convert video to GIF in your browser. FFmpeg-powered, private, zero uploads."
+        />
+        <meta property="og:url" content="https://sumosizedginger.github.io/sumosized-gif-maker/" />
+        <meta property="og:title" content="SumoSized GIF Maker" />
+        <meta property="og:description" content="Elite Browser GIF Studio - No Uploads, All Pro." />
+        <meta property="og:image" content="./icons/og-preview.svg" />
+        <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- Open Graph (Facebook, LinkedIn, Discord previews) -->
-    <meta property="og:title" content="SumoSized GIF Maker — Free Video to GIF Converter">
-    <meta property="og:description"
-        content="Convert video to GIF in your browser. FFmpeg-powered, private, zero uploads.">
-    <meta property="og:url" content="https://sumosizedginger.github.io/sumosized-gif-maker/">
-    <meta property="og:title" content="SumoSized GIF Maker">
-    <meta property="og:description" content="Elite Browser GIF Studio - No Uploads, All Pro.">
-    <meta property="og:image" content="./icons/og-preview.svg">
-    <meta name="twitter:card" content="summary_large_image">
+        <!-- Pre-load & Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
+            rel="stylesheet"
+        />
 
-    <!-- Pre-load & Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
-        rel="stylesheet">
+        <!-- CSS & Favicon -->
+        <link rel="stylesheet" href="css/style.css" />
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>"
+        />
+        <link rel="manifest" href="manifest.json" />
 
-    <!-- CSS & Favicon -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
-    <link rel="manifest" href="manifest.json">
+        <!-- COI Service Worker — must run synchronously before any other script -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./coi-serviceworker.js').then(() => {
+                    if (!navigator.serviceWorker.controller) {
+                        window.location.reload();
+                    }
+                });
+            }
+        </script>
 
-    <!-- COI Service Worker — must run synchronously before any other script -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./coi-serviceworker.js').then(() => {
-                if (!navigator.serviceWorker.controller) {
-                    window.location.reload();
-                }
-            });
-        }
-    </script>
+        <!-- External Libraries (pinned stable versions) -->
 
-    <!-- External Libraries (pinned stable versions) -->
+        <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js" defer crossorigin="anonymous"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"
+            defer
+            crossorigin="anonymous"
+        ></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js" defer crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/omggif@1.0.10/omggif.js" defer crossorigin="anonymous"></script>
+        <script src="js/main.js" defer></script>
+    </head>
 
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js" defer crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js" defer
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js" defer crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/omggif@1.0.10/omggif.js" defer crossorigin="anonymous"></script>
-    <script src="js/main.js" defer></script>
-</head>
+    <body>
+        <main class="container">
+            <header>
+                <h1>SumoSized</h1>
+                <div class="subtitle">Elite Browser GIF Studio</div>
+            </header>
 
-<body>
-    <main class="container">
-        <header>
-            <h1>SumoSized</h1>
-            <div class="subtitle">Elite Browser GIF Studio</div>
-        </header>
+            <div class="mode-switcher" role="tablist" aria-label="Studio mode">
+                <button
+                    id="tab-mode-video"
+                    class="mode-btn active"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="videoUploadSection"
+                    data-mode="video"
+                >
+                    <i data-lucide="video"></i>
+                    Video Studio
+                </button>
+                <button
+                    id="tab-mode-images"
+                    class="mode-btn"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="imageUploadSection"
+                    data-mode="images"
+                >
+                    <i data-lucide="image"></i>
+                    Image Slideshow
+                </button>
+            </div>
 
-        <div class="mode-switcher" role="tablist" aria-label="Studio mode">
-            <button id="tab-mode-video" class="mode-btn active" role="tab" aria-selected="true"
-                aria-controls="videoUploadSection" data-mode="video">
-                <i data-lucide="video"></i> Video Studio
-            </button>
-            <button id="tab-mode-images" class="mode-btn" role="tab" aria-selected="false"
-                aria-controls="imageUploadSection" data-mode="images">
-                <i data-lucide="image"></i> Image Slideshow
-            </button>
-        </div>
-
-        <div class="main-card">
-
-            <!-- ═══ VIDEO UPLOAD SECTION ═══ -->
-            <div id="videoUploadSection" class="upload-section" role="tabpanel" aria-labelledby="tab-mode-video">
-                <div style="margin-bottom: 30px;">
-                    <i data-lucide="clapperboard"
-                        style="width: 64px; height: 64px; color: var(--action-green); opacity: 0.8;"></i>
-                </div>
-                <label for="videoUpload" class="upload-btn">
-                    Select Elite Video
-                </label>
-                <input type="file" id="videoUpload" accept="video/mp4,video/x-m4v,video/*"
-                    aria-label="Upload video file">
-                <p style="margin-top: 25px; color: var(--text-secondary); font-size: 0.9rem;">
-                    Upload Elite Video (up to 50MB)
-                </p>
-
-                <!-- URL Import -->
-                <div class="url-import-row">
-                    <input type="url" id="videoUrlInput" class="url-import-input"
-                        placeholder="https://example.com/elite-video" aria-label="Video URL to import">
-                    <button id="videoUrlBtn" class="url-load-btn">Load URL</button>
-                </div>
-                <details class="url-help-details" id="videoUrlHelp">
-                    <summary>▸ YouTube / TikTok URL?</summary>
-                    <p>These platforms block direct browser access (CORS). Download your video first using
-                        <strong>yt-dlp</strong>, then upload the file using the button above.
+            <div class="main-card">
+                <!-- ═══ VIDEO UPLOAD SECTION ═══ -->
+                <div id="videoUploadSection" class="upload-section" role="tabpanel" aria-labelledby="tab-mode-video">
+                    <div style="margin-bottom: 30px">
+                        <i
+                            data-lucide="clapperboard"
+                            style="width: 64px; height: 64px; color: var(--action-green); opacity: 0.8"
+                        ></i>
+                    </div>
+                    <label for="videoUpload" class="upload-btn">Select Elite Video</label>
+                    <input
+                        type="file"
+                        id="videoUpload"
+                        accept="video/mp4,video/x-m4v,video/*"
+                        aria-label="Upload video file"
+                    />
+                    <p style="margin-top: 25px; color: var(--text-secondary); font-size: 0.9rem">
+                        Upload Elite Video (up to 50MB)
                     </p>
-                </details>
-            </div>
 
-            <!-- ═══ IMAGE UPLOAD SECTION ═══ -->
-            <div id="imageUploadSection" class="upload-section" style="display: none;" role="tabpanel"
-                aria-labelledby="tab-mode-images">
-                <div style="margin-bottom: 30px;">
-                    <i data-lucide="images"
-                        style="width: 64px; height: 64px; color: var(--action-green); opacity: 0.8;"></i>
-                </div>
-                <label for="imageUpload" class="upload-btn">
-                    Select Elite Images
-                </label>
-                <input type="file" id="imageUpload" accept="image/*" multiple aria-label="Upload images for slideshow">
-                <p style="margin-top: 20px; color: var(--text-secondary); font-size: 0.9rem;">
-                    Upload multiple images to stitch into a custom GIF
-                </p>
-
-                <!-- URL Import (Images) -->
-                <div class="url-import-row">
-                    <input type="url" id="imageUrlInput" class="url-import-input"
-                        placeholder="https://example.com/image.jpg" aria-label="Image URL to import">
-                    <button id="imageUrlBtn" class="url-load-btn">Load URL</button>
+                    <!-- URL Import -->
+                    <div class="url-import-row">
+                        <input
+                            type="url"
+                            id="videoUrlInput"
+                            class="url-import-input"
+                            placeholder="https://example.com/elite-video"
+                            aria-label="Video URL to import"
+                        />
+                        <button id="videoUrlBtn" class="url-load-btn">Load URL</button>
+                    </div>
+                    <details class="url-help-details" id="videoUrlHelp">
+                        <summary>▸ YouTube / TikTok URL?</summary>
+                        <p>
+                            These platforms block direct browser access (CORS). Download your video first using
+                            <strong>yt-dlp</strong>
+                            , then upload the file using the button above.
+                        </p>
+                    </details>
                 </div>
 
-                <div id="slideshowGrid" class="slideshow-grid"></div>
-            </div>
-
-            <!-- ═══ VIDEO / MEDIA PREVIEW ═══ -->
-            <div class="video-section active" id="videoSection">
-                <div class="video-container" id="videoContainer">
-                    <div id="loadingPlaceholder"
-                        style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,34,68,0.4); border-radius: 12px; z-index: 5;">
-                        <i data-lucide="monitor-play"
-                            style="width: 48px; height: 48px; color: var(--action-green); margin-bottom: 15px; opacity: 0.5;"></i>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Awaiting Elite Media...</p>
+                <!-- ═══ IMAGE UPLOAD SECTION ═══ -->
+                <div
+                    id="imageUploadSection"
+                    class="upload-section"
+                    style="display: none"
+                    role="tabpanel"
+                    aria-labelledby="tab-mode-images"
+                >
+                    <div style="margin-bottom: 30px">
+                        <i
+                            data-lucide="images"
+                            style="width: 64px; height: 64px; color: var(--action-green); opacity: 0.8"
+                        ></i>
                     </div>
-                    <video id="videoPlayer" style="display: none;" aria-label="Video preview"></video>
-                    <img id="imagePlaceholder" alt="Image preview"
-                        style="display: none; width: 100%; max-height: 500px; border-radius: 12px; border: 1px solid rgba(77, 255, 0, 0.15);">
-                    <div class="cropper-overlay" id="cropperOverlay" aria-hidden="true">
-                        <div class="cropper-box" id="cropperBox"></div>
-                    </div>
-                </div>
-                <div class="video-info" id="videoInfo"></div>
-            </div>
+                    <label for="imageUpload" class="upload-btn">Select Elite Images</label>
+                    <input
+                        type="file"
+                        id="imageUpload"
+                        accept="image/*"
+                        multiple
+                        aria-label="Upload images for slideshow"
+                    />
+                    <p style="margin-top: 20px; color: var(--text-secondary); font-size: 0.9rem">
+                        Upload multiple images to stitch into a custom GIF
+                    </p>
 
-            <!-- ═══ CONTROLS PANEL ═══ -->
-            <div class="controls-panel" id="controlsPanel">
-                <div class="time-controls" id="trimControls">
-                    <div class="time-display">
-                        <span>Start: <span id="startTimeDisplay">0.0s</span></span>
-                        <span>Duration: <span id="durationDisplay">2.0s</span></span>
-                        <span>End: <span id="endTimeDisplay">2.0s</span></span>
-                    </div>
-
-                    <div class="range-container" aria-label="Clip range selector">
-                        <div class="range-slider"></div>
-                        <div class="range-selected" id="rangeSelected"></div>
-                        <input type="range" id="startRange" min="0" max="100" value="0" step="0.1"
-                            aria-label="Start time">
-                        <input type="range" id="endRange" min="0" max="100" value="20" step="0.1" aria-label="End time">
+                    <!-- URL Import (Images) -->
+                    <div class="url-import-row">
+                        <input
+                            type="url"
+                            id="imageUrlInput"
+                            class="url-import-input"
+                            placeholder="https://example.com/image.jpg"
+                            aria-label="Image URL to import"
+                        />
+                        <button id="imageUrlBtn" class="url-load-btn">Load URL</button>
                     </div>
 
-                    <p class="trim-hint">Drag handles to select clip region &mdash; <strong id="sliderMaxLabel">max
-                            10s</strong> recommended</p>
+                    <div id="slideshowGrid" class="slideshow-grid"></div>
                 </div>
 
-                <!-- ── TABS ── -->
-                <div class="feature-tabs" role="tablist" aria-label="GIF options">
-                    <button id="tab-settings" class="tab-btn active" role="tab" aria-selected="true"
-                        aria-controls="settingsPanel">
-                        <i data-lucide="settings"></i> Settings
-                    </button>
-                    <button id="tab-filters" class="tab-btn" role="tab" aria-selected="false"
-                        aria-controls="filtersPanel">
-                        <i data-lucide="sparkles"></i> Filters
-                    </button>
-                    <button id="tab-overlays" class="tab-btn" role="tab" aria-selected="false"
-                        aria-controls="overlaysPanel">
-                        <i data-lucide="type"></i> Overlays
-                    </button>
-                    <button id="tab-frames" class="tab-btn" role="tab" aria-selected="false"
-                        aria-controls="framesPanel">
-                        <i data-lucide="film"></i> Frames
-                    </button>
+                <!-- ═══ VIDEO / MEDIA PREVIEW ═══ -->
+                <div class="video-section active" id="videoSection">
+                    <div class="video-container" id="videoContainer">
+                        <div
+                            id="loadingPlaceholder"
+                            style="
+                                position: absolute;
+                                inset: 0;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                background: rgba(0, 34, 68, 0.4);
+                                border-radius: 12px;
+                                z-index: 5;
+                            "
+                        >
+                            <i
+                                data-lucide="monitor-play"
+                                style="
+                                    width: 48px;
+                                    height: 48px;
+                                    color: var(--action-green);
+                                    margin-bottom: 15px;
+                                    opacity: 0.5;
+                                "
+                            ></i>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem">Awaiting Elite Media...</p>
+                        </div>
+                        <video id="videoPlayer" style="display: none" aria-label="Video preview"></video>
+                        <img
+                            id="imagePlaceholder"
+                            alt="Image preview"
+                            style="
+                                display: none;
+                                width: 100%;
+                                max-height: 500px;
+                                border-radius: 12px;
+                                border: 1px solid rgba(77, 255, 0, 0.15);
+                            "
+                        />
+                        <div class="cropper-overlay" id="cropperOverlay" aria-hidden="true">
+                            <div class="cropper-box" id="cropperBox"></div>
+                        </div>
+                    </div>
+                    <div class="video-info" id="videoInfo"></div>
                 </div>
 
-                <!-- ── SETTINGS PANEL ── -->
-                <div id="settingsPanel" class="advanced-panel active" role="tabpanel" aria-labelledby="tab-settings">
-                    <div class="settings-grid">
-                        <div class="setting-group">
-                            <label class="setting-label" for="gifWidth">Width (px)</label>
-                            <input type="number" id="gifWidth" class="setting-input" value="480" min="100" max="1024"
-                                step="10">
+                <!-- ═══ CONTROLS PANEL ═══ -->
+                <div class="controls-panel" id="controlsPanel">
+                    <div class="time-controls" id="trimControls">
+                        <div class="time-display">
+                            <span>
+                                Start:
+                                <span id="startTimeDisplay">0.0s</span>
+                            </span>
+                            <span>
+                                Duration:
+                                <span id="durationDisplay">2.0s</span>
+                            </span>
+                            <span>
+                                End:
+                                <span id="endTimeDisplay">2.0s</span>
+                            </span>
                         </div>
 
-                        <div class="setting-group">
-                            <label class="setting-label" for="fps">Frame Rate (FPS)</label>
-                            <input type="number" id="fps" class="setting-input" value="15" min="1" max="60" step="1">
+                        <div class="range-container" aria-label="Clip range selector">
+                            <div class="range-slider"></div>
+                            <div class="range-selected" id="rangeSelected"></div>
+                            <input
+                                type="range"
+                                id="startRange"
+                                min="0"
+                                max="100"
+                                value="0"
+                                step="0.1"
+                                aria-label="Start time"
+                            />
+                            <input
+                                type="range"
+                                id="endRange"
+                                min="0"
+                                max="100"
+                                value="20"
+                                step="0.1"
+                                aria-label="End time"
+                            />
                         </div>
 
-                        <div class="setting-group" id="speedGroup">
-                            <label class="setting-label" for="speed">Speed</label>
-                            <select id="speed" class="setting-input">
-                                <option value="0.5">0.5x (Slow)</option>
-                                <option value="1" selected>1.0x (Normal)</option>
-                                <option value="1.5">1.5x (Fast)</option>
-                                <option value="2">2.0x (Turbo)</option>
-                            </select>
-                        </div>
-
-                        <div class="setting-group" id="loopGroup">
-                            <label class="setting-label" for="loopMode">Loop Mode</label>
-                            <select id="loopMode" class="setting-input">
-                                <option value="normal" selected>Normal</option>
-                                <option value="reverse">Reverse</option>
-                                <option value="boomerang">Boomerang</option>
-                            </select>
-                        </div>
-
-                        <div class="setting-group" id="delayGroup" style="display: none;">
-                            <label class="setting-label" for="frameDelay">Frame Delay (ms)</label>
-                            <input type="number" id="frameDelay" class="setting-input" value="200" min="50" step="50">
-                        </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label" for="cropRatio">Pro Crop</label>
-                            <select id="cropRatio" class="setting-input">
-                                <option value="off" selected>Off (Full)</option>
-                                <option value="original">Free Crop</option>
-                                <option value="9:16">TikTok (9:16)</option>
-                                <option value="1:1">Instagram (1:1)</option>
-                                <option value="4:5">FB/Portrait (4:5)</option>
-                            </select>
-                        </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label" for="rotateAngle">Rotate</label>
-                            <select id="rotateAngle" class="setting-input">
-                                <option value="0" selected>Off (0°)</option>
-                                <option value="90">90° Clockwise</option>
-                                <option value="180">180° Flip</option>
-                                <option value="270">90° Counter-CW</option>
-                            </select>
-                        </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label" for="transparentBg">Transparent BG Removal</label>
-                            <select id="transparentBg" class="setting-input">
-                                <option value="off" selected>Off</option>
-                                <option value="white">Remove White BG</option>
-                                <option value="black">Remove Black BG</option>
-                                <option value="green">Remove Green Screen</option>
-                            </select>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- ── FILTERS PANEL ── -->
-                <div id="filtersPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-filters">
-                    <div class="filter-grid" id="filterGrid">
-                        <button class="filter-card active" data-filter="none"><span
-                                class="filter-label">None</span></button>
-                        <button class="filter-card" data-filter="grayscale"><span
-                                class="filter-label">Noir</span></button>
-                        <button class="filter-card" data-filter="sepia"><span class="filter-label">Retro</span></button>
-                        <button class="filter-card" data-filter="vibrant"><span class="filter-label">Vibrant
-                                Pop</span></button>
-                        <button class="filter-card" data-filter="8bit"><span class="filter-label">8-Bit
-                                Retro</span></button>
-                        <button class="filter-card" data-filter="dreamy"><span class="filter-label">Dreamy
-                                Wash</span></button>
-                        <button class="filter-card" data-filter="golden"><span class="filter-label">Golden
-                                Hour</span></button>
-                        <button class="filter-card" data-filter="gladiator"><span
-                                class="filter-label">Gladiator</span></button>
-                        <button class="filter-card" data-filter="nightvision"><span class="filter-label">Night
-                                Vision</span></button>
-                        <button class="filter-card" data-filter="sulphur"><span
-                                class="filter-label">Sulphur</span></button>
-                        <button class="filter-card" data-filter="coldblue"><span class="filter-label">Cold
-                                Blue</span></button>
-                        <button class="filter-card" data-filter="vignette"><span
-                                class="filter-label">Vignette</span></button>
-                        <button class="filter-card" data-filter="mirror"><span class="filter-label">Mirror
-                                Flip</span></button>
-                        <button class="filter-card" data-filter="grain"><span class="filter-label">Film
-                                Grain</span></button>
-                        <button class="filter-card" data-filter="invert"><span
-                                class="filter-label">Invert</span></button>
-                        <button class="filter-card" data-filter="vhs"><span class="filter-label">📼 VHS
-                                Retro</span></button>
-                        <button class="filter-card" data-filter="psychedelic"><span class="filter-label">🌈
-                                Psychedelia</span></button>
-                        <button class="filter-card" data-filter="thermal"><span class="filter-label">🔥
-                                Thermal</span></button>
-                        <button class="filter-card" data-filter="glitch"><span class="filter-label">👾
-                                Glitch</span></button>
-                        <button class="filter-card" data-filter="cyberpunk"><span class="filter-label">🧬
-                                Cyberpunk</span></button>
-                        <button class="filter-card" data-filter="chrome"><span class="filter-label">💿
-                                Chrome</span></button>
-                        <button class="filter-card" data-filter="blueprint"><span class="filter-label">📐
-                                Blueprint</span></button>
-                        <button class="filter-card" data-filter="matrix"><span class="filter-label">📟
-                                Matrix</span></button>
-                        <button class="filter-card" data-filter="oldmovie"><span class="filter-label">🎞️ Old
-                                Movie</span></button>
-                        <button class="filter-card" data-filter="mirrormode"><span class="filter-label">🪞
-                                Mirror</span></button>
-                        <button class="filter-card" data-filter="comic"><span class="filter-label">💥 Comic
-                                Book</span></button>
-                        <button class="filter-card" data-filter="acid"><span class="filter-label">🌀 Acid
-                                Trip</span></button>
-                        <button class="filter-card" data-filter="sketch"><span class="filter-label">✏️
-                                Sketch</span></button>
-                        <button class="filter-card" data-filter="infrared"><span class="filter-label">🛰️
-                                Infrared</span></button>
-                        <button class="filter-card" data-filter="seahawks"><span class="filter-label">🦅
-                                Seahawks</span></button>
-                        <button class="filter-card" data-filter="technicolor"><span class="filter-label">📽️
-                                Technicolor</span></button>
-                        <button class="filter-card" data-filter="golden2"><span class="filter-label">🏆 Golden
-                                II</span></button>
-                        <button class="filter-card" data-filter="posterize"><span class="filter-label">🎨
-                                Posterize</span></button>
-                    </div>
-                </div>
-
-                <!-- ── OVERLAYS PANEL ── -->
-                <div id="overlaysPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-overlays">
-                    <div class="setting-group">
-                        <label class="setting-label" for="overlayText">Overlay Text</label>
-                        <input type="text" id="overlayText" class="setting-input" placeholder="Enter caption...">
-                    </div>
-                    <div class="settings-grid" style="margin-top: 15px;">
-                        <div class="setting-group">
-                            <label class="setting-label" for="textSize">Size</label>
-                            <input type="number" id="textSize" class="setting-input" value="32" min="10" max="100">
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="textPos">Position</label>
-                            <select id="textPos" class="setting-input">
-                                <option value="top">Top</option>
-                                <option value="middle">Middle</option>
-                                <option value="bottom" selected>Bottom</option>
-                            </select>
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="wordSpacing">Word Spacing</label>
-                            <input type="number" id="wordSpacing" class="setting-input" value="1" min="0" max="50">
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="fontStyle">Font Family</label>
-                            <select id="fontStyle" class="setting-input">
-                                <option value="Arimo-Regular.ttf">Standard (Arimo)</option>
-                                <option value="LiberationSans-Regular.ttf">Liberation Sans</option>
-                                <option value="Roboto-Regular.ttf">Roboto (Modern)</option>
-                                <option value="Anton-Regular.ttf">Anton (Headline)</option>
-                                <option value="Orbitron.ttf">Orbitron (Sci-Fi)</option>
-                                <option value="PermanentMarker-Regular.ttf">Marker (Street)</option>
-                                <option value="Montserrat-Regular.ttf">Montserrat</option>
-                            </select>
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="lineSpacing">Line Spacing</label>
-                            <input type="number" id="lineSpacing" class="setting-input" value="20" min="0" max="100">
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="textBox">Text Box</label>
-                            <select id="textBox" class="setting-input">
-                                <option value="0" selected>None</option>
-                                <option value="1">Background Slug</option>
-                            </select>
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="textColor">Text Color</label>
-                            <select id="textColor" class="setting-input">
-                                <option value="#4DFF00" selected>Action Green</option>
-                                <option value="cyan">Cyan</option>
-                                <option value="yellow">Yellow</option>
-                                <option value="red">Red</option>
-                                <option value="white">White</option>
-                                <option value="black">Black</option>
-                            </select>
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="borderColor">Border Color</label>
-                            <select id="borderColor" class="setting-input">
-                                <option value="black" selected>Black (Default)</option>
-                                <option value="white">White</option>
-                                <option value="#4DFF00">Action Green</option>
-                                <option value="cyan">Cyan</option>
-                                <option value="yellow">Yellow</option>
-                                <option value="red">Red</option>
-                                <option value="none">None (Transparent)</option>
-                            </select>
-                        </div>
-                        <div class="setting-group">
-                            <label class="setting-label" for="boxPadding">Box Padding</label>
-                            <input type="number" id="boxPadding" class="setting-input" value="10" min="0" max="50">
-                        </div>
-                        <div class="setting-group">
-                        </div>
-
+                        <p class="trim-hint">
+                            Drag handles to select clip region &mdash;
+                            <strong id="sliderMaxLabel">max 10s</strong>
+                            recommended
+                        </p>
                     </div>
 
-                    <!-- ── FRAMES PANEL ── -->
-                    <div id="framesPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-frames">
-                        <div class="frame-editor-header">
-                            <button id="extractFramesBtn" class="btn btn-secondary" disabled>
-                                <i data-lucide="film"></i> Extract Frames
+                    <!-- ── TABS ── -->
+                    <div class="feature-tabs" role="tablist" aria-label="GIF options">
+                        <button
+                            id="tab-settings"
+                            class="tab-btn active"
+                            role="tab"
+                            aria-selected="true"
+                            aria-controls="settingsPanel"
+                        >
+                            <i data-lucide="settings"></i>
+                            Settings
+                        </button>
+                        <button
+                            id="tab-filters"
+                            class="tab-btn"
+                            role="tab"
+                            aria-selected="false"
+                            aria-controls="filtersPanel"
+                        >
+                            <i data-lucide="sparkles"></i>
+                            Filters
+                        </button>
+                        <button
+                            id="tab-overlays"
+                            class="tab-btn"
+                            role="tab"
+                            aria-selected="false"
+                            aria-controls="overlaysPanel"
+                        >
+                            <i data-lucide="type"></i>
+                            Overlays
+                        </button>
+                        <button
+                            id="tab-frames"
+                            class="tab-btn"
+                            role="tab"
+                            aria-selected="false"
+                            aria-controls="framesPanel"
+                        >
+                            <i data-lucide="film"></i>
+                            Frames
+                        </button>
+                    </div>
+
+                    <!-- ── SETTINGS PANEL ── -->
+                    <div
+                        id="settingsPanel"
+                        class="advanced-panel active"
+                        role="tabpanel"
+                        aria-labelledby="tab-settings"
+                    >
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <label class="setting-label" for="gifWidth">Width (px)</label>
+                                <input
+                                    type="number"
+                                    id="gifWidth"
+                                    class="setting-input"
+                                    value="480"
+                                    min="100"
+                                    max="1024"
+                                    step="10"
+                                />
+                            </div>
+
+                            <div class="setting-group">
+                                <label class="setting-label" for="fps">Frame Rate (FPS)</label>
+                                <input
+                                    type="number"
+                                    id="fps"
+                                    class="setting-input"
+                                    value="15"
+                                    min="1"
+                                    max="60"
+                                    step="1"
+                                />
+                            </div>
+
+                            <div class="setting-group" id="speedGroup">
+                                <label class="setting-label" for="speed">Speed</label>
+                                <select id="speed" class="setting-input">
+                                    <option value="0.5">0.5x (Slow)</option>
+                                    <option value="1" selected>1.0x (Normal)</option>
+                                    <option value="1.5">1.5x (Fast)</option>
+                                    <option value="2">2.0x (Turbo)</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-group" id="loopGroup">
+                                <label class="setting-label" for="loopMode">Loop Mode</label>
+                                <select id="loopMode" class="setting-input">
+                                    <option value="normal" selected>Normal</option>
+                                    <option value="reverse">Reverse</option>
+                                    <option value="boomerang">Boomerang</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-group" id="delayGroup" style="display: none">
+                                <label class="setting-label" for="frameDelay">Frame Delay (ms)</label>
+                                <input
+                                    type="number"
+                                    id="frameDelay"
+                                    class="setting-input"
+                                    value="200"
+                                    min="50"
+                                    step="50"
+                                />
+                            </div>
+
+                            <div class="setting-group">
+                                <label class="setting-label" for="cropRatio">Pro Crop</label>
+                                <select id="cropRatio" class="setting-input">
+                                    <option value="off" selected>Off (Full)</option>
+                                    <option value="original">Free Crop</option>
+                                    <option value="9:16">TikTok (9:16)</option>
+                                    <option value="1:1">Instagram (1:1)</option>
+                                    <option value="4:5">FB/Portrait (4:5)</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-group">
+                                <label class="setting-label" for="rotateAngle">Rotate</label>
+                                <select id="rotateAngle" class="setting-input">
+                                    <option value="0" selected>Off (0°)</option>
+                                    <option value="90">90° Clockwise</option>
+                                    <option value="180">180° Flip</option>
+                                    <option value="270">90° Counter-CW</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-group">
+                                <label class="setting-label" for="transparentBg">Transparent BG Removal</label>
+                                <select id="transparentBg" class="setting-input">
+                                    <option value="off" selected>Off</option>
+                                    <option value="white">Remove White BG</option>
+                                    <option value="black">Remove Black BG</option>
+                                    <option value="green">Remove Green Screen</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── FILTERS PANEL ── -->
+                    <div id="filtersPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-filters">
+                        <div class="filter-grid" id="filterGrid">
+                            <button class="filter-card active" data-filter="none">
+                                <span class="filter-label">None</span>
                             </button>
-                            <span class="frame-status" id="frameStatus">Load a video to extract frames</span>
+                            <button class="filter-card" data-filter="grayscale">
+                                <span class="filter-label">Noir</span>
+                            </button>
+                            <button class="filter-card" data-filter="sepia">
+                                <span class="filter-label">Retro</span>
+                            </button>
+                            <button class="filter-card" data-filter="vibrant">
+                                <span class="filter-label">Vibrant Pop</span>
+                            </button>
+                            <button class="filter-card" data-filter="8bit">
+                                <span class="filter-label">8-Bit Retro</span>
+                            </button>
+                            <button class="filter-card" data-filter="dreamy">
+                                <span class="filter-label">Dreamy Wash</span>
+                            </button>
+                            <button class="filter-card" data-filter="golden">
+                                <span class="filter-label">Golden Hour</span>
+                            </button>
+                            <button class="filter-card" data-filter="gladiator">
+                                <span class="filter-label">Gladiator</span>
+                            </button>
+                            <button class="filter-card" data-filter="nightvision">
+                                <span class="filter-label">Night Vision</span>
+                            </button>
+                            <button class="filter-card" data-filter="sulphur">
+                                <span class="filter-label">Sulphur</span>
+                            </button>
+                            <button class="filter-card" data-filter="coldblue">
+                                <span class="filter-label">Cold Blue</span>
+                            </button>
+                            <button class="filter-card" data-filter="vignette">
+                                <span class="filter-label">Vignette</span>
+                            </button>
+                            <button class="filter-card" data-filter="mirror">
+                                <span class="filter-label">Mirror Flip</span>
+                            </button>
+                            <button class="filter-card" data-filter="grain">
+                                <span class="filter-label">Film Grain</span>
+                            </button>
+                            <button class="filter-card" data-filter="invert">
+                                <span class="filter-label">Invert</span>
+                            </button>
+                            <button class="filter-card" data-filter="vhs">
+                                <span class="filter-label">📼 VHS Retro</span>
+                            </button>
+                            <button class="filter-card" data-filter="psychedelic">
+                                <span class="filter-label">🌈 Psychedelia</span>
+                            </button>
+                            <button class="filter-card" data-filter="thermal">
+                                <span class="filter-label">🔥 Thermal</span>
+                            </button>
+                            <button class="filter-card" data-filter="glitch">
+                                <span class="filter-label">👾 Glitch</span>
+                            </button>
+                            <button class="filter-card" data-filter="cyberpunk">
+                                <span class="filter-label">🧬 Cyberpunk</span>
+                            </button>
+                            <button class="filter-card" data-filter="chrome">
+                                <span class="filter-label">💿 Chrome</span>
+                            </button>
+                            <button class="filter-card" data-filter="blueprint">
+                                <span class="filter-label">📐 Blueprint</span>
+                            </button>
+                            <button class="filter-card" data-filter="matrix">
+                                <span class="filter-label">📟 Matrix</span>
+                            </button>
+                            <button class="filter-card" data-filter="oldmovie">
+                                <span class="filter-label">🎞️ Old Movie</span>
+                            </button>
+                            <button class="filter-card" data-filter="mirrormode">
+                                <span class="filter-label">🪞 Mirror</span>
+                            </button>
+                            <button class="filter-card" data-filter="comic">
+                                <span class="filter-label">💥 Comic Book</span>
+                            </button>
+                            <button class="filter-card" data-filter="acid">
+                                <span class="filter-label">🌀 Acid Trip</span>
+                            </button>
+                            <button class="filter-card" data-filter="sketch">
+                                <span class="filter-label">✏️ Sketch</span>
+                            </button>
+                            <button class="filter-card" data-filter="infrared">
+                                <span class="filter-label">🛰️ Infrared</span>
+                            </button>
+                            <button class="filter-card" data-filter="seahawks">
+                                <span class="filter-label">🦅 Seahawks</span>
+                            </button>
+                            <button class="filter-card" data-filter="technicolor">
+                                <span class="filter-label">📽️ Technicolor</span>
+                            </button>
+                            <button class="filter-card" data-filter="golden2">
+                                <span class="filter-label">🏆 Golden II</span>
+                            </button>
+                            <button class="filter-card" data-filter="posterize">
+                                <span class="filter-label">🎨 Posterize</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── OVERLAYS PANEL ── -->
+                    <div id="overlaysPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-overlays">
+                        <div class="setting-group">
+                            <label class="setting-label" for="overlayText">Overlay Text</label>
+                            <input type="text" id="overlayText" class="setting-input" placeholder="Enter caption..." />
+                        </div>
+                        <div class="settings-grid" style="margin-top: 15px">
+                            <div class="setting-group">
+                                <label class="setting-label" for="textSize">Size</label>
+                                <input
+                                    type="number"
+                                    id="textSize"
+                                    class="setting-input"
+                                    value="32"
+                                    min="10"
+                                    max="100"
+                                />
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="textPos">Position</label>
+                                <select id="textPos" class="setting-input">
+                                    <option value="top">Top</option>
+                                    <option value="middle">Middle</option>
+                                    <option value="bottom" selected>Bottom</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="wordSpacing">Word Spacing</label>
+                                <input
+                                    type="number"
+                                    id="wordSpacing"
+                                    class="setting-input"
+                                    value="1"
+                                    min="0"
+                                    max="50"
+                                />
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="fontStyle">Font Family</label>
+                                <select id="fontStyle" class="setting-input">
+                                    <option value="Arimo-Regular.ttf">Standard (Arimo)</option>
+                                    <option value="LiberationSans-Regular.ttf">Liberation Sans</option>
+                                    <option value="Roboto-Regular.ttf">Roboto (Modern)</option>
+                                    <option value="Anton-Regular.ttf">Anton (Headline)</option>
+                                    <option value="Orbitron.ttf">Orbitron (Sci-Fi)</option>
+                                    <option value="PermanentMarker-Regular.ttf">Marker (Street)</option>
+                                    <option value="Montserrat-Regular.ttf">Montserrat</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="lineSpacing">Line Spacing</label>
+                                <input
+                                    type="number"
+                                    id="lineSpacing"
+                                    class="setting-input"
+                                    value="20"
+                                    min="0"
+                                    max="100"
+                                />
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="textBox">Text Box</label>
+                                <select id="textBox" class="setting-input">
+                                    <option value="0" selected>None</option>
+                                    <option value="1">Background Slug</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="textColor">Text Color</label>
+                                <select id="textColor" class="setting-input">
+                                    <option value="#4DFF00" selected>Action Green</option>
+                                    <option value="cyan">Cyan</option>
+                                    <option value="yellow">Yellow</option>
+                                    <option value="red">Red</option>
+                                    <option value="white">White</option>
+                                    <option value="black">Black</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="borderColor">Border Color</label>
+                                <select id="borderColor" class="setting-input">
+                                    <option value="black" selected>Black (Default)</option>
+                                    <option value="white">White</option>
+                                    <option value="#4DFF00">Action Green</option>
+                                    <option value="cyan">Cyan</option>
+                                    <option value="yellow">Yellow</option>
+                                    <option value="red">Red</option>
+                                    <option value="none">None (Transparent)</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label" for="boxPadding">Box Padding</label>
+                                <input
+                                    type="number"
+                                    id="boxPadding"
+                                    class="setting-input"
+                                    value="10"
+                                    min="0"
+                                    max="50"
+                                />
+                            </div>
+                            <div class="setting-group"></div>
                         </div>
 
-                        <div class="frame-strip-scroll">
-                            <div class="frame-strip" id="frameStrip">
-                                <div class="frame-empty-state" id="frameEmptyState">
-                                    No frames extracted yet — click "Extract Frames" above
+                        <!-- ── FRAMES PANEL ── -->
+                        <div id="framesPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-frames">
+                            <div class="frame-editor-header">
+                                <button id="extractFramesBtn" class="btn btn-secondary" disabled>
+                                    <i data-lucide="film"></i>
+                                    Extract Frames
+                                </button>
+                                <span class="frame-status" id="frameStatus">Load a video to extract frames</span>
+                            </div>
+
+                            <div class="frame-strip-scroll">
+                                <div class="frame-strip" id="frameStrip">
+                                    <div class="frame-empty-state" id="frameEmptyState">
+                                        No frames extracted yet — click "Extract Frames" above
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="frame-global-controls">
+                                <button
+                                    id="resetFrameDelaysBtn"
+                                    class="btn btn-secondary"
+                                    style="padding: 10px 20px; margin: 0"
+                                >
+                                    Reset All
+                                </button>
+                                <label class="frame-global-label" for="globalFrameDelay">Global Delay (ms):</label>
+                                <input
+                                    type="number"
+                                    id="globalFrameDelay"
+                                    class="frame-global-input"
+                                    value="66"
+                                    min="10"
+                                    step="10"
+                                />
                             </div>
                         </div>
 
-                        <div class="frame-global-controls">
-                            <button id="resetFrameDelaysBtn" class="btn btn-secondary"
-                                style="padding: 10px 20px; margin: 0;">
-                                Reset All
-                            </button>
-                            <label class="frame-global-label" for="globalFrameDelay">Global Delay (ms):</label>
-                            <input type="number" id="globalFrameDelay" class="frame-global-input" value="66" min="10"
-                                step="10">
+                        <div class="size-predictor">
+                            <span>
+                                Quality Index:
+                                <span class="size-val" id="qualityEst">Ultra High</span>
+                            </span>
+                            <span>
+                                | Processor:
+                                <span class="size-val">Elite (FFmpeg)</span>
+                            </span>
                         </div>
                     </div>
 
-                    <div class="size-predictor">
-                        <span>Quality Index: <span class="size-val" id="qualityEst">Ultra High</span></span>
-                        <span>| Processor: <span class="size-val">Elite (FFmpeg)</span></span>
-                    </div>
-                </div>
+                    <!-- ═══ ACTION SECTION ═══ -->
+                    <div class="action-section" id="actionSection" style="display: none">
+                        <button class="btn btn-primary" id="convertBtn">⚡ Convert to GIF</button>
+                        <button class="btn btn-secondary" id="newVideoBtn">🗑️ New Video</button>
 
-                <!-- ═══ ACTION SECTION ═══ -->
-                <div class="action-section" id="actionSection" style="display: none;">
-                    <button class="btn btn-primary" id="convertBtn">
-                        ⚡ Convert to GIF
-                    </button>
-                    <button class="btn btn-secondary" id="newVideoBtn">
-                        🗑️ New Video
-                    </button>
-
-                    <div class="progress-container" id="progressContainer">
-                        <div class="progress-info">
-                            <span id="progressStatus">Extracting frames...</span>
-                            <span id="progressPercent">0%</span>
+                        <div class="progress-container" id="progressContainer">
+                            <div class="progress-info">
+                                <span id="progressStatus">Extracting frames...</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div
+                                class="progress-bar"
+                                role="progressbar"
+                                aria-valuenow="0"
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                aria-label="Conversion progress"
+                            >
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
                         </div>
-                        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0"
-                            aria-valuemax="100" aria-label="Conversion progress">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ═══ PREVIEW SECTION ═══ -->
-                <div class="preview-section" id="previewSection">
-                    <h3 style="margin-bottom: 20px; color: var(--action-green);">✨ Your Export is Ready!</h3>
-                    <img id="resultGif" class="preview-image" src="" alt="Generated GIF" style="display:none;">
-                    <div>
-                        <a id="downloadBtn" class="btn btn-primary" download="sumosized-export">
-                            ⬇️ Download
-                        </a>
-                        <button class="btn btn-secondary" id="closePreviewBtn">
-                            🔄 Convert Another Section
-                        </button>
                     </div>
                 </div>
             </div>
-    </main>
+        </main>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-</body>
-
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </body>
 </html>

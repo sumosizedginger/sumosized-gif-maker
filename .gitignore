@@ -1,7 +1,7 @@
 # System Files
-.DS_Store
+**/.DS_Store
 Thumbs.db
-
+node_modules/
 # Dev Artifacts
 .dev_artifacts/
 *.py

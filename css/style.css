@@ -5,18 +5,18 @@
     --midnight: #191970;
     --sapphire: #082567;
     --prussian: #003153;
-    --charcoal: #1F2328;
+    --charcoal: #1f2328;
 
     /* Core Greens (Primary Accents) */
-    --action-green: #4DFF00;
-    --forest: #228B22;
+    --action-green: #4dff00;
+    --forest: #228b22;
     --racing: #004225;
-    --hunter: #355E3B;
+    --hunter: #355e3b;
     --sacramento: #043927;
-    --jungle: #1A2421;
+    --jungle: #1a2421;
 
     /* UI Tokens */
-    --vibe-color: #4DFF00;
+    --vibe-color: #4dff00;
     --glass: rgba(0, 34, 68, 0.75);
     --glass-border: rgba(77, 255, 0, 0.15);
     --text-primary: rgba(77, 255, 0, 0.95);
@@ -125,7 +125,7 @@ h1 {
 }
 
 .mode-btn.active {
-    background: #4DFF00;
+    background: #4dff00;
     color: #002244 !important;
     box-shadow: 0 5px 15px rgba(77, 255, 0, 0.2);
 }
@@ -143,7 +143,9 @@ h1 {
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
     border-radius: 32px;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(77, 255, 0, 0.05);
+    box-shadow:
+        0 40px 100px rgba(0, 0, 0, 0.5),
+        inset 0 0 40px rgba(77, 255, 0, 0.05);
     overflow: hidden;
     animation: fadeInUp 1s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -165,7 +167,7 @@ h1 {
 .upload-btn {
     display: inline-block;
     padding: 18px 48px;
-    background: #4DFF00;
+    background: #4dff00;
     color: #002244 !important;
     border-radius: 100px;
     cursor: pointer;
@@ -280,7 +282,7 @@ h1 {
     line-height: 1.6;
 }
 
-input[type="file"] {
+input[type='file'] {
     display: none;
 }
 
@@ -365,7 +367,7 @@ video {
     pointer-events: none;
 }
 
-input[type="range"] {
+input[type='range'] {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -377,7 +379,7 @@ input[type="range"] {
     margin: 0;
 }
 
-input[type="range"]::-webkit-slider-thumb {
+input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 24px;
@@ -391,13 +393,13 @@ input[type="range"]::-webkit-slider-thumb {
     transition: var(--transition);
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
+input[type='range']::-webkit-slider-thumb:hover {
     transform: scale(1.2);
     background: var(--vibe-color);
     box-shadow: 0 0 30px var(--action-green);
 }
 
-input[type="range"]::-moz-range-thumb {
+input[type='range']::-moz-range-thumb {
     width: 24px;
     height: 24px;
     background: var(--action-green);
@@ -409,13 +411,13 @@ input[type="range"]::-moz-range-thumb {
     transition: var(--transition);
 }
 
-input[type="range"]::-moz-range-thumb:hover {
+input[type='range']::-moz-range-thumb:hover {
     transform: scale(1.2);
     background: var(--vibe-color);
     box-shadow: 0 0 30px var(--action-green);
 }
 
-input[type="range"]::-ms-thumb {
+input[type='range']::-ms-thumb {
     width: 24px;
     height: 24px;
     background: var(--action-green);
@@ -426,19 +428,19 @@ input[type="range"]::-ms-thumb {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
 }
 
-input[type="range"]::-ms-thumb:hover {
+input[type='range']::-ms-thumb:hover {
     background: var(--vibe-color);
 }
 
-input[type="range"]::-webkit-slider-runnable-track {
+input[type='range']::-webkit-slider-runnable-track {
     background: transparent;
 }
 
-input[type="range"]::-moz-range-track {
+input[type='range']::-moz-range-track {
     background: transparent;
 }
 
-input[type="range"]::-ms-track {
+input[type='range']::-ms-track {
     background: transparent;
     border-color: transparent;
     color: transparent;
@@ -582,7 +584,7 @@ footer a:hover {
 }
 
 .tab-btn.active {
-    background: #4DFF00;
+    background: #4dff00;
     color: #002244 !important;
     box-shadow: 0 5px 15px rgba(77, 255, 0, 0.2);
 }
@@ -693,7 +695,7 @@ footer a:hover {
 }
 
 .btn-primary {
-    background: #4DFF00;
+    background: #4dff00;
     color: #002244 !important;
     box-shadow: 0 10px 30px rgba(77, 255, 0, 0.2);
 }
@@ -787,7 +789,6 @@ footer a:hover {
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
     margin-bottom: 30px;
 }
-
 
 /* ============================================
    VIDEO INFO
@@ -893,7 +894,6 @@ footer a:hover {
 
 /* Users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
@@ -932,7 +932,9 @@ footer a:hover {
 .cropper-box {
     position: absolute;
     border: 2px solid var(--action-green);
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 20px var(--action-green);
+    box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.5),
+        0 0 20px var(--action-green);
     pointer-events: none;
 }
 
@@ -1126,7 +1128,7 @@ select:focus-visible {
     position: relative;
     z-index: 20;
     cursor: text;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
     margin-bottom: 8px;
 }
 

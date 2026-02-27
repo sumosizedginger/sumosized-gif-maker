@@ -1,0 +1,23 @@
+{
+  "name": "sumosized-gif-maker",
+  "version": "1.0.1",
+  "description": "Convert video to GIF directly in your browser.",
+  "main": "coi-serviceworker.js",
+  "scripts": {
+    "format": "prettier --write \"**/*.{html,css,js}\"",
+    "check": "prettier --check \"**/*.{html,css,js}\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sumosizedginger/sumosized-gif-maker.git"
+  },
+  "author": "sumosizedginger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sumosizedginger/sumosized-gif-maker/issues"
+  },
+  "homepage": "https://github.com/sumosizedginger/sumosized-gif-maker#readme",
+  "devDependencies": {
+    "prettier": "^3.0.0"
+  }
+}

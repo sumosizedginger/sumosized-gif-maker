@@ -55,7 +55,6 @@ const colorThief = new ColorThief();
 // DOM READY — wire all event listeners
 // ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-
     // Init Lucide icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
@@ -102,10 +101,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Predictor updates on input changes
     [
-        'gifWidth', 'fps', 'speed',
-        'overlayText', 'fontStyle', 'textSize', 'textColor', 'borderColor', 'textPos',
-        'lineSpacing', 'wordSpacing', 'textBox', 'boxPadding', 'boxOpacity'
-    ].forEach(id => {
+        'gifWidth',
+        'fps',
+        'speed',
+        'overlayText',
+        'fontStyle',
+        'textSize',
+        'textColor',
+        'borderColor',
+        'textPos',
+        'lineSpacing',
+        'wordSpacing',
+        'textBox',
+        'boxPadding',
+        'boxOpacity'
+    ].forEach((id) => {
         document.getElementById(id)?.addEventListener('input', updatePredictor);
         document.getElementById(id)?.addEventListener('change', updatePredictor);
     });
@@ -114,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('textColor')?.addEventListener('change', updatePredictor);
     document.getElementById('borderColor')?.addEventListener('change', updatePredictor);
     document.getElementById('boxPadding')?.addEventListener('input', updatePredictor);
-
 
     // Action buttons
     document.getElementById('convertBtn')?.addEventListener('click', startConversion);
@@ -168,7 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         updateCropperUI();
     });
-    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
 
     // Run initial predictor state
     updatePredictor();
@@ -184,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const emoji = btn.dataset.emoji || btn.textContent.trim();
             const currentVal = input.value;
             // Append with space if not empty and not already ending in space
-            const spacer = (currentVal && !currentVal.endsWith(' ')) ? ' ' : '';
+            const spacer = currentVal && !currentVal.endsWith(' ') ? ' ' : '';
             input.value = currentVal + spacer + emoji;
 
             // Trigger reactivity
@@ -234,7 +245,7 @@ function handleTabListKeydown(e) {
 function switchMode(mode) {
     currentMode = mode;
 
-    document.querySelectorAll('.mode-switcher [role="tab"]').forEach(btn => {
+    document.querySelectorAll('.mode-switcher [role="tab"]').forEach((btn) => {
         const isActive = btn.dataset.mode === mode;
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-selected', isActive.toString());
@@ -294,8 +305,8 @@ function switchMode(mode) {
 // ─────────────────────────────────────────────
 function switchTab(panelId, clickedBtn) {
     // Deactivate all panels and tabs
-    document.querySelectorAll('.advanced-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.feature-tabs [role="tab"]').forEach(b => {
+    document.querySelectorAll('.advanced-panel').forEach((p) => p.classList.remove('active'));
+    document.querySelectorAll('.feature-tabs [role="tab"]').forEach((b) => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
     });
@@ -320,7 +331,7 @@ function switchTab(panelId, clickedBtn) {
 // ─────────────────────────────────────────────
 function setFilter(filter, el) {
     currentFilter = filter;
-    document.querySelectorAll('.filter-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.filter-card').forEach((c) => c.classList.remove('active'));
     if (el) el.classList.add('active');
     updatePredictor();
 }
@@ -386,7 +397,9 @@ function updateRange(e) {
         }
     }
 
-    if (start > end) { [start, end] = [end, start]; }
+    if (start > end) {
+        [start, end] = [end, start];
+    }
 
     const leftPercent = (start / videoDuration) * 100;
     const widthPercent = ((end - start) / videoDuration) * 100;
@@ -461,7 +474,10 @@ function loadVideoFile(file) {
             <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
         `;
 
-        if (startRangeEl) { startRangeEl.max = videoDuration; startRangeEl.value = 0; }
+        if (startRangeEl) {
+            startRangeEl.max = videoDuration;
+            startRangeEl.value = 0;
+        }
         if (endRangeEl) {
             endRangeEl.max = videoDuration;
             const GIF_MAX = Math.min(10, videoDuration);
@@ -488,7 +504,7 @@ async function handleImageUpload(e) {
     grid.innerHTML = '';
 
     for (const file of files) {
-        const url = await new Promise(resolve => {
+        const url = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (ev) => resolve(ev.target.result);
             reader.readAsDataURL(file);
@@ -561,7 +577,6 @@ async function loadFromUrl(url, type) {
             grid.appendChild(div);
             showToast('Image imported from URL!');
         }
-
     } catch (err) {
         let message = 'CORS blocked — direct access denied.';
         if (helpEl) helpEl.open = true;
@@ -602,9 +617,19 @@ function toggleCropper(ratio) {
     if (ratio !== 'original') {
         const [rW, rH] = ratio.split(':').map(Number);
         const targetRatio = rW / rH;
-        if (w / h > targetRatio) { w = h * targetRatio; } else { h = w / targetRatio; }
-        if (w > rect.width * 0.9) { w = rect.width * 0.9; h = w / targetRatio; }
-        if (h > rect.height * 0.9) { h = rect.height * 0.9; w = h * targetRatio; }
+        if (w / h > targetRatio) {
+            w = h * targetRatio;
+        } else {
+            h = w / targetRatio;
+        }
+        if (w > rect.width * 0.9) {
+            w = rect.width * 0.9;
+            h = w / targetRatio;
+        }
+        if (h > rect.height * 0.9) {
+            h = rect.height * 0.9;
+            w = h * targetRatio;
+        }
     }
 
     cropData.w = w;
@@ -652,10 +677,14 @@ async function extractFrames() {
         ffmpeg.FS('writeFile', 'input_frames.mp4', await fetchFile(currentVideoFile));
 
         await ffmpeg.run(
-            '-ss', start.toString(),
-            '-t', cappedDuration.toString(),
-            '-i', '/input_frames.mp4',
-            '-vf', `scale=160:-2,fps=${fps}`,
+            '-ss',
+            start.toString(),
+            '-t',
+            cappedDuration.toString(),
+            '-i',
+            '/input_frames.mp4',
+            '-vf',
+            `scale=160:-2,fps=${fps}`,
             '/frame%04d.png'
         );
 
@@ -681,7 +710,6 @@ async function extractFrames() {
         const count = frameData.length;
         document.getElementById('frameStatus').textContent = `${count} frames at ${fps}fps`;
         showToast(`${count} frames extracted!`);
-
     } catch (err) {
         console.error('Frame extraction error:', err);
         showToast('Frame extraction failed.');
@@ -710,7 +738,7 @@ function renderFrameStrip() {
     });
 
     // Live sync delay changes back to frameData
-    strip.querySelectorAll('.frame-delay-input').forEach(input => {
+    strip.querySelectorAll('.frame-delay-input').forEach((input) => {
         input.addEventListener('change', (e) => {
             const idx = parseInt(e.target.dataset.frameIdx);
             frameData[idx].delay = Math.max(10, parseInt(e.target.value) || 66);
@@ -720,16 +748,18 @@ function renderFrameStrip() {
 
 function resetFrameDelays() {
     const globalDelay = parseInt(document.getElementById('globalFrameDelay')?.value) || 66;
-    frameData.forEach(f => f.delay = globalDelay);
-    document.querySelectorAll('.frame-delay-input').forEach(input => {
+    frameData.forEach((f) => (f.delay = globalDelay));
+    document.querySelectorAll('.frame-delay-input').forEach((input) => {
         input.value = globalDelay;
     });
 }
 
 function applyGlobalFrameDelay() {
     const delay = parseInt(document.getElementById('globalFrameDelay')?.value) || 66;
-    frameData.forEach(f => f.delay = delay);
-    document.querySelectorAll('.frame-delay-input').forEach(input => { input.value = delay; });
+    frameData.forEach((f) => (f.delay = delay));
+    document.querySelectorAll('.frame-delay-input').forEach((input) => {
+        input.value = delay;
+    });
 }
 
 // ─────────────────────────────────────────────
@@ -751,11 +781,15 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         const vidAspect = realW / realH;
         let rendW, rendH, offsetX, offsetY;
         if (vidAspect > elAspect) {
-            rendW = rect.width; rendH = rect.width / vidAspect;
-            offsetX = 0; offsetY = (rect.height - rendH) / 2;
+            rendW = rect.width;
+            rendH = rect.width / vidAspect;
+            offsetX = 0;
+            offsetY = (rect.height - rendH) / 2;
         } else {
-            rendH = rect.height; rendW = rect.height * vidAspect;
-            offsetX = (rect.width - rendW) / 2; offsetY = 0;
+            rendH = rect.height;
+            rendW = rect.height * vidAspect;
+            offsetX = (rect.width - rendW) / 2;
+            offsetY = 0;
         }
         const scaleX = realW / rendW;
         const scaleY = realH / rendH;
@@ -784,7 +818,8 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         dreamy: 'eq=contrast=0.8:brightness=0.05:saturation=0.7',
         golden: "curves=red='0/0 0.5/0.6 1/1':green='0/0 0.5/0.45 1/0.9':blue='0/0 0.5/0.3 1/0.7'",
         gladiator: 'eq=contrast=1.5:saturation=0.5:brightness=-0.05,colorchannelmixer=1.1:0:0:0:0:0.9:0:0:0:0:0.7:0',
-        nightvision: 'colorchannelmixer=0:0:0:0:0.5:0.5:0:0:0:0:0:0,eq=brightness=0.1:saturation=2,noise=alls=15:allf=t+u',
+        nightvision:
+            'colorchannelmixer=0:0:0:0:0.5:0.5:0:0:0:0:0:0,eq=brightness=0.1:saturation=2,noise=alls=15:allf=t+u',
         sulphur: "curves=red='0/0 0.5/0.8 1/1':green='0/0 0.5/0.7 1/0.9':blue='0/0 0.5/0.1 1/0.2'",
         coldblue: "curves=red='0/0 0.5/0.3 1/0.7':green='0/0 0.5/0.5 1/0.8':blue='0/0 0.5/0.7 1/1'",
         vignette: 'vignette=PI/4',
@@ -851,7 +886,9 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         // drawtext cannot render colored text on a grayscale pixel format — confirmed FFmpeg behavior.
         // Restoring rgb24 here guarantees fontcolor renders correctly regardless of prior filter.
         baseFilters.push('format=rgb24');
-        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=${borderW}:bordercolor=${actualBorderColor}:shadowcolor=black@0.4:shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+        baseFilters.push(
+            `drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=${borderW}:bordercolor=${actualBorderColor}:shadowcolor=black@0.4:shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`
+        );
     }
 
     // Convert to YUV *after* drawing the text, right before palettegen
@@ -872,11 +909,13 @@ function wrapText(text, maxWidth, fontSize, fontName, wordSpacing = 0) {
     const spaceWidth = ctx.measureText(' ').width;
     const extraSpacingPx = wordSpacing * spaceWidth;
     const words = text.split(' ');
-    let lines = [], currentLine = [];
+    let lines = [],
+        currentLine = [];
 
-    words.forEach(word => {
+    words.forEach((word) => {
         const testLine = [...currentLine, word];
-        const totalWidth = ctx.measureText(testLine.join(' ')).width + (Math.max(0, testLine.length - 1) * extraSpacingPx);
+        const totalWidth =
+            ctx.measureText(testLine.join(' ')).width + Math.max(0, testLine.length - 1) * extraSpacingPx;
         if (totalWidth > maxWidth && currentLine.length > 0) {
             lines.push(currentLine.join(' '));
             currentLine = [word];
@@ -887,7 +926,7 @@ function wrapText(text, maxWidth, fontSize, fontName, wordSpacing = 0) {
     if (currentLine.length > 0) lines.push(currentLine.join(' '));
 
     const spacingStr = ' '.repeat(wordSpacing + 1);
-    return lines.map(l => l.split(' ').join(spacingStr)).join('\n');
+    return lines.map((l) => l.split(' ').join(spacingStr)).join('\n');
 }
 
 // ─────────────────────────────────────────────
@@ -964,7 +1003,9 @@ async function startConversion() {
                     const fontFace = new FontFace(fontName, `url(${fontUrl})`);
                     document.fonts.add(await fontFace.load());
                     await document.fonts.ready;
-                } catch (e) { console.warn('Browser font load failed:', e); }
+                } catch (e) {
+                    console.warn('Browser font load failed:', e);
+                }
             }
             ffmpeg.FS('writeFile', fontStyle, await fetchFile(fontUrl));
         }
@@ -979,9 +1020,14 @@ async function startConversion() {
             ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
 
             await ffmpeg.run(
-                '-ss', start.toString(), '-t', (duration / speed).toString(),
-                '-i', '/input.mp4',
-                '-vf', `scale=${resWidth}:-2,fps=${fps}`,
+                '-ss',
+                start.toString(),
+                '-t',
+                (duration / speed).toString(),
+                '-i',
+                '/input.mp4',
+                '-vf',
+                `scale=${resWidth}:-2,fps=${fps}`,
                 '/fframe%04d.png'
             );
 
@@ -990,7 +1036,11 @@ async function startConversion() {
             let frameIdx = 0;
             while (true) {
                 const name = `/fframe${(frameIdx + 1).toString().padStart(4, '0')}.png`;
-                try { ffmpeg.FS('readFile', name); } catch { break; }
+                try {
+                    ffmpeg.FS('readFile', name);
+                } catch {
+                    break;
+                }
                 const delay = frameData[frameIdx] ? frameData[frameIdx].delay / 1000 : 1 / fps;
                 concatContent += `file '${name}'\nduration ${delay.toFixed(4)}\n`;
                 frameIdx++;
@@ -1002,13 +1052,30 @@ async function startConversion() {
             if (progressBar) progressBar.setAttribute('aria-valuenow', '40');
             // Create and apply filters
             showToast('⚙️ Processing Advanced Filters...');
-            const baseFiltersConfig = await buildBaseFilters(resWidth, fps, 1, duration, overlayText, fontStyle, textSize, textPos);
+            const baseFiltersConfig = await buildBaseFilters(
+                resWidth,
+                fps,
+                1,
+                duration,
+                overlayText,
+                fontStyle,
+                textSize,
+                textPos
+            );
             const baseFilterStr = baseFiltersConfig.join(',');
 
             // Standard linear chain
             const finalCommand = [
-                '-f', 'concat', '-safe', '0', '-i', '/concat.txt',
-                '-vf', `${baseFilterStr},palettegen`, '-y', '/palette.png'
+                '-f',
+                'concat',
+                '-safe',
+                '0',
+                '-i',
+                '/concat.txt',
+                '-vf',
+                `${baseFilterStr},palettegen`,
+                '-y',
+                '/palette.png'
             ];
 
             await ffmpeg.run(...finalCommand);
@@ -1018,14 +1085,23 @@ async function startConversion() {
             if (progressBar) progressBar.setAttribute('aria-valuenow', '70');
 
             await ffmpeg.run(
-                '-f', 'concat', '-safe', '0', '-i', '/concat.txt',
-                '-i', '/palette.png',
-                '-filter_complex', `[0:v]${concatFilters}[vid];[vid][1:v]paletteuse`,
-                '-f', 'gif', '-y', '/output.gif'
+                '-f',
+                'concat',
+                '-safe',
+                '0',
+                '-i',
+                '/concat.txt',
+                '-i',
+                '/palette.png',
+                '-filter_complex',
+                `[0:v]${concatFilters}[vid];[vid][1:v]paletteuse`,
+                '-f',
+                'gif',
+                '-y',
+                '/output.gif'
             );
 
             await finalizeOutput('/output.gif', 'image/gif', progressFill, progressBar);
-
         } else {
             // Standard Video-to-GIF or Image Slideshow
             if (currentMode === 'video') {
@@ -1035,8 +1111,18 @@ async function startConversion() {
                 if (progressFill) progressFill.style.width = '30%';
                 if (progressBar) progressBar.setAttribute('aria-valuenow', '30');
                 await ffmpeg.run(
-                    '-fflags', '+genpts', '-ss', start.toString(), '-t', (duration / speed).toString(),
-                    '-i', '/input.mp4', '-vf', `${baseFilterStr},palettegen`, '-y', '/palette.png'
+                    '-fflags',
+                    '+genpts',
+                    '-ss',
+                    start.toString(),
+                    '-t',
+                    (duration / speed).toString(),
+                    '-i',
+                    '/input.mp4',
+                    '-vf',
+                    `${baseFilterStr},palettegen`,
+                    '-y',
+                    '/palette.png'
                 );
 
                 progressStatus.textContent = 'Pass 2: Encoding GIF...';
@@ -1044,45 +1130,83 @@ async function startConversion() {
                 if (progressBar) progressBar.setAttribute('aria-valuenow', '65');
                 let complexFilter = `[0:v]${baseFilterStr}`;
                 if (loopMode === 'reverse') complexFilter += `,reverse[vid];[vid][1:v]paletteuse`;
-                else if (loopMode === 'boomerang') complexFilter += `,split[f][b];[b]reverse[r];[f][r]concat=n=2:v=1:a=0[vid];[vid][1:v]paletteuse`;
+                else if (loopMode === 'boomerang')
+                    complexFilter += `,split[f][b];[b]reverse[r];[f][r]concat=n=2:v=1:a=0[vid];[vid][1:v]paletteuse`;
                 else complexFilter += `[vid];[vid][1:v]paletteuse`;
 
                 await ffmpeg.run(
-                    '-fflags', '+genpts', '-ss', start.toString(), '-t', (duration / speed).toString(),
-                    '-i', '/input.mp4', '-i', '/palette.png',
-                    '-filter_complex', complexFilter, '-f', 'gif', '-y', '/output.gif'
+                    '-fflags',
+                    '+genpts',
+                    '-ss',
+                    start.toString(),
+                    '-t',
+                    (duration / speed).toString(),
+                    '-i',
+                    '/input.mp4',
+                    '-i',
+                    '/palette.png',
+                    '-filter_complex',
+                    complexFilter,
+                    '-f',
+                    'gif',
+                    '-y',
+                    '/output.gif'
                 );
                 await finalizeOutput('/output.gif', 'image/gif', progressFill, progressBar);
-
             } else {
                 // Image slideshow GIF
                 progressStatus.textContent = 'Preparing images...';
                 for (let i = 0; i < slideshowImages.length; i++) {
-                    const binary = await fetch(slideshowImages[i]).then(r => r.arrayBuffer());
+                    const binary = await fetch(slideshowImages[i]).then((r) => r.arrayBuffer());
                     ffmpeg.FS('writeFile', `/img${(i + 1).toString().padStart(3, '0')}.jpg`, new Uint8Array(binary));
                 }
                 const frameDelay = parseInt(document.getElementById('frameDelay')?.value) || 200;
                 const framerate = 1000 / frameDelay;
                 if (progressFill) progressFill.style.width = '30%';
-                await ffmpeg.run('-framerate', framerate.toString(), '-i', '/img%03d.jpg', '-vf', `${baseFilterStr},palettegen`, '-y', '/palette.png');
+                await ffmpeg.run(
+                    '-framerate',
+                    framerate.toString(),
+                    '-i',
+                    '/img%03d.jpg',
+                    '-vf',
+                    `${baseFilterStr},palettegen`,
+                    '-y',
+                    '/palette.png'
+                );
                 if (progressFill) progressFill.style.width = '65%';
-                await ffmpeg.run('-framerate', framerate.toString(), '-i', '/img%03d.jpg', '-i', '/palette.png', '-filter_complex', `[0:v]${baseFilterStr}[vid];[vid][1:v]paletteuse`, '-f', 'gif', '-y', '/output.gif');
+                await ffmpeg.run(
+                    '-framerate',
+                    framerate.toString(),
+                    '-i',
+                    '/img%03d.jpg',
+                    '-i',
+                    '/palette.png',
+                    '-filter_complex',
+                    `[0:v]${baseFilterStr}[vid];[vid][1:v]paletteuse`,
+                    '-f',
+                    'gif',
+                    '-y',
+                    '/output.gif'
+                );
                 await finalizeOutput('/output.gif', 'image/gif', progressFill, progressBar);
             }
         }
 
         // Cleanup FS
         try {
-            ['input.mp4', 'palette.png', 'output.gif', 'overlay_text.txt', 'concat.txt'].forEach(f => {
-                try { ffmpeg.FS('unlink', '/' + f); } catch { }
+            ['input.mp4', 'palette.png', 'output.gif', 'overlay_text.txt', 'concat.txt'].forEach((f) => {
+                try {
+                    ffmpeg.FS('unlink', '/' + f);
+                } catch {}
             });
             if (currentMode !== 'video') {
                 for (let i = 0; i < slideshowImages.length; i++) {
-                    try { ffmpeg.FS('unlink', `/img${(i + 1).toString().padStart(3, '0')}.jpg`); } catch { }
+                    try {
+                        ffmpeg.FS('unlink', `/img${(i + 1).toString().padStart(3, '0')}.jpg`);
+                    } catch {}
                 }
             }
-        } catch { }
-
+        } catch {}
     } catch (error) {
         console.error('Conversion Error:', error);
         showToast('Processing Error: ' + error.message);
@@ -1092,7 +1216,9 @@ async function startConversion() {
             ffmpeg.FS('unlink', 'input.mp4');
             ffmpeg.FS('unlink', 'input.gif');
             ffmpeg.FS('unlink', '/output.gif');
-        } catch (e) { /* ignore cleanup errors */ }
+        } catch (e) {
+            /* ignore cleanup errors */
+        }
     }
 }
 
@@ -1158,10 +1284,9 @@ async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
         }
 
         gif.on('finished', (blob) => {
-            blob.arrayBuffer().then(buf => outputResult(new Uint8Array(buf)));
+            blob.arrayBuffer().then((buf) => outputResult(new Uint8Array(buf)));
         });
         gif.render();
-
     } catch (e) {
         console.error('Finalize Error:', e);
         showToast('Finalize Error: Check console for details.');
@@ -1226,7 +1351,8 @@ function resetVideo() {
     document.getElementById('videoUploadSection').style.display = 'block';
     document.getElementById('extractFramesBtn')?.setAttribute('disabled', '');
     document.getElementById('frameStatus').textContent = 'Load a video to extract frames';
-    document.getElementById('frameStrip').innerHTML = '<div class="frame-empty-state">No frames extracted yet — click "Extract Frames" above</div>';
+    document.getElementById('frameStrip').innerHTML =
+        '<div class="frame-empty-state">No frames extracted yet — click "Extract Frames" above</div>';
     frameData = [];
     videoDuration = 0;
     currentVideoFile = null;
