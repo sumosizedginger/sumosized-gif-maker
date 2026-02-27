@@ -1127,4 +1127,35 @@ select:focus-visible {
     z-index: 20;
     cursor: text;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+    margin-bottom: 8px;
+}
+
+.quick-emoji-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 5px;
+}
+
+.emoji-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(77, 255, 0, 0.1);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emoji-btn:hover {
+    background: rgba(77, 255, 0, 0.2);
+    border-color: var(--action-green);
+    transform: translateY(-2px);
+}
+
+.emoji-btn:active {
+    transform: scale(0.95);
 }
