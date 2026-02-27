@@ -301,7 +301,27 @@
 
         input[type="range"]::-webkit-slider-thumb:hover {
             transform: scale(1.2);
+            background: var(--vibe-color);
+            box-shadow: 0 0 30px var(--action-green);
+        }
+
+        /* Firefox Support */
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
             background: var(--action-green);
+            border: 4px solid var(--navy);
+            border-radius: 50%;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            transition: var(--transition);
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            background: var(--vibe-color);
+            box-shadow: 0 0 30px var(--action-green);
         }
 
         .settings-grid {
@@ -1410,14 +1430,24 @@
             let start = parseFloat(startRange.value);
             let end = parseFloat(endRange.value);
 
-            // Ensure minimum 0.5s duration and start < end
+            // Ensure minimum 0.5s duration and maximum 10s duration
             if (end - start < 0.5) {
                 if (event && event.target === startRange) {
-                    start = end - 0.5;
+                    start = Math.max(0, end - 0.5);
                     startRange.value = start;
                 } else {
-                    end = start + 0.5;
+                    end = Math.min(videoDuration, start + 0.5);
                     endRange.value = end;
+                }
+            }
+
+            if (end - start > 10) {
+                if (event && event.target === startRange) {
+                    end = start + 10;
+                    endRange.value = end;
+                } else {
+                    start = end - 10;
+                    startRange.value = start;
                 }
             }
 
