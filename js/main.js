@@ -100,11 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Crop ratio
     document.getElementById('cropRatio')?.addEventListener('change', (e) => toggleCropper(e.target.value));
 
-    // Output format toggle
-    document.getElementById('outputFormat')?.addEventListener('change', () => toggleFormatControls());
-
     // Predictor updates on input changes
-    ['gifWidth', 'fps', 'speed', 'overlayText', 'outputFormat'].forEach(id => {
+    ['gifWidth', 'fps', 'speed', 'overlayText'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updatePredictor);
         document.getElementById(id)?.addEventListener('change', updatePredictor);
     });
@@ -298,16 +295,6 @@ function setFilter(filter, el) {
 }
 
 // ─────────────────────────────────────────────
-// FORMAT CONTROLS TOGGLE
-// ─────────────────────────────────────────────
-function toggleFormatControls() {
-    const fmt = document.getElementById('outputFormat')?.value || 'gif';
-    const loopGroup = document.getElementById('loopGroup');
-    if (loopGroup) loopGroup.style.display = fmt === 'gif' ? 'block' : 'none';
-    updatePredictor();
-}
-
-// ─────────────────────────────────────────────
 // PREDICTOR
 // ─────────────────────────────────────────────
 function updatePredictor() {
@@ -315,14 +302,12 @@ function updatePredictor() {
     const fpsInput = document.getElementById('fps');
     const overlayInput = document.getElementById('overlayText');
     const qualityEst = document.getElementById('qualityEst');
-    const formatSelect = document.getElementById('outputFormat');
 
     if (!widthInput || !fpsInput || !overlayInput || !qualityEst) return;
 
     const width = parseInt(widthInput.value);
     const fps = parseInt(fpsInput.value);
     const hasOverlay = overlayInput.value.length > 0;
-    const fmt = formatSelect?.value || 'gif';
 
     let quality = 'High Def';
     if (width > 800) quality = 'Ultra HD';
@@ -330,7 +315,6 @@ function updatePredictor() {
 
     if (fps > 25) quality += ' (Super Smooth)';
     if (hasOverlay) quality += ' + FX';
-    if (fmt !== 'gif') quality += ` → ${fmt.toUpperCase()}`;
 
     qualityEst.textContent = quality;
 }
@@ -921,7 +905,6 @@ async function startConversion() {
     const progressStatus = document.getElementById('progressStatus');
     const progressFill = document.getElementById('progressFill');
     const progressBar = document.querySelector('.progress-bar[role="progressbar"]');
-    const outputFormat = document.getElementById('outputFormat')?.value || 'gif';
 
     if (!startRangeEl || !durationDisplay || !convertBtn || !progressContainer) {
         showToast('Page not ready — please reload.');
@@ -977,8 +960,8 @@ async function startConversion() {
         const baseFilters = buildBaseFilters(resWidth, fps, speed, overlayText, fontStyle, textSize, textPos);
         const baseFilterStr = (await baseFilters).join(',');
 
-        // ── GIF via frame editor (concat demuxer) ──
-        if (outputFormat === 'gif' && frameData.length > 0 && currentMode === 'video') {
+        // ── GIF PRODUCTION ──
+        if (frameData.length > 0 && currentMode === 'video') {
             progressStatus.textContent = 'Re-extracting full-res frames...';
             if (progressFill) progressFill.style.width = '10%';
             ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
@@ -1025,10 +1008,10 @@ async function startConversion() {
                 '-f', 'gif', '-y', '/output.gif'
             );
 
-            await finalizeOutput('gif', '/output.gif', 'image/gif', progressFill, progressBar);
+            await finalizeOutput('/output.gif', 'image/gif', progressFill, progressBar);
 
-            // ── Standard GIF ──
-        } else if (outputFormat === 'gif') {
+        } else {
+            // Standard Video-to-GIF or Image Slideshow
             if (currentMode === 'video') {
                 ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
 
@@ -1053,7 +1036,7 @@ async function startConversion() {
                     '-i', '/input.mp4', '-i', '/palette.png',
                     '-filter_complex', complexFilter, '-f', 'gif', '-y', '/output.gif'
                 );
-                await finalizeOutput('gif', '/output.gif', 'image/gif', progressFill, progressBar);
+                await finalizeOutput('/output.gif', 'image/gif', progressFill, progressBar);
 
             } else {
                 // Image slideshow GIF
@@ -1068,43 +1051,13 @@ async function startConversion() {
                 await ffmpeg.run('-framerate', framerate.toString(), '-i', '/img%03d.jpg', '-vf', `${baseFilterStr},palettegen`, '-y', '/palette.png');
                 if (progressFill) progressFill.style.width = '65%';
                 await ffmpeg.run('-framerate', framerate.toString(), '-i', '/img%03d.jpg', '-i', '/palette.png', '-filter_complex', `[0:v]${baseFilterStr}[vid];[vid][1:v]paletteuse`, '-f', 'gif', '-y', '/output.gif');
-                await finalizeOutput('gif', '/output.gif', 'image/gif', progressFill, progressBar);
+                await finalizeOutput('/output.gif', 'image/gif', progressFill, progressBar);
             }
-
-            // ── MP4 ──
-        } else if (outputFormat === 'mp4') {
-            ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
-            progressStatus.textContent = 'Encoding MP4...';
-            if (progressFill) progressFill.style.width = '40%';
-            if (progressBar) progressBar.setAttribute('aria-valuenow', '40');
-            await ffmpeg.run(
-                '-ss', start.toString(), '-t', (duration / speed).toString(),
-                '-i', '/input.mp4',
-                '-vf', baseFilterStr,
-                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
-                '-y', '/output.mp4'
-            );
-            await finalizeOutput('mp4', '/output.mp4', 'video/mp4', progressFill, progressBar);
-
-            // ── WebM ──
-        } else if (outputFormat === 'webm') {
-            ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(currentVideoFile));
-            progressStatus.textContent = 'Encoding WebM...';
-            if (progressFill) progressFill.style.width = '40%';
-            if (progressBar) progressBar.setAttribute('aria-valuenow', '40');
-            await ffmpeg.run(
-                '-ss', start.toString(), '-t', (duration / speed).toString(),
-                '-i', '/input.mp4',
-                '-vf', baseFilterStr,
-                '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '30',
-                '-y', '/output.webm'
-            );
-            await finalizeOutput('webm', '/output.webm', 'video/webm', progressFill, progressBar);
         }
 
         // Cleanup FS
         try {
-            ['input.mp4', 'palette.png', 'output.gif', 'output.mp4', 'output.webm', 'overlay_text.txt', 'concat.txt'].forEach(f => {
+            ['input.mp4', 'palette.png', 'output.gif', 'overlay_text.txt', 'concat.txt'].forEach(f => {
                 try { ffmpeg.FS('unlink', '/' + f); } catch { }
             });
             if (currentMode !== 'video') {
@@ -1126,39 +1079,33 @@ async function startConversion() {
     }
 }
 
-async function finalizeOutput(format, fsPath, mimeType, progressFill, progressBar) {
-    const data = ffmpeg.FS('readFile', fsPath);
-    const blob = new Blob([data.buffer], { type: mimeType });
-    const objectUrl = URL.createObjectURL(blob);
+async function finalizeOutput(fsPath, mimeType, progressFill, progressBar) {
+    // Check if file exists before reading
+    try {
+        const data = ffmpeg.FS('readFile', fsPath);
+        const blob = new Blob([data.buffer], { type: mimeType });
+        const objectUrl = URL.createObjectURL(blob);
 
-    const resultGif = document.getElementById('resultGif');
-    const resultVideo = document.getElementById('resultVideo');
-    const downloadBtn = document.getElementById('downloadBtn');
+        const resultGif = document.getElementById('resultGif');
+        const downloadBtn = document.getElementById('downloadBtn');
 
-    if (progressFill) progressFill.style.width = '100%';
-    if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
+        if (progressFill) progressFill.style.width = '100%';
+        if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
 
-    if (format === 'gif') {
         if (resultGif.src) URL.revokeObjectURL(resultGif.src);
         resultGif.src = objectUrl;
         resultGif.style.display = 'block';
-        resultVideo.style.display = 'none';
         downloadBtn.href = objectUrl;
         downloadBtn.download = `sumosized-${Date.now()}.gif`;
         downloadBtn.textContent = '⬇️ Download GIF';
-    } else {
-        if (resultVideo.src) URL.revokeObjectURL(resultVideo.src);
-        resultVideo.src = objectUrl;
-        resultVideo.style.display = 'block';
-        resultGif.style.display = 'none';
-        downloadBtn.href = objectUrl;
-        downloadBtn.download = `sumosized-${Date.now()}.${format}`;
-        downloadBtn.textContent = `⬇️ Download ${format.toUpperCase()}`;
-    }
 
-    document.getElementById('previewSection').classList.add('active');
-    showToast(format === 'gif' ? '🔥 Elite GIF Generated!' : `🔥 ${format.toUpperCase()} Exported!`);
-    document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('previewSection').classList.add('active');
+        showToast('🔥 Elite GIF Generated!');
+        document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+    } catch (e) {
+        console.error('Finalize Error:', e);
+        throw new Error(`Output file not created. This usually happens due to a filter error or browser memory limits.`);
+    }
 }
 
 // ─────────────────────────────────────────────

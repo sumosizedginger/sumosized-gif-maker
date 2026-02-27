@@ -198,15 +198,6 @@
                             <input type="number" id="fps" class="setting-input" value="15" min="1" max="60" step="1">
                         </div>
 
-                        <div class="setting-group">
-                            <label class="setting-label" for="outputFormat">Output Format</label>
-                            <select id="outputFormat" class="setting-input">
-                                <option value="gif" selected>GIF (Animated)</option>
-                                <option value="mp4">MP4 (H.264)</option>
-                                <option value="webm">WebM (VP9)</option>
-                            </select>
-                        </div>
-
                         <div class="setting-group" id="speedGroup">
                             <label class="setting-label" for="speed">Speed</label>
                             <select id="speed" class="setting-input">
@@ -527,7 +518,6 @@
             <div class="preview-section" id="previewSection">
                 <h3 style="margin-bottom: 20px; color: var(--action-green);">✨ Your Export is Ready!</h3>
                 <img id="resultGif" class="preview-image" src="" alt="Generated GIF" style="display:none;">
-                <video id="resultVideo" class="preview-video" controls style="display:none;"></video>
                 <div>
                     <a id="downloadBtn" class="btn btn-primary" download="sumosized-export">
                         ⬇️ Download
