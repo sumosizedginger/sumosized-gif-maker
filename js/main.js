@@ -465,11 +465,18 @@ function loadVideoFile(file) {
         videoDuration = videoPlayer.duration;
         setTimeout(syncVibe, 500);
 
-        document.getElementById('videoInfo').innerHTML = `
-            <span>📹 ${file.name}</span>
-            <span>⏱️ ${formatTime(videoDuration)}</span>
-            <span>📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}</span>
-        `;
+        const infoEl = document.getElementById('videoInfo');
+        infoEl.textContent = '';
+        const spans = [
+            `📹 ${file.name}`,
+            `⏱️ ${formatTime(videoDuration)}`,
+            `📐 ${Math.round(videoPlayer.videoWidth)}x${Math.round(videoPlayer.videoHeight)}`
+        ];
+        spans.forEach((text) => {
+            const span = document.createElement('span');
+            span.textContent = text;
+            infoEl.appendChild(span);
+        });
 
         if (startRangeEl) {
             startRangeEl.max = videoDuration;

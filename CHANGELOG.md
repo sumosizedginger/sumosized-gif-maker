@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Added SRI `integrity` hashes to all 4 CDN `<script>` tags in `index.html` (ffmpeg.wasm, Color-Thief, gif.js, omggif) — prevents supply chain injection if CDN is compromised.
+- Fixed XSS vulnerability (CWE-79) in `js/main.js`: `file.name` was interpolated directly into `innerHTML` in `videoInfo` display. Replaced with `textContent` via safe DOM element creation — a maliciously named video file can no longer inject executable HTML.
 
 ## [1.0.1] - 2026-02-27
 ### Added
