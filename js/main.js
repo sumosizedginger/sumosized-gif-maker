@@ -104,12 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
     [
         'gifWidth', 'fps', 'speed',
         'overlayText', 'fontStyle', 'textSize', 'textColor', 'borderColor', 'textPos',
-        'lineSpacing', 'wordSpacing', 'textBox', 'boxPadding', 'boxOpacity',
-        'stickerEmoji', 'stickerSize', 'stickerPos'
+        'lineSpacing', 'wordSpacing', 'textBox', 'boxPadding', 'boxOpacity'
     ].forEach(id => {
         document.getElementById(id)?.addEventListener('input', updatePredictor);
         document.getElementById(id)?.addEventListener('change', updatePredictor);
     });
+    // Explicitly add change listeners for text box styling elements
+    document.getElementById('textBox')?.addEventListener('change', updatePredictor);
+    document.getElementById('textColor')?.addEventListener('change', updatePredictor);
+    document.getElementById('borderColor')?.addEventListener('change', updatePredictor);
+    document.getElementById('boxPadding')?.addEventListener('input', updatePredictor);
 
 
     // Action buttons
@@ -169,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run initial predictor state
     updatePredictor();
 
-    // Quick Emoji Select (Hardened)
+    // Quick Emoji Select (Hardened) - REMOVED: Emoji overlay rendering logic
     document.getElementById('quickEmojiBar')?.addEventListener('mousedown', (e) => {
         const btn = e.target.closest('.emoji-btn');
         if (!btn) return;
@@ -831,23 +835,23 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
 
         const lineSpacing = parseInt(document.getElementById('lineSpacing')?.value) || 10;
         let textColor = document.getElementById('textColor')?.value || '#4DFF00';
+        let borderColor = document.getElementById('borderColor')?.value || 'black';
+        let borderW = borderColor === 'none' ? 0 : 1;
+        let actualBorderColor = borderColor === 'none' ? 'black' : borderColor;
 
         // Keep the simple 0x conversion, no escaping needed now that color space is correct
         if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
+        if (actualBorderColor.startsWith('#')) actualBorderColor = actualBorderColor.replace('#', '0x');
 
         // Filters like chrome/sketch/matrix/oldmovie convert to format=gray earlier in the chain.
         // drawtext cannot render colored text on a grayscale pixel format — confirmed FFmpeg behavior.
         // Restoring rgb24 here guarantees fontcolor renders correctly regardless of prior filter.
         baseFilters.push('format=rgb24');
-        // NUCLEAR OPTION: Pure text color, wrapped text intact, no borders/boxes/shadows
-        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:line_spacing=${lineSpacing}:x=(w-text_w)/2:y=${yPos}`);
+        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=${borderW}:bordercolor=${actualBorderColor}:shadowcolor=black@0.4:shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
     }
 
     // Convert to YUV *after* drawing the text, right before palettegen
     baseFilters.push('format=yuv420p');
-
-
-    // F. Sticker / Emoji Overlay (drawtext — REMOVED IN FAVOR OF POST-PROCESSING)
 
     // G. Animated Progress Bar
     const pbEnabled = document.getElementById('progressBarEnabled')?.value || 'off';
