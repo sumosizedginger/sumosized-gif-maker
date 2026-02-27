@@ -835,6 +835,10 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         // Keep the simple 0x conversion, no escaping needed now that color space is correct
         if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
 
+        // Filters like chrome/sketch/matrix/oldmovie convert to format=gray earlier in the chain.
+        // drawtext cannot render colored text on a grayscale pixel format — confirmed FFmpeg behavior.
+        // Restoring rgb24 here guarantees fontcolor renders correctly regardless of prior filter.
+        baseFilters.push('format=rgb24');
         // NUCLEAR OPTION: Pure text color, wrapped text intact, no borders/boxes/shadows
         baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:line_spacing=${lineSpacing}:x=(w-text_w)/2:y=${yPos}`);
     }
