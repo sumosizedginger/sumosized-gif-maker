@@ -800,15 +800,13 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         comic: 'edgedetect=low=0.1:high=0.2,negate,eq=contrast=1.5:saturation=2,format=gray,colorlevels=rimax=0.8:gimax=0.8:bimax=0.8',
         acid: "hue=h='t*180':s=2,curves=all='0/0 0.5/1 1/0'",
         sketch: 'edgedetect=low=0.1:high=0.2,negate,format=gray,noise=alls=5:allf=t+u',
-        infrared: "curves=r='0/1 0.5/0 1/0':g='0/0 0.5/1 1/0':b='0/0 0.5/0 1/1'",
+        infrared: "curves=r='0/1 0.5/0 1/0':g='0/0 0.5/1 1/0':b='0/0.5 0/0 1/1'",
         seahawks: "format=gray,curves=r='0/0 1/0.3':g='0/0.1 1/1':b='0/0 1/0'",
         technicolor: 'colorchannelmixer=1.1:0:0:0:0:1.3:0:0:0:0:1.1:0',
         golden2: "curves=all='0/0 0.5/0.6 1/1',colorchannelmixer=1.2:0:0:0:0:1:0:0:0:0:0.8:0",
         posterize: 'posterize=bits=3'
     };
     if (filterMap[currentFilter]) baseFilters.push(filterMap[currentFilter]);
-
-
     // C2. Transparent BG Removal (colorkey filter)
     const transparentBg = document.getElementById('transparentBg')?.value || 'off';
     const colorKeyMap = {

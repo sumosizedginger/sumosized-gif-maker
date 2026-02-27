@@ -1,21 +1,22 @@
 # SumoSized GIF Maker — Free Browser-Based Video to GIF Converter
 
-Convert video to GIF directly in your browser. No uploads, no server, no tracking. Powered by FFmpeg.wasm. [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
+Convert video to GIF directly in your browser. No uploads, no server, no dependency vulnerabilities in `ffmpeg.wasm`, `gif.js`, or `omggif`. Powered by FFmpeg.wasm. [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 The undisputed king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
 
 ## 🚀 The "Jealousy" Features
 - **Elite FFmpeg Engine**: High-fidelity video encoding without server lag.
-- **Cinematic Filters**: Noir, Cyberpunk, Sepia, and "Action Green" presets.
-- **Precision Control**: Frame-by-frame trimming, variable speed (0.5x - 2.0x), and FPS control.
-- **Pro Overlays**: High-readability text captions with custom positioning.
-- **Glassmorphic UI**: A premium Seahawk-themed aesthetic built for speed.
+- **Cinematic Filters**: 30+ pro-grade presets including Matrix, VHS, and Action Green.
+- **Precision Control**: Frame-level editor, variable speed, and aspect-ratio cropping.
+- **Pro Overlays**: High-readability text with independent Border & Shadow controls.
+- **Vibe Sync**: Dynamic UI color-matching based on your video content.
+- **Advanced GIF Optimization**: Fine-tuned color palettes and dithering for smaller file sizes.
+- **Direct Video Download**: Save your processed video directly, no GIF conversion needed.
 
 ## 🛠️ The Tech Stack
 - **Core**: HTML5, Vanilla CSS3, Modern JavaScript
 - **Engine**: [FFmpeg.wasm](https://ffmpegwasm.netlify.app/)
-- **Fallback**: [gifshot](https://yahoo.github.io/gifshot/)
 - **Security**: Cross-Origin Isolation via `coi-serviceworker`
 
 ## 📦 Local Installation
