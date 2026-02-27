@@ -9,11 +9,12 @@ This project is built using high-quality Open Source Software (OSS). We believe 
 ## Core Dependencies
 
 | Dependency | License | Role |
-| :--- | :--- | :--- |
-| **FFmpeg.wasm** | [LGPL 2.1+](https://github.com/ffmpegwasm/ffmpeg.wasm/blob/master/LICENSE) | The core GIF processing engine. |
-| **Color Thief** | [MIT](https://github.com/lokesh/color-thief) | Vibe Sync engine for dynamic UI colors. |
-| **Lucide Icons** | [ISC](https://github.com/lucide-icons/lucide/blob/main/LICENSE) | Premium iconography system. |
-| **COI Service Worker** | [MIT](https://github.com/gzuidhof/coi-serviceworker) | Cross-Origin Isolation handler. |
+### 1. FFmpeg.wasm
+- **Description**: A pure WebAssembly / JavaScript port of FFmpeg. It enables video & audio record, convert and stream right inside browsers.
+- **License**: The `ffmpeg.wasm` wrapper itself is licensed under the [MIT License](https://github.com/ffmpegwasm/ffmpeg.wasm/blob/master/LICENSE).
+- **Core Engine License (Important)**: WebAssembly compiles the core FFmpeg C binaries, which are inherently [LGPL / GPL](https://www.ffmpeg.org/legal.html) depending on compilation flags.
+- **Compliance Note**: This project utilizes *dynamic linking* across a network boundary by fetching the pre-compiled `.wasm` binaries directly from the Unpkg CDN at runtime. The GPL/LGPL binary code is **not** distributed within this repository's source tree, preserving this project's MIT status in accordance with standard web linking precedents.
+- **Source**: [https://github.com/ffmpegwasm/ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm)
 
 ## Typography Treasury (All 100% OSS)
 

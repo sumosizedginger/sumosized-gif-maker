@@ -1297,6 +1297,10 @@ async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
 function outputResult(uint8data) {
     const url = URL.createObjectURL(new Blob([uint8data], { type: 'image/gif' }));
     const resultGif = document.getElementById('resultGif');
+    if (!resultGif) {
+        console.error('outputResult: #resultGif element not found in DOM');
+        return;
+    }
     if (resultGif.src) URL.revokeObjectURL(resultGif.src);
     resultGif.src = url;
     resultGif.style.display = 'block';
