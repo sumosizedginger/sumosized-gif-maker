@@ -9,9 +9,11 @@
         content="The world's most elite browser-based GIF studio. Create high-quality GIFs from videos or images with pro filters and zero server uploads.">
 
     <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sumosizedginger.github.io/sumosized-gif-maker/">
     <meta property="og:title" content="SumoSized GIF Maker">
     <meta property="og:description" content="Elite Browser GIF Studio - No Uploads, All Pro.">
-    <meta property="og:image" content="https://sumosizedginger.github.io/sumosized-gif-maker/preview.png">
+    <meta property="og:image" content="./icons/og-preview.svg">
     <meta name="twitter:card" content="summary_large_image">
 
     <!-- Pre-load & Fonts -->
@@ -27,9 +29,8 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
     <link rel="manifest" href="manifest.json">
 
-    <!-- Essential Scripts -->
+    <!-- COI Service Worker — must run synchronously before any other script -->
     <script>
-        // Register the COI service worker to enable SharedArrayBuffer for FFmpeg.wasm
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./coi-serviceworker.js').then(() => {
                 if (!navigator.serviceWorker.controller) {
@@ -38,32 +39,39 @@
             });
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js" defer></script>
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js" defer></script>
-    <script src="https://unpkg.com/lucide@latest" defer></script>
+
+    <!-- External Libraries (pinned stable versions) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js" defer
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js" defer crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js" defer
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/lucide@0.441.0/dist/umd/lucide.min.js" defer crossorigin="anonymous"></script>
     <script src="js/main.js" defer></script>
 </head>
 
 <body>
-    <div class="container" role="main">
+    <main class="container">
         <header>
             <h1>SumoSized</h1>
             <div class="subtitle">Elite Browser GIF Studio</div>
         </header>
 
-        <div class="mode-switcher" role="tablist">
-            <button class="mode-btn active" role="tab" aria-selected="true" onclick="switchMode('video')">
+        <div class="mode-switcher" role="tablist" aria-label="Studio mode">
+            <button id="tab-mode-video" class="mode-btn active" role="tab" aria-selected="true"
+                aria-controls="videoUploadSection" data-mode="video">
                 <i data-lucide="video"></i> Video Studio
             </button>
-            <button class="mode-btn" role="tab" aria-selected="false" onclick="switchMode('images')">
+            <button id="tab-mode-images" class="mode-btn" role="tab" aria-selected="false"
+                aria-controls="imageUploadSection" data-mode="images">
                 <i data-lucide="image"></i> Image Slideshow
             </button>
         </div>
 
         <div class="main-card">
-            <!-- Video Upload Section -->
-            <div id="videoUploadSection" class="upload-section">
+
+            <!-- ═══ VIDEO UPLOAD SECTION ═══ -->
+            <div id="videoUploadSection" class="upload-section" role="tabpanel" aria-labelledby="tab-mode-video">
                 <div style="margin-bottom: 30px;">
                     <i data-lucide="clapperboard"
                         style="width: 64px; height: 64px; color: var(--action-green); opacity: 0.8;"></i>
@@ -71,14 +79,29 @@
                 <label for="videoUpload" class="upload-btn">
                     Select Elite Video
                 </label>
-                <input type="file" id="videoUpload" accept="video/mp4,video/x-m4v,video/*">
+                <input type="file" id="videoUpload" accept="video/mp4,video/x-m4v,video/*"
+                    aria-label="Upload video file">
                 <p style="margin-top: 25px; color: var(--text-secondary); font-size: 0.9rem;">
                     MP4, MOV, or WEBM up to 50MB
                 </p>
+
+                <!-- URL Import -->
+                <div class="url-import-row">
+                    <input type="url" id="videoUrlInput" class="url-import-input"
+                        placeholder="https://example.com/video.mp4" aria-label="Video URL to import">
+                    <button id="videoUrlBtn" class="url-load-btn">Load URL</button>
+                </div>
+                <details class="url-help-details" id="videoUrlHelp">
+                    <summary>▸ YouTube / TikTok URL?</summary>
+                    <p>These platforms block direct browser access (CORS). Download your video first using
+                        <strong>yt-dlp</strong>, then upload the file using the button above.
+                    </p>
+                </details>
             </div>
 
-            <!-- Image Upload Section -->
-            <div id="imageUploadSection" class="upload-section" style="display: none;">
+            <!-- ═══ IMAGE UPLOAD SECTION ═══ -->
+            <div id="imageUploadSection" class="upload-section" style="display: none;" role="tabpanel"
+                aria-labelledby="tab-mode-images">
                 <div style="margin-bottom: 30px;">
                     <i data-lucide="images"
                         style="width: 64px; height: 64px; color: var(--action-green); opacity: 0.8;"></i>
@@ -86,14 +109,22 @@
                 <label for="imageUpload" class="upload-btn">
                     Select Elite Images
                 </label>
-                <input type="file" id="imageUpload" accept="image/*" multiple>
+                <input type="file" id="imageUpload" accept="image/*" multiple aria-label="Upload images for slideshow">
                 <p style="margin-top: 20px; color: var(--text-secondary); font-size: 0.9rem;">
                     Upload multiple images to stitch into a custom GIF
                 </p>
 
+                <!-- URL Import (Images) -->
+                <div class="url-import-row">
+                    <input type="url" id="imageUrlInput" class="url-import-input"
+                        placeholder="https://example.com/image.jpg" aria-label="Image URL to import">
+                    <button id="imageUrlBtn" class="url-load-btn">Load URL</button>
+                </div>
+
                 <div id="slideshowGrid" class="slideshow-grid"></div>
             </div>
 
+            <!-- ═══ VIDEO / MEDIA PREVIEW ═══ -->
             <div class="video-section active" id="videoSection">
                 <div class="video-container" id="videoContainer">
                     <div id="loadingPlaceholder"
@@ -102,16 +133,17 @@
                             style="width: 48px; height: 48px; color: var(--action-green); margin-bottom: 15px; opacity: 0.5;"></i>
                         <p style="color: var(--text-secondary); font-size: 0.9rem;">Awaiting Elite Media...</p>
                     </div>
-                    <video id="videoPlayer" style="display: none;"></video>
-                    <img id="imagePlaceholder"
+                    <video id="videoPlayer" style="display: none;" aria-label="Video preview"></video>
+                    <img id="imagePlaceholder" alt="Image preview"
                         style="display: none; width: 100%; max-height: 500px; border-radius: 12px; border: 1px solid rgba(77, 255, 0, 0.15);">
-                    <div class="cropper-overlay" id="cropperOverlay">
+                    <div class="cropper-overlay" id="cropperOverlay" aria-hidden="true">
                         <div class="cropper-box" id="cropperBox"></div>
                     </div>
                 </div>
                 <div class="video-info" id="videoInfo"></div>
             </div>
 
+            <!-- ═══ CONTROLS PANEL ═══ -->
             <div class="controls-panel" id="controlsPanel">
                 <div class="time-controls" id="trimControls">
                     <div class="time-display">
@@ -120,7 +152,7 @@
                         <span>End: <span id="endTimeDisplay">2.0s</span></span>
                     </div>
 
-                    <div class="range-container">
+                    <div class="range-container" aria-label="Clip range selector">
                         <div class="range-slider"></div>
                         <div class="range-selected" id="rangeSelected"></div>
                         <input type="range" id="startRange" min="0" max="100" value="0" step="0.1"
@@ -132,35 +164,52 @@
                             10s</strong> recommended</p>
                 </div>
 
-                <div class="feature-tabs" role="tablist">
-                    <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab('settings')">
+                <!-- ── TABS ── -->
+                <div class="feature-tabs" role="tablist" aria-label="GIF options">
+                    <button id="tab-settings" class="tab-btn active" role="tab" aria-selected="true"
+                        aria-controls="settingsPanel">
                         <i data-lucide="settings"></i> Settings
                     </button>
-                    <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('filters')">
+                    <button id="tab-filters" class="tab-btn" role="tab" aria-selected="false"
+                        aria-controls="filtersPanel">
                         <i data-lucide="sparkles"></i> Filters
                     </button>
-                    <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('overlays')">
+                    <button id="tab-overlays" class="tab-btn" role="tab" aria-selected="false"
+                        aria-controls="overlaysPanel">
                         <i data-lucide="type"></i> Overlays
+                    </button>
+                    <button id="tab-frames" class="tab-btn" role="tab" aria-selected="false"
+                        aria-controls="framesPanel">
+                        <i data-lucide="film"></i> Frames
                     </button>
                 </div>
 
-                <!-- Settings Panel -->
-                <div id="settingsPanel" class="advanced-panel active" role="tabpanel">
+                <!-- ── SETTINGS PANEL ── -->
+                <div id="settingsPanel" class="advanced-panel active" role="tabpanel" aria-labelledby="tab-settings">
                     <div class="settings-grid">
                         <div class="setting-group">
-                            <label class="setting-label">Width (px)</label>
+                            <label class="setting-label" for="gifWidth">Width (px)</label>
                             <input type="number" id="gifWidth" class="setting-input" value="480" min="100" max="1024"
                                 step="10">
                         </div>
 
                         <div class="setting-group">
-                            <label class="setting-label">Frame Rate (FPS)</label>
+                            <label class="setting-label" for="fps">Frame Rate (FPS)</label>
                             <input type="number" id="fps" class="setting-input" value="15" min="1" max="60" step="1">
                         </div>
 
+                        <div class="setting-group">
+                            <label class="setting-label" for="outputFormat">Output Format</label>
+                            <select id="outputFormat" class="setting-input">
+                                <option value="gif" selected>GIF (Animated)</option>
+                                <option value="mp4">MP4 (H.264)</option>
+                                <option value="webm">WebM (VP9)</option>
+                            </select>
+                        </div>
+
                         <div class="setting-group" id="speedGroup">
-                            <label class="setting-label">Speed</label>
-                            <select id="speed" class="setting-input" onchange="updatePredictor()">
+                            <label class="setting-label" for="speed">Speed</label>
+                            <select id="speed" class="setting-input">
                                 <option value="0.5">0.5x (Slow)</option>
                                 <option value="1" selected>1.0x (Normal)</option>
                                 <option value="1.5">1.5x (Fast)</option>
@@ -169,8 +218,8 @@
                         </div>
 
                         <div class="setting-group" id="loopGroup">
-                            <label class="setting-label">Loop Mode</label>
-                            <select id="loopMode" class="setting-input" onchange="updatePredictor()">
+                            <label class="setting-label" for="loopMode">Loop Mode</label>
+                            <select id="loopMode" class="setting-input">
                                 <option value="normal" selected>Normal</option>
                                 <option value="reverse">Reverse</option>
                                 <option value="boomerang">Boomerang</option>
@@ -178,142 +227,107 @@
                         </div>
 
                         <div class="setting-group" id="delayGroup" style="display: none;">
-                            <label class="setting-label">Frame Delay (ms)</label>
+                            <label class="setting-label" for="frameDelay">Frame Delay (ms)</label>
                             <input type="number" id="frameDelay" class="setting-input" value="200" min="50" step="50">
                         </div>
 
                         <div class="setting-group">
-                            <label class="setting-label">Pro Crop</label>
-                            <select id="cropRatio" class="setting-input" onchange="toggleCropper(this.value)">
+                            <label class="setting-label" for="cropRatio">Pro Crop</label>
+                            <select id="cropRatio" class="setting-input">
                                 <option value="off" selected>Off (Full)</option>
                                 <option value="original">Free Crop</option>
                                 <option value="9:16">TikTok (9:16)</option>
                                 <option value="1:1">Instagram (1:1)</option>
-                                <option value="4:5">FB/Portalt (4:5)</option>
+                                <option value="4:5">FB/Portrait (4:5)</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- Filters Panel -->
-                <div id="filtersPanel" class="advanced-panel" role="tabpanel">
+                <!-- ── FILTERS PANEL ── -->
+                <div id="filtersPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-filters">
                     <div class="filter-grid" id="filterGrid">
-                        <div class="filter-card active" onclick="setFilter('none', this)">
-                            <span class="filter-label">None</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('grayscale', this)">
-                            <span class="filter-label">Noir</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('sepia', this)">
-                            <span class="filter-label">Retro</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('vibrant', this)">
-                            <span class="filter-label">Vibrant Pop</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('8bit', this)">
-                            <span class="filter-label">8-Bit Retro</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('dreamy', this)">
-                            <span class="filter-label">Dreamy Wash</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('golden', this)">
-                            <span class="filter-label">Golden Hour</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('gladiator', this)">
-                            <span class="filter-label">Gladiator</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('nightvision', this)">
-                            <span class="filter-label">Night Vision</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('sulphur', this)">
-                            <span class="filter-label">Sulphur</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('coldblue', this)">
-                            <span class="filter-label">Cold Blue</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('vignette', this)">
-                            <span class="filter-label">Vignette</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('mirror', this)">
-                            <span class="filter-label">Mirror Flip</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('grain', this)">
-                            <span class="filter-label">Film Grain</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('invert', this)">
-                            <span class="filter-label">Invert</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('vhs', this)">
-                            <span class="filter-label">📼 VHS Retro</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('psychedelic', this)">
-                            <span class="filter-label">🌈 Psychedelia</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('thermal', this)">
-                            <span class="filter-label">🔥 Thermal</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('glitch', this)">
-                            <span class="filter-label">👾 Glitch</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('cyberpunk', this)">
-                            <span class="filter-label">🧬 Cyberpunk</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('chrome', this)">
-                            <span class="filter-label">💿 Chrome</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('blueprint', this)">
-                            <span class="filter-label">📐 Blueprint</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('matrix', this)">
-                            <span class="filter-label">📟 Matrix</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('oldmovie', this)">
-                            <span class="filter-label">🎞️ Old Movie</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('mirrormode', this)">
-                            <span class="filter-label">🪞 Kaleidoscope</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('comic', this)">
-                            <span class="filter-label">💥 Comic Book</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('acid', this)">
-                            <span class="filter-label">🌀 Acid Trip</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('sketch', this)">
-                            <span class="filter-label">✏️ Sketch</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('infrared', this)">
-                            <span class="filter-label">🛰️ Infrared</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('seahawks', this)">
-                            <span class="filter-label">🦅 Seahawks</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('technicolor', this)">
-                            <span class="filter-label">📽️ Technicolor</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('golden2', this)">
-                            <span class="filter-label">🏆 Golden II</span>
-                        </div>
-                        <div class="filter-card" onclick="setFilter('posterize', this)">
-                            <span class="filter-label">🎨 Posterize</span>
-                        </div>
+                        <button class="filter-card active" data-filter="none"><span
+                                class="filter-label">None</span></button>
+                        <button class="filter-card" data-filter="grayscale"><span
+                                class="filter-label">Noir</span></button>
+                        <button class="filter-card" data-filter="sepia"><span class="filter-label">Retro</span></button>
+                        <button class="filter-card" data-filter="vibrant"><span class="filter-label">Vibrant
+                                Pop</span></button>
+                        <button class="filter-card" data-filter="8bit"><span class="filter-label">8-Bit
+                                Retro</span></button>
+                        <button class="filter-card" data-filter="dreamy"><span class="filter-label">Dreamy
+                                Wash</span></button>
+                        <button class="filter-card" data-filter="golden"><span class="filter-label">Golden
+                                Hour</span></button>
+                        <button class="filter-card" data-filter="gladiator"><span
+                                class="filter-label">Gladiator</span></button>
+                        <button class="filter-card" data-filter="nightvision"><span class="filter-label">Night
+                                Vision</span></button>
+                        <button class="filter-card" data-filter="sulphur"><span
+                                class="filter-label">Sulphur</span></button>
+                        <button class="filter-card" data-filter="coldblue"><span class="filter-label">Cold
+                                Blue</span></button>
+                        <button class="filter-card" data-filter="vignette"><span
+                                class="filter-label">Vignette</span></button>
+                        <button class="filter-card" data-filter="mirror"><span class="filter-label">Mirror
+                                Flip</span></button>
+                        <button class="filter-card" data-filter="grain"><span class="filter-label">Film
+                                Grain</span></button>
+                        <button class="filter-card" data-filter="invert"><span
+                                class="filter-label">Invert</span></button>
+                        <button class="filter-card" data-filter="vhs"><span class="filter-label">📼 VHS
+                                Retro</span></button>
+                        <button class="filter-card" data-filter="psychedelic"><span class="filter-label">🌈
+                                Psychedelia</span></button>
+                        <button class="filter-card" data-filter="thermal"><span class="filter-label">🔥
+                                Thermal</span></button>
+                        <button class="filter-card" data-filter="glitch"><span class="filter-label">👾
+                                Glitch</span></button>
+                        <button class="filter-card" data-filter="cyberpunk"><span class="filter-label">🧬
+                                Cyberpunk</span></button>
+                        <button class="filter-card" data-filter="chrome"><span class="filter-label">💿
+                                Chrome</span></button>
+                        <button class="filter-card" data-filter="blueprint"><span class="filter-label">📐
+                                Blueprint</span></button>
+                        <button class="filter-card" data-filter="matrix"><span class="filter-label">📟
+                                Matrix</span></button>
+                        <button class="filter-card" data-filter="oldmovie"><span class="filter-label">🎞️ Old
+                                Movie</span></button>
+                        <button class="filter-card" data-filter="mirrormode"><span class="filter-label">🪞
+                                Kaleidoscope</span></button>
+                        <button class="filter-card" data-filter="comic"><span class="filter-label">💥 Comic
+                                Book</span></button>
+                        <button class="filter-card" data-filter="acid"><span class="filter-label">🌀 Acid
+                                Trip</span></button>
+                        <button class="filter-card" data-filter="sketch"><span class="filter-label">✏️
+                                Sketch</span></button>
+                        <button class="filter-card" data-filter="infrared"><span class="filter-label">🛰️
+                                Infrared</span></button>
+                        <button class="filter-card" data-filter="seahawks"><span class="filter-label">🦅
+                                Seahawks</span></button>
+                        <button class="filter-card" data-filter="technicolor"><span class="filter-label">📽️
+                                Technicolor</span></button>
+                        <button class="filter-card" data-filter="golden2"><span class="filter-label">🏆 Golden
+                                II</span></button>
+                        <button class="filter-card" data-filter="posterize"><span class="filter-label">🎨
+                                Posterize</span></button>
                     </div>
                 </div>
 
-                <!-- Overlays Panel -->
-                <div id="overlaysPanel" class="advanced-panel" role="tabpanel">
+                <!-- ── OVERLAYS PANEL ── -->
+                <div id="overlaysPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-overlays">
                     <div class="setting-group">
-                        <label class="setting-label">Overlay Text</label>
-                        <input type="text" id="overlayText" class="setting-input" placeholder="Enter caption..."
-                            oninput="updatePredictor()">
+                        <label class="setting-label" for="overlayText">Overlay Text</label>
+                        <input type="text" id="overlayText" class="setting-input" placeholder="Enter caption...">
                     </div>
                     <div class="settings-grid" style="margin-top: 15px;">
                         <div class="setting-group">
-                            <label class="setting-label">Size</label>
+                            <label class="setting-label" for="textSize">Size</label>
                             <input type="number" id="textSize" class="setting-input" value="32" min="10" max="100">
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Position</label>
+                            <label class="setting-label" for="textPos">Position</label>
                             <select id="textPos" class="setting-input">
                                 <option value="top">Top</option>
                                 <option value="middle">Middle</option>
@@ -321,11 +335,11 @@
                             </select>
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Word Spacing</label>
+                            <label class="setting-label" for="wordSpacing">Word Spacing</label>
                             <input type="number" id="wordSpacing" class="setting-input" value="1" min="0" max="50">
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Font Family</label>
+                            <label class="setting-label" for="fontStyle">Font Family</label>
                             <select id="fontStyle" class="setting-input">
                                 <option value="Arimo-Regular.ttf">Standard (Arimo)</option>
                                 <option value="LiberationSans-Regular.ttf">Liberation Sans</option>
@@ -337,18 +351,18 @@
                             </select>
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Line Spacing</label>
+                            <label class="setting-label" for="lineSpacing">Line Spacing</label>
                             <input type="number" id="lineSpacing" class="setting-input" value="20" min="0" max="100">
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Text Box</label>
+                            <label class="setting-label" for="textBox">Text Box</label>
                             <select id="textBox" class="setting-input">
                                 <option value="0" selected>None</option>
                                 <option value="1">Background Slug</option>
                             </select>
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Text Color</label>
+                            <label class="setting-label" for="textColor">Text Color</label>
                             <select id="textColor" class="setting-input">
                                 <option value="#4DFF00" selected>Action Green</option>
                                 <option value="cyan">Cyan</option>
@@ -358,14 +372,42 @@
                             </select>
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Box Padding</label>
+                            <label class="setting-label" for="boxPadding">Box Padding</label>
                             <input type="number" id="boxPadding" class="setting-input" value="10" min="0" max="50">
                         </div>
                         <div class="setting-group">
-                            <label class="setting-label">Box Opacity</label>
+                            <label class="setting-label" for="boxOpacity">Box Opacity</label>
                             <input type="number" id="boxOpacity" class="setting-input" value="0.5" min="0" max="1"
                                 step="0.1">
                         </div>
+                    </div>
+                </div>
+
+                <!-- ── FRAMES PANEL ── -->
+                <div id="framesPanel" class="advanced-panel" role="tabpanel" aria-labelledby="tab-frames">
+                    <div class="frame-editor-header">
+                        <button id="extractFramesBtn" class="btn btn-secondary" disabled>
+                            <i data-lucide="film"></i> Extract Frames
+                        </button>
+                        <span class="frame-status" id="frameStatus">Load a video to extract frames</span>
+                    </div>
+
+                    <div class="frame-strip-scroll">
+                        <div class="frame-strip" id="frameStrip">
+                            <div class="frame-empty-state" id="frameEmptyState">
+                                No frames extracted yet — click "Extract Frames" above
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="frame-global-controls">
+                        <button id="resetFrameDelaysBtn" class="btn btn-secondary"
+                            style="padding: 10px 20px; margin: 0;">
+                            Reset All
+                        </button>
+                        <label class="frame-global-label" for="globalFrameDelay">Global Delay (ms):</label>
+                        <input type="number" id="globalFrameDelay" class="frame-global-input" value="66" min="10"
+                            step="10">
                     </div>
                 </div>
 
@@ -375,11 +417,12 @@
                 </div>
             </div>
 
+            <!-- ═══ ACTION SECTION ═══ -->
             <div class="action-section" id="actionSection" style="display: none;">
-                <button class="btn btn-primary" id="convertBtn" onclick="startConversion()">
+                <button class="btn btn-primary" id="convertBtn">
                     ⚡ Convert to GIF
                 </button>
-                <button class="btn btn-secondary" onclick="resetVideo()">
+                <button class="btn btn-secondary" id="newVideoBtn">
                     🗑️ New Video
                 </button>
 
@@ -388,28 +431,31 @@
                         <span id="progressStatus">Extracting frames...</span>
                         <span id="progressPercent">0%</span>
                     </div>
-                    <div class="progress-bar">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                        aria-label="Conversion progress">
                         <div class="progress-fill" id="progressFill"></div>
                     </div>
                 </div>
             </div>
 
+            <!-- ═══ PREVIEW SECTION ═══ -->
             <div class="preview-section" id="previewSection">
-                <h3 style="margin-bottom: 20px; color: var(--action-green);">✨ Your GIF is Ready!</h3>
-                <img id="resultGif" class="preview-image" src="" alt="Generated GIF">
+                <h3 style="margin-bottom: 20px; color: var(--action-green);">✨ Your Export is Ready!</h3>
+                <img id="resultGif" class="preview-image" src="" alt="Generated GIF" style="display:none;">
+                <video id="resultVideo" class="preview-video" controls style="display:none;"></video>
                 <div>
-                    <a id="downloadBtn" class="btn btn-primary" download="converted.gif">
-                        ⬇️ Download GIF
+                    <a id="downloadBtn" class="btn btn-primary" download="sumosized-export">
+                        ⬇️ Download
                     </a>
-                    <button class="btn btn-secondary" onclick="closePreview()">
+                    <button class="btn btn-secondary" id="closePreviewBtn">
                         🔄 Convert Another Section
                     </button>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>
 
 </html>
