@@ -1117,3 +1117,13 @@ select:focus-visible {
         justify-content: center;
     }
 }
+
+/* Sticker / Emoji Interactor Fix */
+#stickerEmoji {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    position: relative;
+    z-index: 20;
+    cursor: text;
+}

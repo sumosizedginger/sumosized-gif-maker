@@ -704,7 +704,7 @@ function applyGlobalFrameDelay() {
 // ─────────────────────────────────────────────
 // FILTER CHAIN BUILDER
 // ─────────────────────────────────────────────
-async function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontStyle, textSize, textPos) {
+async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayText, fontStyle, textSize, textPos) {
     const baseFilters = [];
     const videoPlayer = document.getElementById('videoPlayer');
     const imagePlaceholder = document.getElementById('imagePlaceholder');
@@ -769,7 +769,7 @@ async function buildBaseFilters(resWidth, currentFps, speed, overlayText, fontSt
         blueprint: 'negate,hue=h=240:s=1,eq=contrast=1.2',
         matrix: 'format=gray,colorlevels=rimin=0.05:gimin=0.05:bimin=0.05:rimax=0.1:gimax=0.9:bimax=0.1,eq=contrast=1.5,hue=h=120:s=1',
         oldmovie: "format=gray,noise=alls=20:allf=t+u,curves=all='0/0 0.5/0.4 1/1'",
-        mirrormode_disabled: 'split[main][tmp];[tmp]hflip[left];[main][left]hstack',
+        mirrormode: 'hflip',
         comic: 'edgedetect=low=0.1:high=0.2,negate,eq=contrast=1.5:saturation=2,format=gray,colorlevels=rimax=0.8:gimax=0.8:bimax=0.8',
         acid: "hue=h='t*180':s=2,curves=all='0/0 0.5/1 1/0'",
         sketch: 'edgedetect=low=0.1:high=0.2,negate,format=gray,noise=alls=5:allf=t+u',
@@ -956,7 +956,7 @@ async function startConversion() {
             ffmpeg.FS('writeFile', fontStyle, await fetchFile(fontUrl));
         }
 
-        const baseFilters = buildBaseFilters(resWidth, fps, speed, overlayText, fontStyle, textSize, textPos);
+        const baseFilters = buildBaseFilters(resWidth, fps, speed, duration, overlayText, fontStyle, textSize, textPos);
         const baseFilterStr = (await baseFilters).join(',');
 
         // ── GIF PRODUCTION ──
@@ -989,7 +989,7 @@ async function startConversion() {
             if (progressBar) progressBar.setAttribute('aria-valuenow', '40');
 
             // Rebuild filters without scale/fps (already done at extract time)
-            const concatFilters = (await buildBaseFilters(resWidth, fps, 1, overlayText, fontStyle, textSize, textPos)).join(',');
+            const concatFilters = (await buildBaseFilters(resWidth, fps, 1, duration, overlayText, fontStyle, textSize, textPos)).join(',');
 
             await ffmpeg.run(
                 '-f', 'concat', '-safe', '0', '-i', '/concat.txt',
