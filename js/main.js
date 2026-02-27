@@ -1099,13 +1099,13 @@ async function finalizeOutput() {
             quality: 10,
             width,
             height,
-            workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+            workerScript: 'js/gif.worker.js' // Local same-origin script bypasses COEP block
         });
 
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const margin = 12;
 
         for (let i = 0; i < frameCount; i++) {
