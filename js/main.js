@@ -816,11 +816,9 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
     };
     if (colorKeyMap[transparentBg]) baseFilters.push(colorKeyMap[transparentBg]);
 
-    // D. Scale + FPS + Color Space (ensures color text on gray base)
+    // D. Scale + FPS ONLY (No format conversion here yet)
     baseFilters.push(`scale=${resWidth}:-2:flags=lanczos`);
     baseFilters.push(`fps=${currentFps}`);
-    baseFilters.push('format=yuv420p');
-
 
     // E. Text Overlay
     if (overlayText) {
@@ -832,35 +830,18 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
 
         const lineSpacing = parseInt(document.getElementById('lineSpacing')?.value) || 10;
-        const useBox = document.getElementById('textBox')?.value === '1' ? 1 : 0;
-        const boxPadding = parseInt(document.getElementById('boxPadding')?.value) || 10;
-        const boxOpacity = document.getElementById('boxOpacity')?.value || '0.5';
-
         let textColor = document.getElementById('textColor')?.value || '#4DFF00';
-        let borderColor = document.getElementById('borderColor')?.value || 'black';
-        let borderW = borderColor === 'none' ? 0 : 1;
-        let actualBorderColor = borderColor === 'none' ? 'black' : borderColor;
 
-        // The absolute fix for ffmpeg.wasm drawtext color:
-        // 1. Keep the # hash
-        // 2. Wrap the entire fontcolor value in single quotes
-        // 3. Escape the # with a backslash so the CLI parser doesn't treat it as a comment
-        if (textColor.startsWith('#')) {
-            textColor = `\\'\\${textColor}\\'`;
-        } else {
-            textColor = `\\'${textColor}\\'`;
-        }
+        // Keep the simple 0x conversion, no escaping needed now that color space is correct
+        if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
 
-        if (actualBorderColor.startsWith('#')) {
-            actualBorderColor = `\\'\\${actualBorderColor}\\'`;
-        } else {
-            actualBorderColor = `\\'${actualBorderColor}\\'`;
-        }
-
-        // Remove the format=rgb24 filter as it interferes with palettegen
-
-        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=${borderW}:bordercolor=${actualBorderColor}:shadowcolor=black@0.4:shadowx=2:shadowy=2:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+        // NUCLEAR OPTION: Pure text color, wrapped text intact, no borders/boxes/shadows
+        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:line_spacing=${lineSpacing}:x=(w-text_w)/2:y=${yPos}`);
     }
+
+    // Convert to YUV *after* drawing the text, right before palettegen
+    baseFilters.push('format=yuv420p');
+
 
     // F. Sticker / Emoji Overlay (drawtext — REMOVED IN FAVOR OF POST-PROCESSING)
 
