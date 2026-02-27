@@ -1451,7 +1451,7 @@
                     const textColor = document.getElementById('textColor').value;
                     const boxOpacity = document.getElementById('boxOpacity').value;
 
-                    baseFilters.push(`drawtext=fontfile=${fontStyle}:textfile=overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+                    baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
                 }
 
                 const baseFilterStr = baseFilters.join(',');
@@ -1464,9 +1464,9 @@
                     '-fflags', '+genpts',
                     '-ss', start.toString(),
                     '-t', (duration / speed).toString(),
-                    '-i', 'input.mp4',
+                    '-i', '/input.mp4',
                     '-vf', `${baseFilterStr},palettegen`,
-                    '-y', 'palette.png'
+                    '-y', '/palette.png'
                 );
 
                 progressStatus.textContent = 'Pass 2: Encoding...';
@@ -1486,16 +1486,16 @@
                     '-fflags', '+genpts',
                     '-ss', start.toString(),
                     '-t', (duration / speed).toString(),
-                    '-i', 'input.mp4',
-                    '-i', 'palette.png',
+                    '-i', '/input.mp4',
+                    '-i', '/palette.png',
                     '-filter_complex', complexFilter,
                     '-f', 'gif',
-                    '-y', 'output.gif'
+                    '-y', '/output.gif'
                 );
 
                 let data;
                 try {
-                    data = ffmpeg.FS('readFile', 'output.gif');
+                    data = ffmpeg.FS('readFile', '/output.gif');
                 } catch (e) {
                     let logError = ffmpegLogs.length > 0 ? " Last error: " + ffmpegLogs[ffmpegLogs.length - 1] : "";
                     throw new Error("GIF generation failed during encoding." + logError);
@@ -1525,12 +1525,12 @@
 
                 // Cleanup virtual files
                 try {
-                    ffmpeg.FS('unlink', 'input.mp4');
-                    ffmpeg.FS('unlink', 'palette.png');
-                    ffmpeg.FS('unlink', 'output.gif');
-                    if (overlayText) ffmpeg.FS('unlink', 'overlay_text.txt');
+                    ffmpeg.FS('unlink', '/input.mp4');
+                    ffmpeg.FS('unlink', '/palette.png');
+                    ffmpeg.FS('unlink', '/output.gif');
+                    if (overlayText) ffmpeg.FS('unlink', '/overlay_text.txt');
                     if (fontStyle && fontStyle !== 'arial.ttf') {
-                        try { ffmpeg.FS('unlink', fontStyle); } catch (e) { }
+                        try { ffmpeg.FS('unlink', `/${fontStyle}`); } catch (e) { }
                     }
                 } catch (e) { }
 
