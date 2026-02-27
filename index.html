@@ -972,7 +972,8 @@
     <script>
         const CONFIG = {
             FFMPEG_CORE_URL: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
-            FONT_URL: 'fonts/arial.ttf'
+            // Resolve absolute base URL for fonts to satisfy ffmpeg.wasm's fetchFile
+            FONT_BASE_URL: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '') + '/fonts/'
         };
 
         const { createFFmpeg, fetchFile } = FFmpeg;
@@ -1350,11 +1351,11 @@
                 // Load font and write text file if overlay text is present
                 if (overlayText) {
                     const fontMap = {
-                        'arial.ttf': CONFIG.FONT_URL,
-                        'Anton-Regular.ttf': 'fonts/Anton-Regular.ttf',
-                        'Orbitron.ttf': 'fonts/Orbitron-Regular.ttf',
-                        'PermanentMarker-Regular.ttf': 'fonts/PermanentMarker-Regular.ttf',
-                        'Montserrat-Regular.ttf': 'fonts/Montserrat-Regular.ttf'
+                        'arial.ttf': CONFIG.FONT_BASE_URL + 'arial.ttf',
+                        'Anton-Regular.ttf': CONFIG.FONT_BASE_URL + 'Anton-Regular.ttf',
+                        'Orbitron.ttf': CONFIG.FONT_BASE_URL + 'Orbitron-Regular.ttf',
+                        'PermanentMarker-Regular.ttf': CONFIG.FONT_BASE_URL + 'PermanentMarker-Regular.ttf',
+                        'Montserrat-Regular.ttf': CONFIG.FONT_BASE_URL + 'Montserrat-Regular.ttf'
                     };
 
                     const fontUrl = fontMap[fontStyle] || CONFIG.FONT_URL;
