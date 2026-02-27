@@ -34,18 +34,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.1] - 2026-02-27
 ### Added
-- "Vibe Sync" auto-color matching using Color-Thief.
-- Optional Borders (`borderw`, `bordercolor`) and Drop Shadows (`shadowcolor`, `shadowx`, `shadowy`) for text overlays.
-- `transparentBg` specific chroma-keying for white, black, and green backgrounds.
+- **Mascot Branding**: Integrated the custom "SumoSized Ginger" mascot logo into both the application header and the footer.
+- **Hero Demonstration**: Replaced the broken placeholder in `README.md` with a high-fidelity demonstration GIF (`assets/demo.gif`) showcasing the UI.
+- **Social Link Strip**: Implemented a gloss-morphic footer containing verified links to the user's Twitter, LinkedIn, YouTube, and GitHub profiles.
+- **Vibe Sync**: Added auto-color matching using Color-Thief for dynamic UI theming.
+- **Overlay FX**: Added optional Borders (`borderw`, `bordercolor`) and Drop Shadows (`shadowcolor`, `shadowx`, `shadowy`) for text overlays.
+- **Chroma Key**: Integrated `transparentBg` specific chroma-keying for white, black, and green backgrounds.
 
 ### Changed
-- Re-architected FFmpeg output pipeline to aggressively maintain the `rgb24` color space, preventing grayscale filters (like Old Movie or Matrix) from wiping out text overlay colors due to YUV limited-range clamping.
-- Condensed filter terminology (e.g., changed 'Kaleidoscope' to 'Mirror' (`hflip`)).
-- Migrated GIF encoder from `gifshot` back to native FFmpeg `palettegen` for superior quality and removed dead library dependencies.
+- **Mascot Refinement**: Hand-corrected the `Sumo Sized Ginger.svg` anatomy to anchor shoulders organically to the torso while expanding the arm-swing radius to 45 degrees for better expression.
+- **Branding Scale**: Quadrupled the header logo scale (from 60px to 240px) and centered the text alignment for maximum "Elite Studio" impact.
+- **FFmpeg Pipeline**: Re-architected the engine to aggressively maintain the `rgb24` color space, preventing grayscale filters (like Old Movie or Matrix) from wiping out text overlay colors.
+- **Filter Cleanup**: Condensed filter terminology (e.g., changed 'Kaleidoscope' to 'Mirror') and migrated to native FFmpeg `palettegen` for superior GIF quality.
+- **Documentation**: Synchronized `ATTRIBUTION.md` and `README.md` to reflect new 2026-02-27 dependencies and CI status.
+
+### Fixed
+- **Social Icons**: Corrected the rendering of social links by properly initializing the `Lucide` icon library script in `index.html`.
+- **Anatomy**: Resolved the "detached arms" SVG animation bug through coordinate-level pivot point mapping.
 
 ### Removed
-- **Sticker / Emoji Overlay engine** removed. The feature proved too unstable in browser-side canvas-to-FFmpeg rendering, leading to visual artifacts and inconsistent cross-platform font rendering.
-- **Animated Progress Bar** removed due to FFmpeg WASM limitations involving the `drawbox` filter not correctly evaluating dynamic time (`t`) expressions for width over a linear `-vf` sequence.
+- **Sticker / Emoji Overlay Engine**: Removed due to inconsistent browser-side canvas rendering and font artifacts.
+- **Animated Progress Bar**: Removed due to FFmpeg WASM limitations involving dynamic `drawbox` time expressions.
 
 ### Security
 - Purged all unmaintained or unnecessary dependencies (`gifshot`, `gif.js`, `omggif`).
