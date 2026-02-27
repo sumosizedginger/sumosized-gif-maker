@@ -1197,16 +1197,16 @@ async function startConversion() {
             ['input.mp4', 'palette.png', 'output.gif', 'overlay_text.txt', 'concat.txt'].forEach((f) => {
                 try {
                     ffmpeg.FS('unlink', '/' + f);
-                } catch {}
+                } catch { }
             });
             if (currentMode !== 'video') {
                 for (let i = 0; i < slideshowImages.length; i++) {
                     try {
                         ffmpeg.FS('unlink', `/img${(i + 1).toString().padStart(3, '0')}.jpg`);
-                    } catch {}
+                    } catch { }
                 }
             }
-        } catch {}
+        } catch { }
     } catch (error) {
         console.error('Conversion Error:', error);
         showToast('Processing Error: ' + error.message);
@@ -1215,8 +1215,7 @@ async function startConversion() {
         try {
             ffmpeg.FS('unlink', 'input.mp4');
             ffmpeg.FS('unlink', 'input.gif');
-            ffmpeg.FS('unlink', '/output.gif');
-        } catch (e) {
+        } catch {
             /* ignore cleanup errors */
         }
     }
