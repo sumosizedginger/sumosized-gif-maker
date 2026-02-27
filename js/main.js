@@ -163,15 +163,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run initial predictor state
     updatePredictor();
 
-    // Quick Emoji Select
-    document.getElementById('quickEmojiBar')?.addEventListener('click', (e) => {
+    // Quick Emoji Select (Hardened)
+    document.getElementById('quickEmojiBar')?.addEventListener('mousedown', (e) => {
         const btn = e.target.closest('.emoji-btn');
         if (!btn) return;
+        e.preventDefault(); // Prevent focus loss from input
+
         const input = document.getElementById('stickerEmoji');
         if (input) {
-            input.value += btn.textContent;
-            input.dispatchEvent(new Event('input'));
-            input.dispatchEvent(new Event('change'));
+            const emoji = btn.dataset.emoji || btn.textContent.trim();
+            const currentVal = input.value;
+            // Append with space if not empty and not already ending in space
+            const spacer = (currentVal && !currentVal.endsWith(' ')) ? ' ' : '';
+            input.value = currentVal + spacer + emoji;
+
+            // Trigger reactivity
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            input.focus();
         }
     });
 });
