@@ -2,13 +2,15 @@
   "name": "sumosized-gif-maker",
   "version": "1.0.1",
   "description": "Convert video to GIF directly in your browser.",
+  "type": "module",
   "main": "coi-serviceworker.js",
   "scripts": {
+    "dev": "npx serve . --cors",
     "format": "prettier --write \"**/*.{html,css,js}\"",
     "check": "prettier --check \"**/*.{html,css,js}\"",
-    "lint": "eslint \\**/*.js\\",
-    "test": "vitest run",
-    "prepare": "husky install"
+    "lint": "eslint \"**/*.js\"",
+    "test": "vitest run --passWithNoTests",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -25,7 +27,7 @@
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.3.0",
-    "husky": "^8.0.0",
+    "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.0.0",
     "vitest": "^4.0.18"

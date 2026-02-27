@@ -1,6 +1,5 @@
 /**
  * SumoSized GIF Maker — main.js
- * Phase 19: Hardened, modular, feature-complete
  */
 
 // ─────────────────────────────────────────────

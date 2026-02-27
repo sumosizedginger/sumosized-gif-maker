@@ -6,9 +6,11 @@ Thanks for wanting to contribute to the undisputed king of browser-based GIF cre
 
 1. Fork the repo
 2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/sumosized-gif-maker.git`
-3. Open `index.html` in Chrome, Edge, or Firefox (must support `SharedArrayBuffer`)
-4. Make your changes
-5. Test locally — make sure GIF output still works before submitting
+3. Install dev tools: `npm install`
+4. Start a local server: `npm run dev` (required — `file://` won't work with `SharedArrayBuffer`)
+5. Open `http://localhost:3000` in Chrome, Edge, or Firefox
+6. Make your changes
+7. Test locally — make sure GIF output still works before submitting
 
 ## What We Welcome
 
@@ -37,6 +39,31 @@ Open an issue and include:
 ## Code Style
 
 This is vanilla HTML/CSS/JS. Keep it that way. No frameworks, no bundlers, no build steps. If your contribution requires a build pipeline, it's probably not the right fit for this project.
+
+Before committing, run:
+```bash
+npm run check   # Prettier formatting check
+npm run lint    # ESLint
+npm test        # Vitest
+```
+
+Pre-commit hooks will run Prettier and ESLint automatically via husky + lint-staged.
+
+## Commit Convention
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <short summary>
+
+Types: feat | fix | docs | style | refactor | test | chore
+```
+
+Examples:
+- `feat(filters): add Cyberpunk neon filter preset`
+- `fix(overlay): correct shadow offset calculation for RGB output`
+- `docs(readme): update local dev setup instructions`
+- `chore(deps): upgrade husky to v9`
 
 ## Security Issues
 

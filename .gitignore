@@ -1,12 +1,24 @@
 # System Files
 **/.DS_Store
 Thumbs.db
+
+# Dependencies
 node_modules/
+
+# Build artifacts
+dist/
+coverage/
+
 # Dev Artifacts
 .dev_artifacts/
 *.py
 debug/
 temp/
+
+# Environment variables
+.env
+.env.*
+!.env.example
 
 # IDE Folders
 .vscode/

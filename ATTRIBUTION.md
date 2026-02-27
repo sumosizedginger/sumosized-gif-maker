@@ -6,9 +6,17 @@ This project is built using high-quality Open Source Software (OSS). We believe 
 - **License**: [MIT License](LICENSE)
 - **Status**: Forkable, redistributable, and open for commercial use.
 
-## Core Dependencies
+## Core CDN Runtime Dependencies
+
+These libraries are loaded at runtime from CDN and are not bundled in this repository.
 
 | Dependency | License | Role |
+| :--- | :--- | :--- |
+| **FFmpeg.wasm** | MIT + LGPL/GPL (see below) | Video/GIF encoding engine |
+| **Color-Thief** | MIT | Dominant color extraction for Vibe Sync |
+| **gif.js** | MIT | GIF frame assembly |
+| **omggif** | MIT | GIF decoding |
+
 ### 1. FFmpeg.wasm
 - **Description**: A pure WebAssembly / JavaScript port of FFmpeg. It enables video & audio record, convert and stream right inside browsers.
 - **License**: The `ffmpeg.wasm` wrapper itself is licensed under the [MIT License](https://github.com/ffmpegwasm/ffmpeg.wasm/blob/master/LICENSE).
@@ -16,9 +24,11 @@ This project is built using high-quality Open Source Software (OSS). We believe 
 - **Compliance Note**: This project utilizes *dynamic linking* across a network boundary by fetching the pre-compiled `.wasm` binaries directly from the Unpkg CDN at runtime. The GPL/LGPL binary code is **not** distributed within this repository's source tree, preserving this project's MIT status in accordance with standard web linking precedents.
 - **Source**: [https://github.com/ffmpegwasm/ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm)
 
-## Typography Treasury (All 100% OSS)
+## Typography
 
-The following fonts are bundled with this project in the `/fonts` directory. All were selected for their permissive licenses, ensuring no proprietary assets (like Arial) clutter the repo.
+### Bundled Fonts (`/fonts` directory)
+
+The following fonts are bundled in this repository for use in GIF text overlays. All were selected for their permissive licenses.
 
 | Font | License | Source |
 | :--- | :--- | :--- |
@@ -29,8 +39,15 @@ The following fonts are bundled with this project in the `/fonts` directory. All
 | **Orbitron** | [SIL OFL](https://fonts.google.com/specimen/Orbitron/about) | Futuristic sci-fi typography. |
 | **Permanent Marker** | [Apache 2.0](https://fonts.google.com/specimen/Permanent+Marker/about) | Handwritten street typography. |
 | **Montserrat** | [SIL OFL](https://fonts.google.com/specimen/Montserrat/about) | Classic geometric sans-serif. |
-| **Inter** | [SIL OFL](https://fonts.google.com/specimen/Inter/about) | High-readability UI font (Google Fonts). |
-| **Outfit** | [SIL OFL](https://fonts.google.com/specimen/Outfit/about) | Vibrant, modern geometric font (Google Fonts). |
+
+### CDN Fonts (UI only, not bundled)
+
+The following fonts are loaded from Google Fonts CDN for the application UI. They are not embedded in this repository.
+
+| Font | License | Source |
+| :--- | :--- | :--- |
+| **Inter** | [SIL OFL](https://fonts.google.com/specimen/Inter/about) | High-readability UI font. |
+| **Outfit** | [SIL OFL](https://fonts.google.com/specimen/Outfit/about) | Vibrant, modern geometric font. |
 
 
 ---

@@ -3,6 +3,7 @@ import globals from 'globals';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
+    { ignores: ['.dev_artifacts/', 'node_modules/'] },
     js.configs.recommended,
     {
         languageOptions: {

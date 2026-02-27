@@ -16,5 +16,5 @@
             }
         }
     },
-    "postCreateCommand": "npm install && npm run format"
+    "postCreateCommand": "npm ci"
 }

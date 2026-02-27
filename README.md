@@ -2,17 +2,13 @@
 
 Convert video to GIF directly in your browser. No uploads, no server, no dependency vulnerabilities. Powered by FFmpeg.wasm. [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
 
+[![CI](https://github.com/sumosizedginger/sumosized-gif-maker/actions/workflows/ci.yml/badge.svg)](https://github.com/sumosizedginger/sumosized-gif-maker/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)](#)
+[![Runtime: CDN Only](https://img.shields.io/badge/Runtime-CDN_Only-orange.svg)](#-the-tech-stack)
 [![Client Side Processing](https://img.shields.io/badge/Processing-100%25_Browser-blue.svg)](#)
 [![FFmpeg](https://img.shields.io/badge/Engine-FFmpeg.wasm-red.svg)](https://github.com/ffmpegwasm/ffmpeg.wasm)
 
-<div align="center">
-  <!-- TODO: Replace with an actual high-quality demonstration GIF of the UI in action -->
-  <img src="https://via.placeholder.com/800x450?text=SumoSized+GIF+Maker+Demo" alt="SumoSized GIF Maker Dashboard preview" width="800"/>
-</div>
-
-The undirected king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
+The undisputed king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
 
 ## 🚀 The "Jealousy" Features
 - **Elite FFmpeg Engine**: High-fidelity video encoding without server lag.
@@ -28,11 +24,21 @@ The undirected king of browser-based GIF creation. No servers, no tracking, just
 - **Security**: Cross-Origin Isolation via `coi-serviceworker`
 
 ## 📦 Local Installation
-Since this is a client-side app, you can simply clone and open:
+
+This app uses `SharedArrayBuffer`, which requires COOP/COEP security headers. A local server is needed — opening `index.html` directly from the filesystem will not work.
+
 ```bash
 git clone https://github.com/sumosizedginger/sumosized-gif-maker.git
 cd sumosized-gif-maker
-# Open index.html in a browser supporting SharedArrayBuffer (Chrome/Edge/Firefox)
+npm install
+npm run dev
+# Open http://localhost:3000 in Chrome, Edge, or Firefox
+```
+
+Or without Node.js:
+```bash
+npx serve . --cors
+# Open http://localhost:3000
 ```
 
 ## 🛡️ Privacy & Security

@@ -1,0 +1,51 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing — please test in the **latest version** of Chrome, Edge, or Firefox.
+        Check the browser console (F12 → Console) for errors first.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: "When I upload a video and apply the Matrix filter, the output GIF is blank."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Upload a video
+        2. Select 'Matrix' filter
+        3. Click Convert
+        4. See blank output
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser + OS
+      placeholder: "Chrome 122 on Windows 11"
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors (F12 → Console tab)
+      render: text
+      placeholder: Paste any red error messages here.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: File type, file size, specific filter or settings used.
