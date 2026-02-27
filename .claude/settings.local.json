@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sf \"https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js\")",
+      "Bash(openssl dgst -sha384 -binary)",
+      "Bash(openssl base64 -A)"
+    ]
+  }
+}

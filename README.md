@@ -8,6 +8,10 @@ Convert video to GIF directly in your browser. No uploads, no server, no depende
 [![Client Side Processing](https://img.shields.io/badge/Processing-100%25_Browser-blue.svg)](#)
 [![FFmpeg](https://img.shields.io/badge/Engine-FFmpeg.wasm-red.svg)](https://github.com/ffmpegwasm/ffmpeg.wasm)
 
+<div align="center">
+  <img src="assets/demo.gif" alt="SumoSized GIF Maker Dashboard preview" width="800"/>
+</div>
+
 The undisputed king of browser-based GIF creation. No servers, no tracking, just professional-grade GIF processing directly in your browser using **FFmpeg.wasm**.
 
 ## 🚀 The "Jealousy" Features
