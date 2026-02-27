@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Predictor updates on input changes
     [
         'gifWidth', 'fps', 'speed',
-        'overlayText', 'fontStyle', 'textSize', 'textColor', 'textPos',
+        'overlayText', 'fontStyle', 'textSize', 'textColor', 'borderColor', 'textPos',
         'lineSpacing', 'wordSpacing', 'textBox', 'boxPadding', 'boxOpacity',
         'stickerEmoji', 'stickerSize', 'stickerPos'
     ].forEach(id => {
@@ -836,12 +836,22 @@ async function buildBaseFilters(resWidth, currentFps, speed, duration, overlayTe
         const useBox = document.getElementById('textBox')?.value === '1' ? 1 : 0;
         const boxPadding = parseInt(document.getElementById('boxPadding')?.value) || 10;
         let textColor = document.getElementById('textColor')?.value || '#4DFF00';
-        // Convert hex to 0x for FFmpeg stability
-        if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
+        let borderColor = document.getElementById('borderColor')?.value || 'black';
         const boxOpacity = document.getElementById('boxOpacity')?.value || '0.5';
 
+        // Convert hex to 0x for FFmpeg stability
+        if (textColor.startsWith('#')) textColor = textColor.replace('#', '0x');
 
-        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=2:bordercolor=black:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
+        let borderW = 2;
+        if (borderColor === 'none') {
+            borderW = 0;
+            borderColor = 'black'; // fallback needed for filter syntax even if width is 0
+        } else if (borderColor.startsWith('#')) {
+            borderColor = borderColor.replace('#', '0x');
+        }
+
+
+        baseFilters.push(`drawtext=fontfile=/${fontStyle}:textfile=/overlay_text.txt:fontsize=${textSize}:fontcolor=${textColor}:borderw=${borderW}:bordercolor=${borderColor}:line_spacing=${lineSpacing}:box=${useBox}:boxcolor=black@${boxOpacity}:boxborderw=${boxPadding}:x=(w-text_w)/2:y=${yPos}`);
     }
 
     // F. Sticker / Emoji Overlay (drawtext — REMOVED IN FAVOR OF POST-PROCESSING)
