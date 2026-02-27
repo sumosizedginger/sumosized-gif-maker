@@ -1249,3 +1249,36 @@ select:focus-visible {
         width: 240px;
     }
 }
+
+/* ============================================
+   PREMIUM HEADER
+   ============================================ */
+.main-header {
+    margin-bottom: 30px;
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.header-logo {
+    width: 60px;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(105, 190, 40, 0.3));
+}
+
+.brand-text {
+    text-align: left;
+}
+
+.brand-text h1 {
+    margin: 0;
+    line-height: 1;
+}
+
+.brand-text .subtitle {
+    margin-top: 4px;
+}
