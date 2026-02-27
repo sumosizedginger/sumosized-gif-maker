@@ -149,8 +149,12 @@
 
         .mode-btn.active {
             background: var(--action-green);
-            color: var(--navy);
+            color: var(--navy) !important;
             box-shadow: 0 5px 15px rgba(77, 255, 0, 0.2);
+        }
+
+        .mode-btn.active i {
+            color: var(--navy) !important;
         }
 
         .main-card {
@@ -481,8 +485,12 @@
 
         .tab-btn.active {
             background: var(--action-green);
-            color: var(--navy);
+            color: var(--navy) !important;
             box-shadow: 0 5px 15px rgba(77, 255, 0, 0.2);
+        }
+
+        .tab-btn.active i {
+            color: var(--navy) !important;
         }
 
         .advanced-panel {
@@ -601,8 +609,12 @@
 
         .btn-primary {
             background: var(--action-green);
-            color: var(--navy);
+            color: var(--navy) !important;
             box-shadow: 0 10px 30px rgba(77, 255, 0, 0.2);
+        }
+
+        .btn i {
+            color: inherit;
         }
 
         .btn-primary:hover:not(:disabled) {
@@ -1879,8 +1891,8 @@
                 if (currentFilter === '8bit') baseFilters.push('scale=iw/4:-2,scale=iw*4:-2:flags=neighbor');
                 if (currentFilter === 'dreamy') baseFilters.push('eq=contrast=0.8:brightness=0.05:saturation=0.7');
                 if (currentFilter === 'golden') baseFilters.push('curves=red=\'0/0 0.5/0.6 1/1\':green=\'0/0 0.5/0.45 1/0.9\':blue=\'0/0 0.5/0.3 1/0.7\'');
-                if (currentFilter === 'gladiator') baseFilters.push('eq=contrast=1.4:saturation=0.6:brightness=-0.05,colorchannelmixer=1.1:0:0:0:0:0.9:0:0:0:0:0.7:0');
-                if (currentFilter === 'nightvision') baseFilters.push('colorchannelmixer=0:0:0:0:0.5:0.5:0:0:0:0:0:0,eq=brightness=0.1:saturation=2');
+                if (currentFilter === 'gladiator') baseFilters.push('eq=contrast=1.5:saturation=0.5:brightness=-0.05,colorchannelmixer=1.1:0:0:0:0:0.9:0:0:0:0:0.7:0');
+                if (currentFilter === 'nightvision') baseFilters.push('colorchannelmixer=0:0:0:0:0.5:0.5:0:0:0:0:0:0,eq=brightness=0.1:saturation=2,noise=alls=15:allf=t+u');
                 if (currentFilter === 'sulphur') baseFilters.push('curves=red=\'0/0 0.5/0.8 1/1\':green=\'0/0 0.5/0.7 1/0.9\':blue=\'0/0 0.5/0.1 1/0.2\'');
                 if (currentFilter === 'coldblue') baseFilters.push('curves=red=\'0/0 0.5/0.3 1/0.7\':green=\'0/0 0.5/0.5 1/0.8\':blue=\'0/0 0.5/0.7 1/1\'');
                 if (currentFilter === 'vignette') baseFilters.push('vignette=PI/4');
@@ -1891,20 +1903,20 @@
                 if (currentFilter === 'psychedelic') baseFilters.push('hue=h=\'t*50\',eq=saturation=2');
                 if (currentFilter === 'thermal') baseFilters.push('curves=r=\'0/0 0.1/1 1/1\':g=\'0/1 0.5/0 1/1\':b=\'0/0.5 1/0\'');
                 if (currentFilter === 'glitch') baseFilters.push('noise=alls=20:allf=t+u,hue=h=\'t*10\':s=1.2,boxblur=2:1');
-                if (currentFilter === 'cyberpunk') baseFilters.push('curves=r=\'0/0 0.5/1 1/1\':g=\'0/0 0.5/0 1/0.5\':b=\'0/0 0.5/1 1/1\',eq=contrast=1.2:saturation=1.5');
+                if (currentFilter === 'cyberpunk') baseFilters.push('eq=contrast=1.8:saturation=1.5,curves=r=\'0/0 0.5/1 1/1\':g=\'0/0 0.5/0 1/0.5\':b=\'0/0 0.5/1 1/1\'');
                 if (currentFilter === 'chrome') baseFilters.push('format=gray,curves=all=\'0/0 0.25/0.5 0.5/1 0.75/0.5 1/0\',eq=contrast=1.5');
                 if (currentFilter === 'blueprint') baseFilters.push('negate,hue=h=240:s=1,eq=contrast=1.2');
-                if (currentFilter === 'matrix') baseFilters.push('format=gray,colorlevels=rimin=0.05:gimin=0.05:bimin=0.05:rimax=0.1:gimax=0.9:bimax=0.1,eq=contrast=1.5');
+                if (currentFilter === 'matrix') baseFilters.push('format=gray,colorlevels=rimin=0.05:gimin=0.05:bimin=0.05:rimax=0.1:gimax=0.9:bimax=0.1,eq=contrast=1.5,hue=h=120:s=1');
                 if (currentFilter === 'oldmovie') baseFilters.push('format=gray,noise=alls=20:allf=t+u,curves=all=\'0/0 0.5/0.4 1/1\'');
                 if (currentFilter === 'mirrormode') baseFilters.push('split[main][tmp];[tmp]hflip[left];[main][left]hstack');
-                if (currentFilter === 'comic') baseFilters.push('edgedetect=low=0.1:high=0.2,negate,eq=contrast=1.5:saturation=2');
+                if (currentFilter === 'comic') baseFilters.push('edgedetect=low=0.1:high=0.2,negate,eq=contrast=1.5:saturation=2,format=gray,colorlevels=rimax=0.8:gimax=0.8:bimax=0.8');
                 if (currentFilter === 'acid') baseFilters.push('hue=h=\'t*180\':s=2,curves=all=\'0/0 0.5/1 1/0\'');
-                if (currentFilter === 'sketch') baseFilters.push('edgedetect=low=0.1:high=0.2,negate');
+                if (currentFilter === 'sketch') baseFilters.push('edgedetect=low=0.1:high=0.2,negate,format=gray,noise=alls=5:allf=t+u');
                 if (currentFilter === 'infrared') baseFilters.push('curves=r=\'0/1 0.5/0 1/0\':g=\'0/0 0.5/1 1/0\':b=\'0/0 0.5/0 1/1\'');
                 if (currentFilter === 'seahawks') baseFilters.push('format=gray,curves=r=\'0/0 1/0.3\':g=\'0/0.1 1/1\':b=\'0/0 1/0\'');
                 if (currentFilter === 'technicolor') baseFilters.push('colorchannelmixer=1.1:0:0:0:0:1.3:0:0:0:0:1.1:0');
                 if (currentFilter === 'golden2') baseFilters.push('curves=all=\'0/0 0.5/0.6 1/1\',colorchannelmixer=1.2:0:0:0:0:1:0:0:0:0:0.8:0');
-                if (currentFilter === 'posterize') baseFilters.push('curves=all=\'0/0 0.2/0.2 0.4/0.4 0.6/0.6 0.8/0.8 1/1\',eq=saturation=1.5');
+                if (currentFilter === 'posterize') baseFilters.push('posterize=bits=3');
 
                 // D. Sizing & FPS
                 baseFilters.push(`scale=${resWidth}:-2:flags=lanczos`);
