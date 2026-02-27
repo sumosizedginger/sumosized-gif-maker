@@ -1259,21 +1259,21 @@ select:focus-visible {
 
 .logo-group {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 30px;
+    margin-bottom: 20px;
 }
 
 .header-logo {
-    width: 240px;
-    height: auto;
-    filter: drop-shadow(0 0 20px rgba(105, 190, 40, 0.4));
-    margin-bottom: 10px;
+    height: 120px;
+    width: auto;
+    filter: drop-shadow(0 0 30px rgba(105, 190, 40, 0.5));
 }
 
 .brand-text {
-    text-align: center;
+    text-align: left;
 }
 
 .brand-text h1 {
