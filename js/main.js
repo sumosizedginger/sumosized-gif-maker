@@ -6,9 +6,12 @@
 // CONFIG
 // ─────────────────────────────────────────────
 const CONFIG = {
-    FFMPEG_CORE_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.js',
-    FFMPEG_WASM_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.wasm',
-    FFMPEG_WORKER_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.worker.js',
+    FFMPEG_CORE_URL:
+        window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.js',
+    FFMPEG_WASM_URL:
+        window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.wasm',
+    FFMPEG_WORKER_URL:
+        window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.worker.js',
     FONT_BASE_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/fonts/'
 };
 
