@@ -1,8 +1,8 @@
 # SumoSized GIF Maker // Local Video-to-GIF Converter
 
-Convert video to GIF locally. In your browser. No cloud, no external servers. 
-This tool processes files entirely client-side using WebAssembly and a locally vendored FFmpeg.wasm instance. 
-Network transmission is an unacceptable risk for your media. We killed it. 
+Convert video to GIF locally. In your browser. No cloud, no external servers.
+This tool processes files entirely client-side using WebAssembly and a locally vendored FFmpeg.wasm instance.
+Network transmission is an unacceptable risk for your media. We killed it.
 
 [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
 
@@ -53,7 +53,7 @@ npm run dev
 # Access at http://localhost:3000
 ```
 
-*Note: The `coi-serviceworker.js` forces a reload on your first visit to register the worker. Let it run.*
+_Note: The `coi-serviceworker.js` forces a reload on your first visit to register the worker. Let it run._
 
 ## 🛡️ Supply Chain Security
 
