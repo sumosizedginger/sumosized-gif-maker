@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Mascot Refinement**: Hand-corrected the `Sumo Sized Ginger.svg` anatomy to anchor shoulders organically to the torso while expanding the arm-swing radius to 45 degrees for better expression.
-- **Branding Scale**: Quadrupled the header logo scale (from 60px to 240px) and centered the text alignment for maximum "Elite Studio" impact.
+- **Branding Scale**: Implemented a non-destructive "Mascot Zoom" technique via CSS, scaling the header mascot to 90px height to match brand text while preserving the original high-fidelity SVG asset. 🫡🚀
 - **FFmpeg Pipeline**: Re-architected the engine to aggressively maintain the `rgb24` color space, preventing grayscale filters (like Old Movie or Matrix) from wiping out text overlay colors.
 - **Filter Cleanup**: Condensed filter terminology (e.g., changed 'Kaleidoscope' to 'Mirror') and migrated to native FFmpeg `palettegen` for superior GIF quality.
 - **Documentation**: Synchronized `ATTRIBUTION.md` and `README.md` to reflect new 2026-02-27 dependencies and CI status.

@@ -1267,10 +1267,21 @@ select:focus-visible {
 }
 
 .header-logo {
-    height: 120px;
-    width: auto;
+    width: 90px;
+    height: 90px;
+    background-image: url('../icons/Sumo Sized Ginger.svg');
+    background-size: 290px 90px;
+    /* Scale based on banner aspect ratio */
+    background-position: 12px center;
+    /* Shifted right for perfect mascot centering */
+    background-repeat: no-repeat;
     filter: drop-shadow(0 0 30px rgba(105, 190, 40, 0.4));
     flex-shrink: 0;
+    border-radius: 20px;
+    background-color: #001428;
+    /* Matches the SVG deep navy for a seamless badge look */
+    border: 1px solid rgba(77, 255, 0, 0.1);
+    /* Subtle glow border */
 }
 
 .brand-text {
