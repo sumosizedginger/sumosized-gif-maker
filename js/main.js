@@ -6,7 +6,9 @@
 // CONFIG
 // ─────────────────────────────────────────────
 const CONFIG = {
-    FFMPEG_CORE_URL: 'js/vendor/ffmpeg-core.js',
+    FFMPEG_CORE_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.js',
+    FFMPEG_WASM_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.wasm',
+    FFMPEG_WORKER_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/js/vendor/ffmpeg-core.worker.js',
     FONT_BASE_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/fonts/'
 };
 
@@ -16,7 +18,9 @@ const CONFIG = {
 const { createFFmpeg, fetchFile } = FFmpeg;
 const ffmpeg = createFFmpeg({
     log: false, // Set to true to debug FFmpeg output
-    corePath: CONFIG.FFMPEG_CORE_URL
+    corePath: CONFIG.FFMPEG_CORE_URL,
+    wasmPath: CONFIG.FFMPEG_WASM_URL,
+    workerPath: CONFIG.FFMPEG_WORKER_URL
 });
 
 // ─────────────────────────────────────────────
