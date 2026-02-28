@@ -6,7 +6,7 @@
 // CONFIG
 // ─────────────────────────────────────────────
 const CONFIG = {
-    FFMPEG_CORE_URL: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+    FFMPEG_CORE_URL: 'js/vendor/ffmpeg-core.js',
     FONT_BASE_URL: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/fonts/'
 };
 
@@ -1285,7 +1285,7 @@ async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
             quality: 10,
             width,
             height,
-            workerScript: 'js/gif.worker.js' // Local same-origin script bypasses COEP block
+            workerScript: 'js/vendor/gif.worker.js' // Local same-origin script bypasses COEP block
         });
 
         const canvas = document.createElement('canvas');

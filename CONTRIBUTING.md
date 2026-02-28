@@ -24,13 +24,14 @@ Thanks for wanting to contribute to the undisputed king of browser-based GIF cre
 ## Pull Request Rules
 
 - One feature or fix per PR — don't bundle unrelated changes
-- Describe *what* you changed and *why* in the PR description
+- Describe _what_ you changed and _why_ in the PR description
 - If you're fixing a bug, reference the issue number: `Fixes #42`
 - Don't commit `node_modules`, build artifacts, or test screenshots to main
 
 ## Reporting Bugs
 
 Open an issue and include:
+
 - What you were trying to do
 - What actually happened
 - Your browser and OS
@@ -41,6 +42,7 @@ Open an issue and include:
 This is vanilla HTML/CSS/JS. Keep it that way. No frameworks, no bundlers, no build steps. If your contribution requires a build pipeline, it's probably not the right fit for this project.
 
 Before committing, run:
+
 ```bash
 npm run check   # Prettier formatting check
 npm run lint    # ESLint
@@ -60,6 +62,7 @@ Types: feat | fix | docs | style | refactor | test | chore
 ```
 
 Examples:
+
 - `feat(filters): add Cyberpunk neon filter preset`
 - `fix(overlay): correct shadow offset calculation for RGB output`
 - `docs(readme): update local dev setup instructions`
