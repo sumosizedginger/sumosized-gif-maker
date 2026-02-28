@@ -1,61 +1,65 @@
-# SumoSized GIF Maker — Local Browser Video to GIF Converter
+# SumoSized GIF Maker // Local Video-to-GIF Converter
 
-Convert video to GIF locally in your browser using WebAssembly. This tool processes files entirely client-side against a locally vendored FFmpeg.wasm instance, eliminating external server dependencies. [Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
+Convert video to GIF locally. In your browser. No cloud, no external servers. 
+This tool processes files entirely client-side using WebAssembly and a locally vendored FFmpeg.wasm instance. 
+Network transmission is an unacceptable risk for your media. We killed it. 
+
+[Live Demo](https://sumosizedginger.github.io/sumosized-gif-maker/)
 
 [![CI](https://github.com/sumosizedginger/sumosized-gif-maker/actions/workflows/ci.yml/badge.svg)](https://github.com/sumosizedginger/sumosized-gif-maker/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Infrastructure: Fully Vendored](https://img.shields.io/badge/Runtime-Fully_Local-blue.svg)](#-the-tech-stack)
+[![Infrastructure: Fully Vendored](https://img.shields.io/badge/Runtime-Fully_Local-blue.svg)](#-supply-chain-security)
 [![FFmpeg](https://img.shields.io/badge/Engine-FFmpeg.wasm-red.svg)](https://github.com/ffmpegwasm/ffmpeg.wasm)
 
 <div align="center">
   <img src="assets/demo.gif" alt="SumoSized GIF Maker Dashboard preview" width="800"/>
 </div>
 
-A straightforward utility for generating high-fidelity GIFs without uploading your media to a third-party server.
+A high-fidelity GIF generator built for local execution. You don't upload your media to third-party servers. We don't want your data. Keep it on your machine.
 
-## 🚀 Features
+## 🚀 Arsenal
 
-- **FFmpeg Engine**: Utilizes WebAssembly for local video encoding.
-- **Filter Pre-sets**: Includes over 30 visual filters (e.g., Matrix, VHS, color isolation).
-- **Editor Controls**: Frame range selection, playback speed adjustments, and aspect-ratio cropping.
-- **Overlay Tools**: Custom typography overlays with independent border and drop-shadow parameters.
-- **Chroma Key**: Background transparency removal natively supported.
+- **FFmpeg Engine**: WebAssembly drives the video encoding locally. Pure client-side execution.
+- **Filter Pre-sets**: Over 30 visual filters (e.g., Matrix, VHS, color isolation) ready to deploy.
+- **Editor Controls**: Precision frame limits, playback speed adjustments, and aspect-ratio cropping.
+- **Overlay Tools**: Custom typography with independent border and drop-shadow parameters.
+- **Chroma Key**: Native background transparency removal.
 
-## ⚠️ Technical Limits & Hardware Expectations (Important)
+## ⚠️ Strategic Constraints (Hardware Limits)
 
-Because this tool relies on WebAssembly and `SharedArrayBuffer` within the browser ecosystem, you must be aware of the following constraints:
+This tool runs on WebAssembly and `SharedArrayBuffer`. Browsers have hard limits. Acknowledge these constraints before operating:
 
-- **Browser Memory Caps**: Browsers strictly limit tab memory (often 2GB - 4GB). Attempting to process 4K video, highly complex multi-filter chains, or clips longer than 15-20 seconds may silently crash the tab.
-- **Recommended Usage**: Keep input videos under 50MB and target GIF lengths under 10 seconds for stable execution.
-- **Mobile Hardware**: Processing on iOS Safari or Android devices is highly unstable and largely unsupported due to strict mobile OS memory management. Desktop usage is strongly recommended.
-- **Hardware Acceleration**: Encoding relies on your local CPU. Older machines, laptops without dedicated cooling, or Chromebooks will experience significantly slower processing times and high fan usage.
+- **Browser Memory Caps**: Tabs hard-cap memory at 2GB - 4GB. Push 4K video, complex filter chains, or clips past 15 seconds, and the tab will silently crash. Know your limits.
+- **Optimal Envelope**: Keep input under 50MB. Target output under 10 seconds. Anything else is pushing the line.
+- **Mobile Hardware**: iOS Safari and Android aggressively kill high-memory tabs. Mobile is unsupported. Use a desktop.
+- **Hardware Acceleration**: Encoding burns your local CPU. Older rigs or laptops without dedicated cooling will throttle hard and max out their fans.
 
-## 📦 Installation & Local Usage
+## 📦 Deployment
 
-This application requires `SharedArrayBuffer` to function, which mandates strict Cross-Origin Isolation (COOP/COEP) headers. **You cannot open `index.html` directly from your filesystem.**
+`SharedArrayBuffer` mandates strict Cross-Origin Isolation (COOP/COEP) headers. **Do not open `index.html` directly from your filesystem. It will fail.**
 
-A local server must be used. Execute the following block exactly:
+You need a local server. Execute this exact sequence:
 
 ```bash
 git clone https://github.com/sumosizedginger/sumosized-gif-maker.git
 cd sumosized-gif-maker
 
-# Ensure you have Node.js installed
+# Install Node.js dependencies
 npm install
 
-# Start the local development server (handles COOP/COEP headers via coi-serviceworker)
+# Start local server. Handles COOP/COEP via coi-serviceworker
 npm run dev
 
-# Open http://localhost:3000 in a modern browser (Chrome, Edge, Firefox)
+# Access at http://localhost:3000
 ```
 
-_Note: Due to the `coi-serviceworker.js` workaround for COOP/COEP, the page may automatically reload once on your very first visit to register the worker. This is expected behavior._
+*Note: The `coi-serviceworker.js` forces a reload on your first visit to register the worker. Let it run.*
 
-## 🛡️ Project Security & Supply Chain
+## 🛡️ Supply Chain Security
 
-- **Zero Server Uploads**: Your video file is never transmitted over the network.
-- **Locally Vendored**: As of version 1.0.2, all critical dependencies (`ffmpeg.wasm`, `color-thief`, `gif.js`, `lucide`) have been physically downloaded and vendored into the `js/vendor/` directory. The application makes **zero external CDN requests** during operation, securing the supply chain against malicious package injection.
+- **Air-Gapped Operation**: Your video file never hits the network. Pure local execution.
+- **Locally Vendored**: Core dependencies (`ffmpeg.wasm`, `color-thief`, `gif.js`, `lucide`) live in the `js/vendor/` directory. Zero external CDN requests during operation. We secured the supply chain by severing it from the outside world.
 
 ## ⚖️ Attribution
 
-See [ATTRIBUTION.md](ATTRIBUTION.md) for a full list of dependencies and their respective licenses.
+See [ATTRIBUTION.md](ATTRIBUTION.md) for the full manifest of dependencies and licenses.
