@@ -27,3 +27,4 @@ temp/
 # Temp processing files
 /tmp/
 *.log
+/RENDER

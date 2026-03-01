@@ -16,6 +16,36 @@ const CONFIG = {
 };
 
 // ─────────────────────────────────────────────
+// TELEMETRY HELPER
+// ─────────────────────────────────────────────
+async function sendTelemetry(isSuccess, renderTimeMs, fileSizeMb = 0, errorMessage = null) {
+    try {
+        const payload = {
+            device_type: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop",
+            file_size_mb: Number(fileSizeMb) || 0,
+            render_time_seconds: Number((renderTimeMs / 1000).toFixed(2)),
+            is_success: Boolean(isSuccess),
+            error_message: errorMessage ? String(errorMessage) : null
+        };
+
+        // Fire and forget - don't await the response to prevent blocking the UI
+        fetch("https://sumo-sized-api.onrender.com/telemetry", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload),
+            // Important for CORS if testing locally, fine for prod
+            mode: "cors"
+        }).catch(err => console.debug("Telemetry dropped (Network issue):", err));
+
+    } catch (err) {
+        // If telemetry itself fails somehow, just swallow it silently 
+        // We never want telemetry tracking to break the actual app
+        console.debug("Telemetry build failed:", err);
+    }
+}
+
 // FFMPEG INSTANCE
 // ─────────────────────────────────────────────
 const { createFFmpeg, fetchFile } = FFmpeg;
@@ -963,8 +993,10 @@ function wrapText(text, maxWidth, fontSize, fontName, wordSpacing = 0) {
  */
 async function startConversion() {
     if (isConverting) return;
-    // FIX: Set immediately to prevent double-click race
     isConverting = true;
+
+    // Capture precise render start time
+    const _telemetryStartTime = performance.now();
 
     if (!ffmpeg.isLoaded()) {
         showToast('Processor Loading...');
@@ -1243,6 +1275,10 @@ async function startConversion() {
             // Ignore top-level FS errors
         }
     } catch (error) {
+        // Log telemetry error timing immediately
+        const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
+        sendTelemetry(false, _telemetryRenderTimeMs, 0, error.message || "Unknown FFmpeg Error");
+
         console.error('Conversion Error:', error);
         showToast('Processing Error: ' + error.message);
     } finally {
@@ -1326,10 +1362,21 @@ async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
         }
 
         gif.on('finished', (blob) => {
-            blob.arrayBuffer().then((buf) => outputResult(new Uint8Array(buf)));
+            blob.arrayBuffer().then((buf) => {
+                outputResult(new Uint8Array(buf));
+
+                // Trigger Success Tracking (Sticker Overlay Workflow)
+                const fileSizeMb = blob.size / (1024 * 1024);
+                const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
+                sendTelemetry(true, _telemetryRenderTimeMs, fileSizeMb, null);
+            });
         });
         gif.render();
     } catch (e) {
+        // Trigger Error Tracking (Failed Sticker Overlay)
+        const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
+        sendTelemetry(false, _telemetryRenderTimeMs, 0, e.message || "Sticker finalize error");
+
         console.error('Finalize Error:', e);
         showToast('Finalize Error: Check console for details.');
         resetConversionState();
@@ -1338,6 +1385,17 @@ async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
 
 function outputResult(uint8data) {
     const url = URL.createObjectURL(new Blob([uint8data], { type: 'image/gif' }));
+
+    // Trigger Success Tracking for standard workflows (no stickers applied)
+    // Only fire if called directly from `startConversion`, handle exception internally
+    try {
+        if (typeof _telemetryStartTime !== "undefined") {
+            const fileSizeMb = uint8data.byteLength / (1024 * 1024);
+            const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
+            sendTelemetry(true, _telemetryRenderTimeMs, fileSizeMb, null);
+        }
+    } catch (err) { }
+
     const resultGif = document.getElementById('resultGif');
     if (!resultGif) {
         console.error('outputResult: #resultGif element not found in DOM');
