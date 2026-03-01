@@ -21,7 +21,7 @@ const CONFIG = {
 async function sendTelemetry(isSuccess, renderTimeMs, fileSizeMb = 0, errorMessage = null) {
     try {
         const payload = {
-            device_type: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop",
+            device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
             file_size_mb: Number(fileSizeMb) || 0,
             render_time_seconds: Number((renderTimeMs / 1000).toFixed(2)),
             is_success: Boolean(isSuccess),
@@ -29,20 +29,19 @@ async function sendTelemetry(isSuccess, renderTimeMs, fileSizeMb = 0, errorMessa
         };
 
         // Fire and forget - don't await the response to prevent blocking the UI
-        fetch("https://sumo-sized-api.onrender.com/telemetry", {
-            method: "POST",
+        fetch('https://sumo-sized-api.onrender.com/telemetry', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json"
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload),
             // Important for CORS if testing locally, fine for prod
-            mode: "cors"
-        }).catch(err => console.debug("Telemetry dropped (Network issue):", err));
-
+            mode: 'cors'
+        }).catch((err) => console.debug('Telemetry dropped (Network issue):', err));
     } catch (err) {
-        // If telemetry itself fails somehow, just swallow it silently 
+        // If telemetry itself fails somehow, just swallow it silently
         // We never want telemetry tracking to break the actual app
-        console.debug("Telemetry build failed:", err);
+        console.debug('Telemetry build failed:', err);
     }
 }
 
@@ -69,6 +68,7 @@ let cropData = { active: false, x: 0, y: 0, w: 0, h: 0, ratio: 'off' };
 let isDragging = false;
 let startX, startY;
 let frameData = []; // { src: string, delay: number }[]
+let _telemetryStartTime;
 
 const colorThief = new ColorThief();
 
@@ -996,7 +996,7 @@ async function startConversion() {
     isConverting = true;
 
     // Capture precise render start time
-    const _telemetryStartTime = performance.now();
+    _telemetryStartTime = performance.now();
 
     if (!ffmpeg.isLoaded()) {
         showToast('Processor Loading...');
@@ -1277,7 +1277,7 @@ async function startConversion() {
     } catch (error) {
         // Log telemetry error timing immediately
         const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
-        sendTelemetry(false, _telemetryRenderTimeMs, 0, error.message || "Unknown FFmpeg Error");
+        sendTelemetry(false, _telemetryRenderTimeMs, 0, error.message || 'Unknown FFmpeg Error');
 
         console.error('Conversion Error:', error);
         showToast('Processing Error: ' + error.message);
@@ -1375,7 +1375,7 @@ async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
     } catch (e) {
         // Trigger Error Tracking (Failed Sticker Overlay)
         const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
-        sendTelemetry(false, _telemetryRenderTimeMs, 0, e.message || "Sticker finalize error");
+        sendTelemetry(false, _telemetryRenderTimeMs, 0, e.message || 'Sticker finalize error');
 
         console.error('Finalize Error:', e);
         showToast('Finalize Error: Check console for details.');
@@ -1389,12 +1389,14 @@ function outputResult(uint8data) {
     // Trigger Success Tracking for standard workflows (no stickers applied)
     // Only fire if called directly from `startConversion`, handle exception internally
     try {
-        if (typeof _telemetryStartTime !== "undefined") {
+        if (_telemetryStartTime) {
             const fileSizeMb = uint8data.byteLength / (1024 * 1024);
             const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
             sendTelemetry(true, _telemetryRenderTimeMs, fileSizeMb, null);
         }
-    } catch (err) { }
+    } catch {
+        // Silently skip if telemetry calculation fails
+    }
 
     const resultGif = document.getElementById('resultGif');
     if (!resultGif) {
