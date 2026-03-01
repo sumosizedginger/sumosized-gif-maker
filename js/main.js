@@ -18,30 +18,26 @@ const CONFIG = {
 // ─────────────────────────────────────────────
 // TELEMETRY HELPER
 // ─────────────────────────────────────────────
-async function sendTelemetry(isSuccess, renderTimeMs, fileSizeMb = 0, errorMessage = null) {
+async function sendTelemetry(payload) {
     try {
-        const payload = {
-            device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-            file_size_mb: Number(fileSizeMb) || 0,
-            render_time_seconds: Number((renderTimeMs / 1000).toFixed(2)),
-            is_success: Boolean(isSuccess),
-            error_message: errorMessage ? String(errorMessage) : null
-        };
-
-        // Fire and forget - don't await the response to prevent blocking the UI
         fetch('https://sumo-sized-api.onrender.com/telemetry', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(payload),
-            // Important for CORS if testing locally, fine for prod
-            mode: 'cors'
-        }).catch((err) => console.debug('Telemetry dropped (Network issue):', err));
+            body: JSON.stringify(payload)
+        })
+            .then((response) => {
+                if (response.ok) {
+                    console.log('Telemetry sent successfully', payload);
+                } else {
+                    console.log('Telemetry failed with status', response.status);
+                }
+            })
+            .catch((err) => console.log('Telemetry dropped (Network issue):', err));
     } catch (err) {
-        // If telemetry itself fails somehow, just swallow it silently
         // We never want telemetry tracking to break the actual app
-        console.debug('Telemetry build failed:', err);
+        console.log('Telemetry build failed:', err);
     }
 }
 
@@ -1277,7 +1273,13 @@ async function startConversion() {
     } catch (error) {
         // Log telemetry error timing immediately
         const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
-        sendTelemetry(false, _telemetryRenderTimeMs, 0, error.message || 'Unknown FFmpeg Error');
+        sendTelemetry({
+            device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+            file_size_mb: 0,
+            render_time_seconds: Number((_telemetryRenderTimeMs / 1000).toFixed(2)),
+            is_success: false,
+            error_message: error.message || 'Unknown FFmpeg Error'
+        });
 
         console.error('Conversion Error:', error);
         showToast('Processing Error: ' + error.message);
@@ -1368,14 +1370,26 @@ async function finalizeOutput(outputPath, mimeType, progressFill, progressBar) {
                 // Trigger Success Tracking (Sticker Overlay Workflow)
                 const fileSizeMb = blob.size / (1024 * 1024);
                 const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
-                sendTelemetry(true, _telemetryRenderTimeMs, fileSizeMb, null);
+                sendTelemetry({
+                    device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                    file_size_mb: Number(fileSizeMb) || 0,
+                    render_time_seconds: Number((_telemetryRenderTimeMs / 1000).toFixed(2)),
+                    is_success: true,
+                    error_message: null
+                });
             });
         });
         gif.render();
     } catch (e) {
         // Trigger Error Tracking (Failed Sticker Overlay)
         const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
-        sendTelemetry(false, _telemetryRenderTimeMs, 0, e.message || 'Sticker finalize error');
+        sendTelemetry({
+            device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+            file_size_mb: 0,
+            render_time_seconds: Number((_telemetryRenderTimeMs / 1000).toFixed(2)),
+            is_success: false,
+            error_message: e.message || 'Sticker finalize error'
+        });
 
         console.error('Finalize Error:', e);
         showToast('Finalize Error: Check console for details.');
@@ -1392,7 +1406,13 @@ function outputResult(uint8data) {
         if (_telemetryStartTime) {
             const fileSizeMb = uint8data.byteLength / (1024 * 1024);
             const _telemetryRenderTimeMs = performance.now() - _telemetryStartTime;
-            sendTelemetry(true, _telemetryRenderTimeMs, fileSizeMb, null);
+            sendTelemetry({
+                device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                file_size_mb: Number(fileSizeMb) || 0,
+                render_time_seconds: Number((_telemetryRenderTimeMs / 1000).toFixed(2)),
+                is_success: true,
+                error_message: null
+            });
         }
     } catch {
         // Silently skip if telemetry calculation fails
