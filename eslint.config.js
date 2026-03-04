@@ -41,5 +41,14 @@ export default [
             'no-console': 'off'
         }
     },
+    {
+        files: ['js/worker/**/*.js'],
+        languageOptions: {
+            globals: {
+                ...globals.worker,
+                FFmpeg: 'readonly'
+            }
+        }
+    },
     eslintConfigPrettier
 ];

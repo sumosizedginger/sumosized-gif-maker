@@ -19,11 +19,14 @@ A high-fidelity GIF generator built for local execution. You don't upload your m
 
 ## 🚀 Arsenal
 
-- **FFmpeg Engine**: WebAssembly drives the video encoding locally. Pure client-side execution.
-- **Filter Pre-sets**: Over 30 visual filters (e.g., Matrix, VHS, color isolation) ready to deploy.
-- **Editor Controls**: Precision frame limits, playback speed adjustments, and aspect-ratio cropping.
-- **Overlay Tools**: Custom typography with independent border and drop-shadow parameters.
-- **Chroma Key**: Native background transparency removal.
+- **FFmpeg Engine**: WebAssembly-powered, now running in a dedicated **Web Worker** for 100% UI responsiveness.
+- **Project Presets**: Save/load entire studio states (filters, overlays, settings) via JSON for session recovery.
+- **Geometric Warp**: 8-point perspective corner-pinning and H/V spatial flipping.
+- **Timeline Studio**: Visual scrubbing with real-time thumbnail generation and frame-level editing.
+- **Filter Stack**: Layer up to 10 filters simultaneously with drag-and-drop reordering.
+- **Live Preview**: Instant visual feedback on composite filter stacks before rendering.
+- **WebP & APNG Support**: Elite animated formats with high-performance compression.
+- **Advanced Smoothing**: Integrated motion blur and frame interpolation (mci) for cinematic results.
 
 ## ⚠️ Strategic Constraints (Hardware Limits)
 

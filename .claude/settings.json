@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run check)",
+      "Bash(npm run lint)",
+      "Bash(npm install -D happy-dom)",
+      "Bash(npx vitest run)",
+      "Bash(npx eslint \"js/modules/upload.js\" \"js/modules/conversion.js\")",
+      "Bash(npx eslint \"**/*.js\")",
+      "WebFetch(domain:github.com)",
+      "Bash(npm test)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}

@@ -25,7 +25,13 @@ if (typeof window === 'undefined') {
                         headers: newHeaders
                     });
                 })
-                .catch((e) => console.error(e))
+                .catch((e) => {
+                    console.error('COI Service Worker Fetch Error:', e);
+                    return new Response('Offline or Network Error', {
+                        status: 503,
+                        statusText: 'Service Unavailable'
+                    });
+                })
         );
     });
 }

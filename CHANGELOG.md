@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-01
+
+### Added
+
+- **Timeline Scrubbing**: Interactive visual timeline with real-time thumbnail generation via FFmpeg.
+- **Project Presets**: Full state serialization/deserialization to JSON. Save and load all filters, settings, and image overlays (including binary buffers via base64).
+- **Geometric Transforms**: Elite 8-point perspective warping (corner pinning) for 3D-like skewing. Added Horizontal and Vertical flip toggles.
+- **Web Worker Engine**: Re-architected the FFmpeg core to run in a dedicated Web Worker (`js/worker/ffmpeg-worker.js`). This ensures 100% UI responsiveness during heavy rendering or frame extraction.
+- **Enhanced Filter Preview**: Restored and improved the Live Filter Preview to support image overlays and complex geometry.
+
+### Changed
+
+- Refactored `js/main.js` to use an asynchronous `FFmpegWorkerClient` proxy.
+- Optimized frame extraction and timeline generation to be non-blocking via worker offloading.
+- Improved the project persistence layer with robust JSON import/export in the Settings panel.
+- Enhanced `previewCurrentFilters` with full image overlay and geometry support.
+
 ### Added
 
 - GitHub Pages auto-deploy workflow (`pages.yml`) — every push to `main` now deploys the live site automatically via `actions/configure-pages`, `actions/upload-pages-artifact`, and `actions/deploy-pages`.
