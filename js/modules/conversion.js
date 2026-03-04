@@ -4,7 +4,7 @@
 import { state, resetConversionState } from './state.js';
 import { dom, showToast } from './ui.js';
 import { ffmpeg, fetchFile } from './ffmpeg-client.js';
-import { buildBaseFilters } from './filters.js';
+import { buildBaseFilters, readFilterOptions } from './filters.js';
 import { sendTelemetry } from './telemetry.js';
 import { CONFIG } from './config.js';
 import { classifyFfmpegError, safeUnlinkAll } from './utils.js';
@@ -99,16 +99,16 @@ export async function startConversion() {
             await ffmpeg.FS('writeFile', fontStyle, await fetchFile(fontUrl));
         }
 
-        const baseFilters = await buildBaseFilters(
+        const filterOpts = readFilterOptions({
             resWidth,
-            fps,
+            currentFps: fps,
             speed,
-            duration,
             overlayText,
             fontStyle,
             textSize,
             textPos
-        );
+        });
+        const baseFilters = await buildBaseFilters(filterOpts);
         const baseFilterStr = baseFilters.join(',');
 
         if (state.frameData.length > 0 && state.currentMode === 'video') {

@@ -40,35 +40,116 @@ export const filterMap = {
 };
 
 /**
- * Builds the array of FFmpeg filter strings based on user settings.
+ * Reads all filter-related settings from the DOM and state.
+ * Call this at the conversion call-site and pass the result to buildBaseFilters.
+ * Keeping this here (paired with buildBaseFilters) keeps the boundary thin.
+ *
+ * @param {{ resWidth: number, currentFps: number, speed: number, overlayText: string, fontStyle: string, textSize: number, textPos: string }} callsiteArgs
  */
-export async function buildBaseFilters(
-    resWidth,
-    currentFps,
-    speed,
-    duration,
-    overlayText,
-    fontStyle,
-    textSize,
-    textPos
-) {
+export function readFilterOptions({ resWidth, currentFps, speed, overlayText, fontStyle, textSize, textPos }) {
+    return {
+        resWidth,
+        currentFps,
+        speed,
+        overlayText,
+        fontStyle,
+        textSize,
+        textPos,
+        // pulled from state
+        currentMode: state.currentMode,
+        cropData: { ...state.cropData },
+        filterStack: [...state.filterStack],
+        // pulled from dom (nullable-safe)
+        rotateAngle: parseInt(dom.rotateAngle?.value) || 0,
+        transparentBg: dom.transparentBg?.value || 'off',
+        interpolation: dom.interpolation?.value || 'off',
+        motionBlur: dom.motionBlur?.value || 'off',
+        wordSpacing: parseInt(dom.wordSpacing?.value) || 0,
+        lineSpacing: parseInt(dom.lineSpacing?.value) || 10,
+        useBox: dom.textBox?.value === '1' ? 1 : 0,
+        boxPadding: parseInt(dom.boxPadding?.value) || 10,
+        boxOpacity: dom.boxOpacity?.value || '0.5',
+        textColor: dom.textColor?.value || '#4DFF00',
+        borderColor: dom.borderColor?.value || 'black',
+        p_x0: parseFloat(dom.p_x0?.value) ?? 0,
+        p_y0: parseFloat(dom.p_y0?.value) ?? 0,
+        p_x1: parseFloat(dom.p_x1?.value) ?? 100,
+        p_y1: parseFloat(dom.p_y1?.value) ?? 0,
+        p_x2: parseFloat(dom.p_x2?.value) ?? 0,
+        p_y2: parseFloat(dom.p_y2?.value) ?? 100,
+        p_x3: parseFloat(dom.p_x3?.value) ?? 100,
+        p_y3: parseFloat(dom.p_y3?.value) ?? 100,
+        hFlip: dom.hFlip?.value === '1',
+        vFlip: dom.vFlip?.value === '1',
+        // needed for crop box computation in image mode
+        imagePlaceholderNaturalWidth: dom.imagePlaceholder?.naturalWidth || 0,
+        imagePlaceholderNaturalHeight: dom.imagePlaceholder?.naturalHeight || 0,
+        videoWidth: dom.videoPlayer?.videoWidth || 0,
+        videoHeight: dom.videoPlayer?.videoHeight || 0,
+        videoContainerRect: dom.videoContainer?.getBoundingClientRect() || null
+    };
+}
+
+/**
+ * Builds the array of FFmpeg filter strings from a pure options object.
+ * No DOM or state reads occur here — all values must be passed in via `opts`.
+ *
+ * @param {ReturnType<typeof readFilterOptions>} opts
+ */
+export async function buildBaseFilters(opts) {
+    const {
+        resWidth,
+        currentFps,
+        speed,
+        overlayText,
+        fontStyle,
+        textSize,
+        textPos,
+        currentMode,
+        cropData,
+        filterStack,
+        rotateAngle,
+        transparentBg,
+        interpolation,
+        motionBlur,
+        wordSpacing,
+        lineSpacing,
+        useBox,
+        boxPadding,
+        boxOpacity,
+        textColor: rawTextColor,
+        borderColor: rawBorderColor,
+        p_x0,
+        p_y0,
+        p_x1,
+        p_y1,
+        p_x2,
+        p_y2,
+        p_x3,
+        p_y3,
+        hFlip,
+        vFlip,
+        imagePlaceholderNaturalWidth,
+        imagePlaceholderNaturalHeight,
+        videoWidth,
+        videoHeight,
+        videoContainerRect
+    } = opts;
+
     const baseFilters = [];
-    const targetEl = state.currentMode === 'video' ? dom.videoPlayer : dom.imagePlaceholder;
 
     // A. Crop
-    if (state.cropData.active && state.cropData.w > 0 && targetEl) {
-        const rect = targetEl.getBoundingClientRect();
+    if (cropData.active && cropData.w > 0 && videoContainerRect) {
         let realW, realH;
-        if (state.currentMode === 'video') {
-            realW = dom.videoPlayer.videoWidth;
-            realH = dom.videoPlayer.videoHeight;
+        if (currentMode === 'video') {
+            realW = videoWidth;
+            realH = videoHeight;
         } else {
-            // In image mode, conversion.js normalizes slides to `resWidth` before feeding FFmpeg.
-            // We must calculate the crop box relative to this downscaled input.
             realW = resWidth;
-            realH = Math.round(resWidth * (dom.imagePlaceholder.naturalHeight / dom.imagePlaceholder.naturalWidth));
+            realH = Math.round(resWidth * (imagePlaceholderNaturalHeight / imagePlaceholderNaturalWidth));
         }
 
+        const rect = videoContainerRect;
         const elAspect = rect.width / rect.height;
         const vidAspect = realW / realH;
         let rendW, rendH, offsetX, offsetY;
@@ -85,29 +166,27 @@ export async function buildBaseFilters(
         }
         const scaleX = realW / rendW;
         const scaleY = realH / rendH;
-        const cX = Math.round(Math.max(0, state.cropData.x - offsetX) * scaleX);
-        const cY = Math.round(Math.max(0, state.cropData.y - offsetY) * scaleY);
-        const cW = Math.min(Math.round(state.cropData.w * scaleX), realW - cX);
-        const cH = Math.min(Math.round(state.cropData.h * scaleY), realH - cY);
+        const cX = Math.round(Math.max(0, cropData.x - offsetX) * scaleX);
+        const cY = Math.round(Math.max(0, cropData.y - offsetY) * scaleY);
+        const cW = Math.min(Math.round(cropData.w * scaleX), realW - cX);
+        const cH = Math.min(Math.round(cropData.h * scaleY), realH - cY);
         if (cW > 0 && cH > 0) baseFilters.push(`crop=${cW}:${cH}:${cX}:${cY}`);
     }
 
     // B. Speed
-    if (speed !== 1 && state.currentMode === 'video') baseFilters.push(`setpts=${1 / speed}*PTS`);
+    if (speed !== 1 && currentMode === 'video') baseFilters.push(`setpts=${1 / speed}*PTS`);
 
     // B2. Rotate
-    const rotateAngle = parseInt(dom.rotateAngle?.value) || 0;
     if (rotateAngle === 90) baseFilters.push('transpose=1');
     if (rotateAngle === 180) baseFilters.push('hflip,vflip');
     if (rotateAngle === 270) baseFilters.push('transpose=2');
 
     // C. Filter Stack
-    state.filterStack.forEach((fId) => {
+    filterStack.forEach((fId) => {
         if (filterMap[fId]) baseFilters.push(filterMap[fId]);
     });
 
     // C2. Transparent BG
-    const transparentBg = dom.transparentBg?.value || 'off';
     const colorKeyMap = {
         white: 'colorkey=color=0xffffff:similarity=0.3:blend=0.1',
         black: 'colorkey=color=0x000000:similarity=0.3:blend=0.1',
@@ -117,17 +196,15 @@ export async function buildBaseFilters(
 
     // D. Scale + FPS / Interpolation
     baseFilters.push(`scale=${resWidth}:-2:flags=lanczos`);
-    const interpVal = dom.interpolation?.value || 'off';
-    if (interpVal !== 'off' && state.currentMode === 'video') {
-        baseFilters.push(`minterpolate=fps=${interpVal}:mi_mode=mci`);
+    if (interpolation !== 'off' && currentMode === 'video') {
+        baseFilters.push(`minterpolate=fps=${interpolation}:mi_mode=mci`);
     } else {
         baseFilters.push(`fps=${currentFps}`);
     }
 
     // D3. Motion Blur
-    const blurVal = dom.motionBlur?.value || 'off';
-    if (blurVal !== 'off' && state.currentMode === 'video') {
-        const blurFrames = blurVal === 'low' ? 3 : blurVal === 'med' ? 5 : 10;
+    if (motionBlur !== 'off' && currentMode === 'video') {
+        const blurFrames = motionBlur === 'low' ? 3 : motionBlur === 'med' ? 5 : 10;
         baseFilters.push(`tmix=frames=${blurFrames}:weights=1`);
     }
 
@@ -135,18 +212,12 @@ export async function buildBaseFilters(
     if (overlayText) {
         const yPosMap = { top: '20', middle: '(h-text_h)/2', bottom: '(h-text_h-20)' };
         const yPos = yPosMap[textPos] || '(h-text_h-20)';
-        const wordSpacing = parseInt(dom.wordSpacing?.value) || 0;
         const fontName = fontStyle.split('.')[0];
         const wrapped = wrapText(overlayText.trim(), resWidth * 0.8, textSize, fontName, wordSpacing);
         ffmpeg.FS('writeFile', 'overlay_text.txt', new TextEncoder().encode(wrapped));
 
-        const lineSpacing = parseInt(dom.lineSpacing?.value) || 10;
-        const useBox = dom.textBox?.value === '1' ? 1 : 0;
-        const boxPadding = parseInt(dom.boxPadding?.value) || 10;
-        const boxOpacity = dom.boxOpacity?.value || '0.5';
-
-        let textColor = dom.textColor?.value || '#4DFF00';
-        let borderColor = dom.borderColor?.value || 'black';
+        let textColor = rawTextColor;
+        let borderColor = rawBorderColor;
         let borderW = borderColor === 'none' ? 0 : 1;
         let actualBorderColor = borderColor === 'none' ? 'black' : borderColor;
 
@@ -160,15 +231,6 @@ export async function buildBaseFilters(
     }
 
     // F. Perspective Warp
-    const p_x0 = parseFloat(dom.p_x0?.value) ?? 0;
-    const p_y0 = parseFloat(dom.p_y0?.value) ?? 0;
-    const p_x1 = parseFloat(dom.p_x1?.value) ?? 100;
-    const p_y1 = parseFloat(dom.p_y1?.value) ?? 0;
-    const p_x2 = parseFloat(dom.p_x2?.value) ?? 0; // Bot-L in UI
-    const p_y2 = parseFloat(dom.p_y2?.value) ?? 100; // Bot-L in UI
-    const p_x3 = parseFloat(dom.p_x3?.value) ?? 100; // Bot-R in UI
-    const p_y3 = parseFloat(dom.p_y3?.value) ?? 100; // Bot-R in UI
-
     const isChanged =
         p_x0 !== 0 ||
         p_y0 !== 0 ||
@@ -181,7 +243,6 @@ export async function buildBaseFilters(
 
     if (isChanged) {
         // Validation: Ensure the quad is not collapsed or inverted too far
-        // A basic check: Top-R should be to the right of Top-L, Bot-R to the right of Bot-L
         if (p_x1 > p_x0 && p_x3 > p_x2 && p_y2 > p_y0 && p_y3 > p_y1) {
             // Note: Map p_x3/y3 (Bot-R) to FFmpeg x2/y2, and p_x2/y2 (Bot-L) to FFmpeg x3/y3
             baseFilters.push('format=rgba');
@@ -192,8 +253,8 @@ export async function buildBaseFilters(
     }
 
     // G. H/V Flip
-    if (dom.hFlip?.value === '1') baseFilters.push('hflip');
-    if (dom.vFlip?.value === '1') baseFilters.push('vflip');
+    if (hFlip) baseFilters.push('hflip');
+    if (vFlip) baseFilters.push('vflip');
 
     return baseFilters;
 }
