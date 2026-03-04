@@ -11,7 +11,6 @@ import { initEvents } from './modules/events.js';
 import { ffmpeg } from './modules/ffmpeg-client.js';
 import { showToast } from './modules/ui.js';
 
-
 // D1 — SharedArrayBuffer / cross-origin isolation check
 // ffmpeg.wasm (mt build) requires SharedArrayBuffer, which requires COOP+COEP headers.
 // The coi-serviceworker.js provides these after the first page load.
@@ -25,7 +24,6 @@ if (typeof lucide !== 'undefined') lucide.createIcons();
 
 // Attach all event listeners — DOM is ready because modules are deferred
 initEvents();
-
 
 // Lazy-load FFmpeg in the background after events are wired up
 (async () => {
