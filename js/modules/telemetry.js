@@ -3,7 +3,7 @@
  */
 export async function sendTelemetry(payload) {
     try {
-        const response = await fetch('https://sumo-sized-api.onrender.com/telemetry', {
+        await fetch('https://sumo-sized-api.onrender.com/telemetry', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

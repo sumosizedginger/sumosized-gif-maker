@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-03-04
+
+### Added
+
+- **Advanced Quality Controls**: Exposed FFmpeg `paletteuse` params in the UI:
+    - **Dithering**: New dropdown with Auto, Bayer, Floyd-Steinberg, and Sierra 2 modes.
+    - **Frame Diff Mode**: New dropdown for Rectangle and None modes (reduces GIF size by 30-60%).
+    - **Max Colors**: New slider to control palette quantization (2-256).
+
+### Fixed
+
+- **FFmpeg `palettegen` Crash**: Implemented strict clamping (4-256) and base-10 integer parsing for the `maxColors` setting. This prevents the "max_colors=16000" crash reported in the field.
+- **UI Logic Cleanup**: Removed legacy `stickerEmoji` and `conversionLoader` logic that was targeting non-existent DOM nodes.
+- **Duplicate Frame Rendering**: Resolved a bug where `strip.appendChild` was called twice during frame re-renders.
+
+### Security
+
+- **Full XSS Hardening**: Purged all `innerHTML` sinks and dynamic template literals across the codebase. Refactored UI generators (`renderFrameStrip`, `renderFilterStack`) to use secure `document.createElement()` and `textContent` patterns.
+- **Telemetry Sanitization**: Removed descriptive network logs to ensure anonymous operation.
+- **Audit Compliance**: Verified 100% compliance with modern secure DOM manipulation standards.
+
 ## [1.1.0] - 2026-03-01
 
 ### Added

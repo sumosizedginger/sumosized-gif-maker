@@ -30,7 +30,7 @@ export async function generateTimelineThumbnails() {
     if (state.isFfmpegBusy) return;
 
     const strip = document.getElementById('thumbnailStrip');
-    if (strip) strip.innerHTML = '';
+    if (strip) strip.textContent = '';
 
     try {
         state.isFfmpegBusy = true;
@@ -42,7 +42,7 @@ export async function generateTimelineThumbnails() {
         existingThumbs.forEach((img) => {
             if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
         });
-        strip.innerHTML = '';
+        strip.textContent = '';
 
         await ffmpeg.FS('writeFile', 'timeline_input.mp4', await fetchFile(state.currentVideoFile));
 

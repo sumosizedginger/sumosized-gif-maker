@@ -51,7 +51,14 @@ export async function startConversion() {
     const outputFormat = dom.outputFormat?.value || 'gif';
 
     dom.convertBtn.disabled = true;
-    dom.convertBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Processing...';
+    if (dom.convertBtn) {
+        dom.convertBtn.textContent = ' Processing...';
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', 'loader-2');
+        icon.classList.add('animate-spin');
+        dom.convertBtn.prepend(icon);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     dom.progressContainer.classList.add('active');
@@ -164,7 +171,7 @@ export async function startConversion() {
                     preOvl += `[ovl]`;
 
                     if (oBlend !== 'normal') {
-                        paletteFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge,palettegen`;
+                        paletteFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge,palettegen`;
                     } else {
                         paletteFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100,palettegen`;
                     }
@@ -177,8 +184,13 @@ export async function startConversion() {
                 }
 
                 let paletteuseFilters = `paletteuse`;
-                if (dithering !== 'auto') paletteuseFilters += `:dither=${dithering}`;
-                if (diffMode !== 'auto') paletteuseFilters += `:diff_mode=${diffMode}`;
+                if (dithering !== 'auto' || diffMode !== 'auto') {
+                    paletteuseFilters += '=';
+                    let opts = [];
+                    if (dithering !== 'auto') opts.push(`dither=${dithering}`);
+                    if (diffMode !== 'auto') opts.push(`diff_mode=${diffMode}`);
+                    paletteuseFilters += opts.join(':');
+                }
 
                 if (dom.progressStatus) dom.progressStatus.textContent = 'Pass 2: Encoding GIF...';
                 if (dom.progressFill) dom.progressFill.style.width = '70%';
@@ -199,7 +211,7 @@ export async function startConversion() {
                     if (oRot !== 0) preOvl += `,rotate=${oRot}*PI/180:c=none`;
                     preOvl += `[ovl]`;
                     if (oBlend !== 'normal') {
-                        complexFilter += `;${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[vid_merged]`;
+                        complexFilter += `;${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[vid_merged]`;
                     } else {
                         complexFilter += `;${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[vid_merged]`;
                     }
@@ -227,7 +239,7 @@ export async function startConversion() {
                     if (oRot !== 0) preOvl += `,rotate=${oRot}*PI/180:c=none`;
                     preOvl += `[ovl]`;
                     if (oBlend !== 'normal')
-                        complexWebpFilter += `;${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
+                        complexWebpFilter += `;${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
                     else
                         complexWebpFilter += `;${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[out]`;
                 } else {
@@ -272,7 +284,7 @@ export async function startConversion() {
                     preOvl += `[ovl]`;
 
                     if (oBlend !== 'normal') {
-                        apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
+                        apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
                     } else {
                         apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[out]`;
                     }
@@ -324,7 +336,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            paletteFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge,palettegen`;
+                            paletteFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge,palettegen`;
                         } else {
                             paletteFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100,palettegen`;
                         }
@@ -361,7 +373,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            finalFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[m];[m][1:v]paletteuse`;
+                            finalFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[m];[m][1:v]paletteuse`;
                         } else {
                             finalFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[m];[m][1:v]paletteuse`;
                         }
@@ -392,7 +404,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            webpFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
+                            webpFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
                         } else {
                             webpFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[out]`;
                         }
@@ -437,7 +449,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
+                            apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
                         } else {
                             apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[out]`;
                         }
@@ -476,7 +488,7 @@ export async function startConversion() {
 
                     const img = new Image();
                     img.src = state.slideshowImages[i];
-                    await new Promise((resolve) => (img.onload = resolve));
+                    await img.decode().catch(() => {}); // decode() resolves even for cached blobs; img.onload would hang
 
                     // First image defines the aspect ratio/canvas height
                     if (targetH === 0) {
@@ -526,8 +538,13 @@ export async function startConversion() {
                 const maxColors = isNaN(rawColors) ? 256 : Math.max(4, Math.min(256, rawColors));
 
                 let paletteuseFilters = `paletteuse`;
-                if (dithering !== 'auto') paletteuseFilters += `:dither=${dithering}`;
-                if (diffMode !== 'auto') paletteuseFilters += `:diff_mode=${diffMode}`;
+                if (dithering !== 'auto' || diffMode !== 'auto') {
+                    paletteuseFilters += '=';
+                    let opts = [];
+                    if (dithering !== 'auto') opts.push(`dither=${dithering}`);
+                    if (diffMode !== 'auto') opts.push(`diff_mode=${diffMode}`);
+                    paletteuseFilters += opts.join(':');
+                }
 
                 const safeBaseFilter = baseFilterStr || 'null';
 
@@ -552,7 +569,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            paletteFilters = `[0:v]${safeBaseFilter}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge,palettegen`;
+                            paletteFilters = `[0:v]${safeBaseFilter}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge,palettegen`;
                         } else {
                             paletteFilters = `[0:v]${safeBaseFilter}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100,palettegen`;
                         }
@@ -582,7 +599,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            finalFilters = `[0:v]${safeBaseFilter}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[m];[m][1:v]${paletteuseFilters}`;
+                            finalFilters = `[0:v]${safeBaseFilter}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[m];[m][1:v]${paletteuseFilters}`;
                         } else {
                             finalFilters = `[0:v]${safeBaseFilter}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[m];[m][1:v]${paletteuseFilters}`;
                         }
@@ -613,7 +630,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            webpFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
+                            webpFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
                         } else {
                             webpFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[out]`;
                         }
@@ -658,7 +675,7 @@ export async function startConversion() {
                         preOvl += `[ovl]`;
 
                         if (oBlend !== 'normal') {
-                            apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=rgba[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
+                            apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid]split=3[vid1][vid2][vid3];[vid2]colorchannelmixer=aa=0[canvas];[canvas][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100:format=auto[full_ovl];[full_ovl]split[full_ovl1][full_ovl2];[vid3][full_ovl1]blend=all_mode='${oBlend}':all_opacity=1[vid_blended];[vid1][vid_blended][full_ovl2]maskedmerge[out]`;
                         } else {
                             apngFilters = `[0:v]${baseFilterStr}[vid];${preOvl};[vid][ovl]overlay=x=(W-w)*${oPosX}/100:y=(H-h)*${oPosY}/100[out]`;
                         }

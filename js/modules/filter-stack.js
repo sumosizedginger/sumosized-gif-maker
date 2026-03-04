@@ -52,23 +52,29 @@ export function clearFilterStack() {
 export function renderFilterStack() {
     const list = document.getElementById('activeFilterStack');
     if (!list) return;
-    list.innerHTML = '';
-
+    list.textContent = '';
     state.filterStack.forEach((fId, index) => {
         const item = document.createElement('div');
         item.className = 'stack-item';
-        item.innerHTML = `
-            <span class="stack-item-label">${fId}</span>
-            <div class="stack-item-actions">
-                <button class="stack-item-move" data-dir="up" aria-label="Move ${fId} up" ${index === 0 ? 'disabled' : ''}>↑</button>
-                <button class="stack-item-move" data-dir="down" aria-label="Move ${fId} down" ${index === state.filterStack.length - 1 ? 'disabled' : ''}>↓</button>
-                <button class="stack-item-remove" aria-label="Remove ${fId}">×</button>
-            </div>
-        `;
 
-        item.querySelectorAll('.stack-item-move').forEach((btn) => {
+        const label = document.createElement('span');
+        label.className = 'stack-item-label';
+        label.textContent = fId;
+        item.appendChild(label);
+
+        const actions = document.createElement('div');
+        actions.className = 'stack-item-actions';
+
+        const createMoveBtn = (dir, text) => {
+            const btn = document.createElement('button');
+            btn.className = 'stack-item-move';
+            btn.dataset.dir = dir;
+            btn.setAttribute('aria-label', `Move ${fId} ${dir}`);
+            btn.textContent = text;
+            if ((dir === 'up' && index === 0) || (dir === 'down' && index === state.filterStack.length - 1)) {
+                btn.disabled = true;
+            }
             btn.addEventListener('click', () => {
-                const dir = btn.dataset.dir;
                 const newIdx = dir === 'up' ? index - 1 : index + 1;
                 if (newIdx >= 0 && newIdx < state.filterStack.length) {
                     [state.filterStack[index], state.filterStack[newIdx]] = [
@@ -78,11 +84,24 @@ export function renderFilterStack() {
                     renderFilterStack();
                 }
             });
-        });
+            return btn;
+        };
 
-        item.querySelector('.stack-item-remove').addEventListener('click', () => {
+        const btnUp = createMoveBtn('up', '↑');
+        const btnDown = createMoveBtn('down', '↓');
+
+        const btnRemove = document.createElement('button');
+        btnRemove.className = 'stack-item-remove';
+        btnRemove.setAttribute('aria-label', `Remove ${fId}`);
+        btnRemove.textContent = '×';
+        btnRemove.addEventListener('click', () => {
             removeFromFilterStack(index);
         });
+
+        actions.appendChild(btnUp);
+        actions.appendChild(btnDown);
+        actions.appendChild(btnRemove);
+        item.appendChild(actions);
 
         list.appendChild(item);
     });

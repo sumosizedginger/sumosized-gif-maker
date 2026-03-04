@@ -91,7 +91,7 @@ export function renderFrameStrip() {
     const emptyState = document.getElementById('frameEmptyState');
     if (!strip) return;
 
-    strip.innerHTML = '';
+    strip.textContent = '';
     if (emptyState) emptyState.remove();
 
     state.frameData.forEach((frame, idx) => {
@@ -99,32 +99,79 @@ export function renderFrameStrip() {
         card.className = 'frame-card';
         card.draggable = true;
         card.dataset.index = idx;
-        card.innerHTML = `
-            <div class="frame-card-header">
-                <span class="frame-index">#${idx + 1}</span>
-                <div class="frame-actions">
-                    <button class="frame-action-btn frame-action-move" data-dir="left" title="Move Left" ${idx === 0 ? 'disabled' : ''}>
-                        <i data-lucide="chevron-left"></i>
-                    </button>
-                    <button class="frame-action-btn frame-action-move" data-dir="right" title="Move Right" ${idx === state.frameData.length - 1 ? 'disabled' : ''}>
-                        <i data-lucide="chevron-right"></i>
-                    </button>
-                    <button class="frame-action-btn duplicate" title="Duplicate frame">
-                        <i data-lucide="copy"></i>
-                    </button>
-                    <button class="frame-action-btn delete" title="Delete frame">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
-            </div>
-            <img class="frame-thumb" src="${frame.src}" alt="Frame ${idx + 1}">
-            <div class="frame-card-footer">
-                <input type="number" class="frame-delay-input" value="${frame.delay}" min="10" step="10">
-                <span class="frame-delay-label">ms</span>
-            </div>
-        `;
 
-        card.querySelectorAll('.frame-action-move').forEach((btn) => {
+        // Header
+        const header = document.createElement('div');
+        header.className = 'frame-card-header';
+
+        const indexSpan = document.createElement('span');
+        indexSpan.className = 'frame-index';
+        indexSpan.textContent = `#${idx + 1}`;
+        header.appendChild(indexSpan);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'frame-actions';
+
+        // Helper to create buttons
+        const createBtn = (cls, dir, title, iconName, disabled = false) => {
+            const btn = document.createElement('button');
+            btn.className = `frame-action-btn ${cls}`;
+            if (dir) btn.dataset.dir = dir;
+            btn.title = title;
+            if (disabled) btn.disabled = true;
+            const icon = document.createElement('i');
+            icon.setAttribute('data-lucide', iconName);
+            btn.appendChild(icon);
+            return btn;
+        };
+
+        const btnLeft = createBtn('frame-action-move', 'left', 'Move Left', 'chevron-left', idx === 0);
+        const btnRight = createBtn(
+            'frame-action-move',
+            'right',
+            'Move Right',
+            'chevron-right',
+            idx === state.frameData.length - 1
+        );
+        const btnDup = createBtn('duplicate', null, 'Duplicate frame', 'copy');
+        const btnDel = createBtn('delete', null, 'Delete frame', 'trash-2');
+
+        actionsDiv.appendChild(btnLeft);
+        actionsDiv.appendChild(btnRight);
+        actionsDiv.appendChild(btnDup);
+        actionsDiv.appendChild(btnDel);
+
+        header.appendChild(actionsDiv);
+        card.appendChild(header);
+
+        // Thumbnail
+        const img = document.createElement('img');
+        img.className = 'frame-thumb';
+        img.src = frame.src;
+        img.alt = `Frame ${idx + 1}`;
+        card.appendChild(img);
+
+        // Footer
+        const footer = document.createElement('div');
+        footer.className = 'frame-card-footer';
+
+        const delayInput = document.createElement('input');
+        delayInput.type = 'number';
+        delayInput.className = 'frame-delay-input';
+        delayInput.value = frame.delay;
+        delayInput.min = 10;
+        delayInput.step = 10;
+        footer.appendChild(delayInput);
+
+        const delayLabel = document.createElement('span');
+        delayLabel.className = 'frame-delay-label';
+        delayLabel.textContent = 'ms';
+        footer.appendChild(delayLabel);
+
+        card.appendChild(footer);
+
+        // Listeners for move buttons
+        [btnLeft, btnRight].forEach((btn) => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const dir = btn.dataset.dir;
@@ -136,17 +183,17 @@ export function renderFrameStrip() {
             });
         });
 
-        card.querySelector('.duplicate').addEventListener('click', (e) => {
+        btnDup.addEventListener('click', (e) => {
             e.stopPropagation();
             duplicateFrame(idx);
         });
 
-        card.querySelector('.delete').addEventListener('click', (e) => {
+        btnDel.addEventListener('click', (e) => {
             e.stopPropagation();
             deleteFrame(idx);
         });
 
-        card.querySelector('.frame-delay-input').addEventListener('change', (e) => {
+        delayInput.addEventListener('change', (e) => {
             state.frameData[idx].delay = Math.max(10, parseInt(e.target.value) || 66);
         });
 

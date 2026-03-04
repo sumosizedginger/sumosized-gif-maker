@@ -28,7 +28,11 @@ export function resetConversionState() {
     const btn = document.getElementById('convertBtn');
     if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="zap"></i> Elite Conversion';
+        btn.textContent = ' Elite Conversion';
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', 'zap');
+        btn.prepend(icon);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }

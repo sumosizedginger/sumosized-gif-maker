@@ -14,25 +14,25 @@ export const filterMap = {
     golden: "curves=red='0/0 0.5/0.6 1/1':green='0/0 0.5/0.45 1/0.9':blue='0/0 0.5/0.3 1/0.7'",
     gladiator: 'eq=contrast=1.5:saturation=0.5:brightness=-0.05,colorchannelmixer=1.1:0:0:0:0:0.9:0:0:0:0:0.7:0',
     nightvision: 'colorchannelmixer=0:0:0:0:0.5:0.5:0:0:0:0:0:0,eq=brightness=0.1:saturation=2,noise=alls=15:allf=t+u',
-    sulphur: "curves=red='0/0 0.5/0.8 1/1':green='0/0 0.5/0.7 1/0.9':blue='0/0 0.5/0.1 1/0.2'",
-    coldblue: "curves=red='0/0 0.5/0.3 1/0.7':green='0/0 0.5/0.5 1/0.8':blue='0/0 0.5/0.7 1/1'",
+    sulphur: "curves=r='0.001/0.8 1/1':g='0.001/0.7 1/0.9':b='0.001/0.1 1/0.2'",
+    coldblue: "curves=r='0.001/0.3 1/0.7':g='0.001/0.5 1/0.8':b='0.001/0.7 1/1'",
     vignette: 'vignette=PI/4',
     mirror: 'hflip',
     grain: 'noise=alls=20:allf=t+u',
     invert: 'negate',
     vhs: 'hue=s=0.5,noise=alls=10:allf=t+u,boxblur=lx=1:ly=1',
     psychedelic: "hue=h='t*50',eq=saturation=2",
-    thermal: "curves=r='0/0 0.1/1 1/1':g='0/1 0.5/0 1/1':b='0/0.5 1/0'",
+    thermal: "curves=r='0/0 0.1/1 1/1':g='0.1/0 1/1':b='0.001/0.5 1/0'",
     glitch: "noise=alls=20:allf=t+u,hue=h='t*10':s=1.2,boxblur=2:1",
     cyberpunk: "eq=contrast=1.8:saturation=1.5,curves=r='0/0 0.5/1 1/1':g='0/0 0.5/0 1/0.5':b='0/0 0.5/1 1/1'",
     chrome: "format=gray,curves=all='0/0 0.25/0.5 0.5/1 0.75/0.5 1/0',eq=contrast=1.5",
     blueprint: 'negate,hue=h=240:s=1,eq=contrast=1.2',
     matrix: 'format=gray,colorlevels=rimin=0.05:gimin=0.05:bimin=0.05:rimax=0.1:gimax=0.9:bimax=0.1,eq=contrast=1.5,hue=h=120:s=1',
-    oldmovie: "format=gray,noise=alls=20:allf=t+u,curves=all='0/0 0.5/0.4 1/1'",
+    oldmovie: "format=gray,noise=alls=20:allf=t+u,curves=all='0.001/0.1 0.5/0.4 1/1'",
     comic: 'edgedetect=low=0.1:high=0.2,negate,eq=contrast=1.5:saturation=2,format=gray,colorlevels=rimax=0.8:gimax=0.8:bimax=0.8',
     acid: "hue=h='t*180':s=2,curves=all='0/0 0.5/1 1/0'",
-    sketch: 'edgedetect=low=0.1:high=0.4,negate,format=gray,curves=all="0/0 0.5/0.8 1/1"',
-    infrared: 'curves=red="0/0.5 1/1":blue="0/0 1/0.2":green="0/0.5 1/0.8",eq=saturation=1.5',
+    sketch: 'edgedetect=low=0.1:high=0.4,negate,format=gray,curves=all="0.001/0.1 0.5/0.8 1/1"',
+    infrared: 'curves=r="0.001/0.5 1/1":b="0/0 1/0.2":g="0.001/0.5 1/0.8",eq=saturation=1.5',
     seahawks: 'colorchannelmixer=0.2:0.5:0.1:0:0.1:0.8:0.1:0:0.1:0.2:0.5',
     technicolor: 'colorchannelmixer=1:0:0:0:0:1:0.5:0:0:0.5:1,eq=saturation=1.2:contrast=1.1',
     golden2: 'curves=all="0/0 0.5/0.6 1/1",colorchannelmixer=1:0.1:0:0:0.1:0.9:0:0:0:0:0.6',
@@ -58,8 +58,16 @@ export async function buildBaseFilters(
     // A. Crop
     if (state.cropData.active && state.cropData.w > 0 && targetEl) {
         const rect = targetEl.getBoundingClientRect();
-        const realW = state.currentMode === 'video' ? dom.videoPlayer.videoWidth : dom.imagePlaceholder.naturalWidth;
-        const realH = state.currentMode === 'video' ? dom.videoPlayer.videoHeight : dom.imagePlaceholder.naturalHeight;
+        let realW, realH;
+        if (state.currentMode === 'video') {
+            realW = dom.videoPlayer.videoWidth;
+            realH = dom.videoPlayer.videoHeight;
+        } else {
+            // In image mode, conversion.js normalizes slides to `resWidth` before feeding FFmpeg.
+            // We must calculate the crop box relative to this downscaled input.
+            realW = resWidth;
+            realH = Math.round(resWidth * (dom.imagePlaceholder.naturalHeight / dom.imagePlaceholder.naturalWidth));
+        }
 
         const elAspect = rect.width / rect.height;
         const vidAspect = realW / realH;

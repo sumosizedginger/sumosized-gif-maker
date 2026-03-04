@@ -50,9 +50,9 @@ export function loadVideoFile(file) {
     state.frameData.forEach((f) => URL.revokeObjectURL(f.src));
     state.frameData = [];
     const slideshowGrid = document.getElementById('slideshowGrid');
-    if (slideshowGrid) slideshowGrid.innerHTML = '';
+    if (slideshowGrid) slideshowGrid.textContent = '';
     const frameStrip = document.getElementById('frameStrip');
-    if (frameStrip) frameStrip.innerHTML = '';
+    if (frameStrip) frameStrip.textContent = '';
 
     showToast('🎥 Video Loaded Successfully');
 }
@@ -150,10 +150,10 @@ export function clearCurrentMedia() {
     if (actionSection) actionSection.style.display = 'none';
 
     const frameStrip = document.getElementById('frameStrip');
-    if (frameStrip) frameStrip.innerHTML = '';
+    if (frameStrip) frameStrip.textContent = '';
 
     const timelineTrack = document.getElementById('timelineTrack');
-    if (timelineTrack) timelineTrack.innerHTML = '';
+    if (timelineTrack) timelineTrack.textContent = '';
 
     showToast('Media cleared.');
 }
