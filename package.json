@@ -10,6 +10,8 @@
         "check": "prettier --check .",
         "lint": "eslint .",
         "test": "vitest run --passWithNoTests",
+        "coverage": "vitest run --coverage",
+        "test:ci": "vitest run --coverage --reporter=html --reporter=text",
         "prepare": "husky"
     },
     "repository": {
@@ -24,6 +26,7 @@
     "homepage": "https://github.com/sumosizedginger/sumosized-gif-maker#readme",
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@vitest/coverage-v8": "^4.0.18",
         "eslint": "^10.0.2",
         "eslint-config-prettier": "^10.1.8",
         "globals": "^17.3.0",
